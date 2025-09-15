@@ -15,10 +15,10 @@ const montserrat = Montserrat({
 })
 
 export const metadata: Metadata = {
-  title: "MotoGear & Café - Motocicletas, Vehículos Eléctricos y Más",
+  title: "Uzcudun Coffe & Ride",
   description:
     "Tu destino para motocicletas, vehículos eléctricos, accesorios y el mejor café. Descubre nuestra amplia gama de productos.",
-  generator: "v0.app",
+  generator: "Bitia",
 }
 
 export default function RootLayout({
