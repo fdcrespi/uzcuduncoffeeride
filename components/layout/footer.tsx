@@ -1,4 +1,5 @@
-import { Bike } from "lucide-react"
+import { Mail, Map, MapPin, Phone } from "lucide-react"
+import Image from "next/image"
 
 interface FooterProps {
   className?: string
@@ -11,11 +12,10 @@ export function Footer({ className }: FooterProps) {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
             <div className="flex items-center space-x-2 mb-4">
-              <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-                <Bike className="w-5 h-5 text-primary-foreground" />
-              </div>
-              <span className="text-lg font-bold">MotoGear & Café</span>
+              <Image src="logo-black.png" alt="logo uzcudun coffee and ride" width={120} height={80} />
+              <span className="text-lg font-bold">COFFEE & RIDE</span>
             </div>
+            
             <p className="text-muted-foreground text-sm">
               Tu destino para motocicletas, vehículos eléctricos y el mejor café de la ciudad.
             </p>
@@ -76,10 +76,38 @@ export function Footer({ className }: FooterProps) {
           <div>
             <h3 className="font-semibold mb-4">Contacto</h3>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li>Av. Principal 123</li>
-              <li>Ciudad, País</li>
-              <li>+1 (555) 123-4567</li>
-              <li>info@motogear.com</li>
+              <li>
+                <a 
+                  href="https://maps.app.goo.gl/8Rjk9L9aCjwe2phx7"
+                  className="flex gap-2"
+                  target="_blank"
+                >
+                  <MapPin />
+                  Av. del Trabajador 46
+                </a>
+              </li>
+              <li className="flex gap-2">
+                <Map />
+                Tres Arroyos, Buenos Aires, Argentina
+              </li>
+              <li>
+                <a
+                  href="tel:+542983381888"
+                  className="flex gap-2"
+                >
+                  <Phone />
+                  +54 (2983) 381888
+                </a>
+              </li>
+              <li>
+                <a 
+                  href="mailto:uzcudunmotorstore@gmail.com"
+                  className="flex gap-2"
+                >
+                  <Mail />
+                  uzcudunmotorstore@gmail.com
+                </a>
+              </li>
             </ul>
           </div>
         </div>

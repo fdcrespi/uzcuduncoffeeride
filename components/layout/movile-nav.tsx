@@ -1,6 +1,7 @@
 "use client"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
-import { Bike } from "lucide-react"
+
+import Image from "next/image"
 
 interface MobileNavProps {
   isOpen: boolean
@@ -33,14 +34,15 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent side="right" className="w-80 p-0">
         <SheetHeader className="p-6 border-b">
-          <div className="flex items-center justify-between">
+          {/* <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
                 <Bike className="w-5 h-5 text-primary-foreground" />
               </div>
               <SheetTitle className="text-lg font-bold">MotoGear & Café</SheetTitle>
             </div>
-          </div>
+          </div> */}
+          <Image src="logo-black.png" width={80} height={60} alt="logo uzcudun coffee and ride"/> 
         </SheetHeader>
 
         <nav className="p-6">
