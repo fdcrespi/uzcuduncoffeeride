@@ -1,59 +1,114 @@
 "use client"
 
-import { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ProductFormDialog } from "@/components/admin/product-form-dialog"
-import { SearchFilters } from "@/components/admin/search-filters"
 import { ProductsTable } from "@/components/admin/products-table"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
-const sampleProducts = [
-  {
-    id: "1",
-    name: "Yamaha R6 2024",
-    category: "Motocicletas",
-    price: 18500,
-    stock: 3,
-    status: "active",
-    image: "/modern-sport-motorcycle-in-showroom.jpg",
-  },
-  {
-    id: "2",
-    name: "NIU NGT",
-    category: "Eléctricos",
-    price: 3200,
-    stock: 8,
-    status: "active",
-    image: "/electric-scooter-modern-design.jpg",
-  },
-  {
-    id: "3",
-    name: "Casco AGV K6",
-    category: "Accesorios",
-    price: 450,
-    stock: 25,
-    status: "active",
-    image: "/motorcycle-helmet-premium-black.jpg",
-  },
-  {
-    id: "4",
-    name: "Café Ruta 66",
-    category: "Cafetería",
-    price: 24,
-    stock: 150,
-    status: "active",
-    image: "/premium-coffee-beans-package-motorcycle-theme.jpg",
-  },
-]
+// Interfaces to type the data
+interface Subcategory {
+  id: string;
+  nombre: string;
+}
+
+interface Product {
+  id: string;
+  nombre: string;
+  descripcion: string;
+  image: string;
+  subrubro_id: string;
+  subrubro_nombre: string;
+  precio: number;
+  stock: number;
+}
 
 export default function ProductsPage() {
-  const [products, setProducts] = useState(sampleProducts)
-  const [searchTerm, setSearchTerm] = useState("")
+  const [products, setProducts] = useState<Product[]>([])
+  const [subcategories, setSubcategories] = useState<Subcategory[]>([])
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [errorDialog, setErrorDialog] = useState<{ isOpen: boolean; message: string }>({ isOpen: false, message: '' });
 
-  const filteredProducts = products.filter(
-    (product) =>
-      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.category.toLowerCase().includes(searchTerm.toLowerCase()),
-  )
+  const fetchProducts = async () => {
+    try {
+      const res = await fetch('/api/products');
+      if (!res.ok) throw new Error("Failed to fetch products");
+      const data = await res.json();
+      setProducts(data);
+    } catch (error) {
+      console.error(error);
+      setErrorDialog({ isOpen: true, message: 'No se pudieron cargar los productos.' });
+    }
+  };
+
+  const fetchSubcategories = async () => {
+    try {
+      const res = await fetch('/api/subcategories');
+      if (!res.ok) throw new Error("Failed to fetch subcategories");
+      const data = await res.json();
+      setSubcategories(data);
+    } catch (error) {
+      console.error(error);
+      setErrorDialog({ isOpen: true, message: 'No se pudieron cargar las subcategorías.' });
+    }
+  };
+
+  useEffect(() => {
+    fetchProducts();
+    fetchSubcategories();
+  }, []);
+
+  const handleAddProduct = async (data: Omit<Product, 'id' | 'subrubro_nombre'>) => {
+    const response = await fetch('/api/products', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+
+    if (response.ok) {
+      await fetchProducts(); // Refetch to get the full product data with subcategory name
+    } else {
+      const errorData = await response.json();
+      setErrorDialog({ isOpen: true, message: errorData.message || 'Error al crear el producto.' });
+    }
+  };
+
+  const handleUpdateProduct = async (id: string, data: Omit<Product, 'id' | 'subrubro_nombre'>) => {
+    const response = await fetch(`/api/products/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+
+    if (response.ok) {
+      await fetchProducts(); // Refetch to get updated data
+      setEditingProduct(null);
+    } else {
+      const errorData = await response.json();
+      setErrorDialog({ isOpen: true, message: errorData.message || 'Error al actualizar el producto.' });
+    }
+  };
+
+  const handleDeleteProduct = async (id: string) => {
+    const response = await fetch(`/api/products/${id}`, {
+      method: 'DELETE',
+    });
+
+    if (response.ok) {
+      setProducts(products.filter(p => p.id !== id));
+    } else {
+      const errorData = await response.json();
+      setErrorDialog({ isOpen: true, message: errorData.message || 'Ocurrió un error al eliminar el producto.' });
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -65,21 +120,46 @@ export default function ProductsPage() {
             Gestiona tu inventario de motocicletas, accesorios y productos de cafetería
           </p>
         </div>
-        <ProductFormDialog />
+        <ProductFormDialog
+            key={editingProduct ? 'edit' : 'add'} // Reset form when switching between add/edit
+            subcategories={subcategories}
+            onSubmit={editingProduct ? (data) => handleUpdateProduct(editingProduct.id, data) : handleAddProduct}
+            initialData={editingProduct}
+            onOpenChange={(isOpen) => {
+              if (!isOpen) setEditingProduct(null);
+            }}
+        />
       </div>
-
-      <SearchFilters searchTerm={searchTerm} onSearchChange={setSearchTerm} />
 
       {/* Products table */}
       <Card>
         <CardHeader>
-          <CardTitle>Lista de Productos ({filteredProducts.length})</CardTitle>
+          <CardTitle>Lista de Productos ({products.length})</CardTitle>
           <CardDescription>Gestiona todos tus productos desde esta vista</CardDescription>
         </CardHeader>
         <CardContent>
-          <ProductsTable products={filteredProducts} />
+          <ProductsTable
+            products={products}
+            onEdit={setEditingProduct}
+            onDelete={handleDeleteProduct}
+          />
         </CardContent>
       </Card>
+
+      {/* Error Dialog */}
+      <AlertDialog open={errorDialog.isOpen} onOpenChange={(open) => setErrorDialog({ ...errorDialog, isOpen: open })}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Error</AlertDialogTitle>
+            <AlertDialogDescription>
+              {errorDialog.message}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setErrorDialog({ isOpen: false, message: '' })}>OK</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
