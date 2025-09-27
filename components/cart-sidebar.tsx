@@ -45,7 +45,7 @@ export function CartSidebar() {
             <Button onClick={() => setIsOpen(false)}>Continuar Comprando</Button>
           </div>
         ) : (
-          <div className="flex flex-col h-full">
+          <div className="flex flex-col h-full px-3">
             <ScrollArea className="flex-1 -mx-6 px-6">
               <div className="space-y-4 py-4">
                 {items.map((item) => (
@@ -94,19 +94,19 @@ export function CartSidebar() {
               </div>
             </ScrollArea>
 
-            <div className="space-y-4 pt-4 border-t">
+            <div className="space-y-4 pt-4 border-t px-3">
               <div className="flex items-center justify-between text-lg font-semibold">
                 <span>Total:</span>
                 <span>${totalPrice.toLocaleString()}</span>
               </div>
               <div className="space-y-2">
                 <Link href="/checkout" onClick={() => setIsOpen(false)}>
-                  <Button className="w-full" size="lg">
-                    Proceder al Checkout
+                  <Button className="w-full my-3" size="lg">
+                    Confirmar Compra
                   </Button>
                 </Link>
-                <Button variant="outline" className="w-full bg-transparent" onClick={() => setIsOpen(false)}>
-                  Continuar Comprando
+                <Button variant="outline" className="w-full bg-transparent mb-6" onClick={() => setIsOpen(false)}>
+                  Volver a la tienda
                 </Button>
               </div>
             </div>
