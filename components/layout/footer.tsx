@@ -1,5 +1,6 @@
 import { Mail, Map, MapPin, Phone } from "lucide-react"
 import Image from "next/image"
+import Link from "next/link"
 
 interface FooterProps {
   className?: string
@@ -77,14 +78,14 @@ export function Footer({ className }: FooterProps) {
             <h3 className="font-semibold mb-4">Contacto</h3>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li>
-                <a 
+                <Link 
                   href="https://maps.app.goo.gl/8Rjk9L9aCjwe2phx7"
                   className="flex gap-2"
                   target="_blank"
                 >
                   <MapPin />
                   Av. del Trabajador 46
-                </a>
+                </Link>
               </li>
               <li className="flex gap-2">
                 <Map />
@@ -113,7 +114,7 @@ export function Footer({ className }: FooterProps) {
         </div>
 
         <div className="border-t mt-8 pt-8 text-center text-sm text-muted-foreground">
-          <p>&copy; 2024 MotoGear & Café. Todos los derechos reservados.</p>
+          <p>&copy; 2025 <Link href="https://www.bitia.com.ar" className="text-blue-900 text-bold" target="_blank">Bitia</Link>. Todos los derechos reservados.</p>
         </div>
       </div>
     </footer>

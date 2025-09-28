@@ -216,6 +216,7 @@
   border-radius: 50%;
   position: relative;
   background: radial-gradient(circle at center, rgba(168, 143, 115, 0.1) 0%, transparent 70%);
+  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
 }
 

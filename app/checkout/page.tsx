@@ -54,6 +54,7 @@ interface OrderSummaryProps {
   preferenceId: string | null;
   isMobile: boolean;
   onBack: () => void;
+  updateQuantity: (productId: string, quantity: number) => void;
 }
 
 // Sub-component: ShippingForm
@@ -119,8 +120,48 @@ const ShippingForm: React.FC<ShippingFormProps> = ({ shippingData, setShippingDa
   );
 };
 
+interface QuantityControlProps {
+  quantity: number;
+  onUpdate: (newQuantity: number) => void;
+}
+
+const QuantityControl: React.FC<QuantityControlProps> = ({ quantity, onUpdate }) => {
+  return (
+    <div className="flex items-center gap-1 mt-2">
+      <Button
+        variant="outline"
+        size="icon"
+        className="h-6 w-6"
+        onClick={() => onUpdate(quantity - 1)}
+      >
+        -
+      </Button>
+      <Input
+        type="number"
+        className="h-8 w-12 text-center"
+        value={quantity}
+        onChange={(e) => {
+          const newQuantity = parseInt(e.target.value, 10);
+          if (!isNaN(newQuantity) && newQuantity >= 0) {
+            onUpdate(newQuantity);
+          }
+        }}
+      />
+      <Button
+        variant="outline"
+        size="icon"
+        className="h-6 w-6"
+        onClick={() => onUpdate(quantity + 1)}
+      >
+        +
+      </Button>
+    </div>
+  );
+};
+
+
 // Sub-component: OrderSummary
-const OrderSummary: React.FC<OrderSummaryProps> = ({ items, totalPrice, shipping, finalTotal, isProcessing, handleCreatePreference, preferenceId, isMobile, onBack }) => (
+const OrderSummary: React.FC<OrderSummaryProps> = ({ items, totalPrice, shipping, finalTotal, isProcessing, handleCreatePreference, preferenceId, isMobile, onBack, updateQuantity }) => (
   <div className="flex flex-col h-full">
     {/* Scrollable content area */}
     <div className="flex-grow overflow-y-auto space-y-6 pr-2">
@@ -133,13 +174,16 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ items, totalPrice, shipping
         </CardHeader>
         <CardContent className="space-y-4">
           {items.map((item) => (
-            <div key={item.product.id} className="flex items-center space-x-4">
+            <div key={item.product.id} className="flex items-start space-x-4">
               <div className="relative w-16 h-16 rounded-md overflow-hidden">
                 <Image src={item.product.image || "/placeholder.svg"} alt={item.product.name} fill className="object-cover" />
               </div>
               <div className="flex-1">
-                <h4 className="font-medium">{item.product.name}</h4>
-                <p className="text-sm text-muted-foreground">Cantidad: {item.quantity}</p>
+                <h4 className="font-medium leading-tight">{item.product.name}</h4>
+                <QuantityControl
+                  quantity={item.quantity}
+                  onUpdate={(newQuantity) => updateQuantity(item.product.id, newQuantity)}
+                />
               </div>
               <div className="text-right">
                 <p className="font-medium">${(item.product.price * item.quantity).toLocaleString()}</p>
@@ -197,6 +241,15 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ items, totalPrice, shipping
               Volver
             </Button>
           )}
+
+          {!isMobile && (
+            <Link href="/" className="w-full inline-block text-center">
+              <Button className="w-full" size="lg" variant="outline">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Volver a la tienda
+              </Button>
+            </Link>
+          )}
         </CardContent>
       </Card>
     </div>
@@ -205,7 +258,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ items, totalPrice, shipping
 
 // Main Component: CheckoutPage
 export default function CheckoutPage() {
-  const { items, getTotalPrice } = useCart();
+  const { items, getTotalPrice, updateQuantity } = useCart();
   const [isProcessing, setIsProcessing] = useState(false);
   const [step, setStep] = useState(1);
   const [shippingData, setShippingData] = useState<ShippingData>({
@@ -277,7 +330,7 @@ export default function CheckoutPage() {
     );
   }
 
-  const orderSummaryProps = { items, totalPrice, shipping, finalTotal, isProcessing, handleCreatePreference, preferenceId, isMobile, onBack: () => setStep(1) };
+  const orderSummaryProps = { items, totalPrice, shipping, finalTotal, isProcessing, handleCreatePreference, preferenceId, isMobile, onBack: () => setStep(1), updateQuantity };
 
   return (
     <div className="min-h-screen bg-background">
@@ -298,7 +351,7 @@ export default function CheckoutPage() {
       <div className="container mx-auto px-4 py-8">
         {isMobile ? (
           step === 1 ? (
-            <div className="flex flex-col" style={{ height: 'calc(100vh - 112px)' }}>
+            <div className="flex flex-col h-[calc(100vh-112px)]">
               <div className="flex-grow overflow-y-auto pr-2">
                 <ShippingForm shippingData={shippingData} setShippingData={setShippingData} isMobile={isMobile} onStepForward={() => setStep(2)} />
               </div>
@@ -318,7 +371,7 @@ export default function CheckoutPage() {
               </div>
             </div>
           ) : (
-            <div style={{ height: 'calc(100vh - 112px)' }}>
+            <div className="h-[calc(100vh-112px)]">
               <OrderSummary {...orderSummaryProps} />
             </div>
           )
