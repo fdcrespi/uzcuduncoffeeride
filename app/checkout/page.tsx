@@ -57,7 +57,7 @@ interface OrderSummaryProps {
 }
 
 // Sub-component: ShippingForm
-const ShippingForm: React.FC<ShippingFormProps> = ({ shippingData, setShippingData, isMobile, onStepForward }) => {
+const ShippingForm: React.FC<ShippingFormProps> = ({ shippingData, setShippingData, onStepForward }) => {
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setShippingData({ ...shippingData, [e.target.name]: e.target.value });
   };
@@ -68,7 +68,7 @@ const ShippingForm: React.FC<ShippingFormProps> = ({ shippingData, setShippingDa
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} id="shipping-form">
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -113,11 +113,6 @@ const ShippingForm: React.FC<ShippingFormProps> = ({ shippingData, setShippingDa
             <Label htmlFor="notes">Notas del pedido (opcional)</Label>
             <Textarea id="notes" name="notes" value={shippingData.notes} onChange={handleChange} placeholder="Instrucciones especiales de entrega..." />
           </div>
-          {isMobile && (
-            <Button type="submit" className="w-full" size="lg">
-              Continuar al resumen
-            </Button>
-          )}
         </CardContent>
       </Card>
     </form>
@@ -286,24 +281,44 @@ export default function CheckoutPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b bg-card">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center space-x-2">
-              <ArrowLeft className="w-5 h-5" />
-              <span className="font-semibold">Volver a la tienda</span>
-            </Link>
-            <div className="w-24" />
+      {!isMobile && (
+        <header className="border-b bg-card">
+          <div className="container mx-auto px-4 py-4">
+            <div className="flex items-center justify-between">
+              <Link href="/" className="flex items-center space-x-2">
+                <ArrowLeft className="w-5 h-5" />
+                <span className="font-semibold">Volver a la tienda</span>
+              </Link>
+              <div className="w-24" />
+            </div>
           </div>
-        </div>
-      </header>
+        </header>
+      )}
 
       <div className="container mx-auto px-4 py-8">
         {isMobile ? (
           step === 1 ? (
-            <ShippingForm shippingData={shippingData} setShippingData={setShippingData} isMobile={isMobile} onStepForward={() => setStep(2)} />
+            <div className="flex flex-col" style={{ height: 'calc(100vh - 112px)' }}>
+              <div className="flex-grow overflow-y-auto pr-2">
+                <ShippingForm shippingData={shippingData} setShippingData={setShippingData} isMobile={isMobile} onStepForward={() => setStep(2)} />
+              </div>
+              <div className="flex-shrink-0 pt-4">
+                <Card>
+                  <CardContent className="pt-6 space-y-4">
+                    <Button type="submit" form="shipping-form" className="w-full" size="lg">
+                      Continuar al resumen
+                    </Button>
+                    <Link href="/" className="w-full inline-block text-center">
+                      <Button className="w-full" size="lg" variant="outline">
+                        Volver a la tienda
+                      </Button>
+                    </Link>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
           ) : (
-            <div style={{ height: 'calc(100vh - 144px)' }}>
+            <div style={{ height: 'calc(100vh - 112px)' }}>
               <OrderSummary {...orderSummaryProps} />
             </div>
           )
