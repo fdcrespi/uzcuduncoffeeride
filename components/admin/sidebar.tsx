@@ -28,8 +28,8 @@ const sidebarItems = [
     icon: ShoppingCart,
   },
   {
-    title: "Clientes",
-    href: "/admin/customers",
+    title: "Usuarios",
+    href: "/admin/users",
     icon: Users,
   },
   {
