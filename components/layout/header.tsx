@@ -28,7 +28,7 @@ export function Header({ className }: HeaderProps) {
               </div>
               <span className="text-xl font-bold text-foreground">MotoGear & Café</span>
             </div> */}
-          <Image src="logo-black.png" alt="Logo uzcudun coffee and ride" width={120} height={80} className="ml-4"/>
+          <Image src="logo-black.png" alt="Logo uzcudun coffee and ride" width={100} height={80} className="ml-4"/>
           
 
           <nav className="hidden md:flex items-center space-x-4">
@@ -46,25 +46,28 @@ export function Header({ className }: HeaderProps) {
             </a>
           </nav>
 
-          <div className="flex items-center space-x-2 hidden md:block">
+          <div className="hidden items-center space-x-2 md:flex">
             <Button variant="ghost" size="icon" className="hover-lift">
-              <Search className="w-5 h-5" />
+              <Search className="w-6 h-6" />
             </Button>
-            <Button variant="ghost" size="icon" className="hover-lift">
+            {/* <Button variant="ghost" size="icon" className="hover-lift">
               <User className="w-5 h-5" />
-            </Button>
+            </Button> */}
             <CartSidebar />
           </div>
-  
-  
+
+          {/* Mobile Icons */}
+          <div className="flex items-center space-x-2 md:hidden">
+            <CartSidebar />
             <Button
               variant="ghost"
               size="icon"
-              className="md:hidden hover-lift"
+              className="hover-lift"
               onClick={() => setIsMobileNavOpen(true)}
             >
-              <Menu className="w-5 h-5" />
+              <Menu className="w-6 h-6" />
             </Button>
+          </div>
   
         </div>
       </header>

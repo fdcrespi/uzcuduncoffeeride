@@ -17,7 +17,7 @@ export function AdminTopBar({ onMenuClick, title = "Panel de Administración" }:
 
       <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
         <div className="flex items-center gap-x-4 lg:gap-x-6">
-          <h1 className="text-xl font-semibold">{title}</h1>
+          <h1 className="text-lg font-semibold md:text-xl">{title}</h1>
         </div>
         <div className="ml-auto flex items-center gap-x-4 lg:gap-x-6">
           <div className="flex items-center space-x-2">

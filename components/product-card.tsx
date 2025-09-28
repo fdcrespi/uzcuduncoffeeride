@@ -18,10 +18,6 @@ export function ProductCard({ product }: ProductCardProps) {
 
   const handleAddToCart = () => {
     addItem(product)
-    toast({
-      title: "Producto agregado",
-      description: `${product.name} se agregó al carrito`,
-    })
   }
 
   return (

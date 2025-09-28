@@ -23,4 +23,6 @@ export interface CartContextType {
   clearCart: () => void
   getTotalItems: () => number
   getTotalPrice: () => number
+  lastItemAddedTimestamp: number | null
+  setLastItemAddedTimestamp: (timestamp: number | null) => void
 }
