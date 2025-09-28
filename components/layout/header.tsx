@@ -46,7 +46,7 @@ export function Header({ className }: HeaderProps) {
             </a>
           </nav>
 
-          <div className="flex items-center space-x-2 hidden md:block">
+          <div className="hidden items-center space-x-2 md:flex">
             <Button variant="ghost" size="icon" className="hover-lift">
               <Search className="w-5 h-5" />
             </Button>
@@ -55,16 +55,19 @@ export function Header({ className }: HeaderProps) {
             </Button>
             <CartSidebar />
           </div>
-  
-  
+
+          {/* Mobile Icons */}
+          <div className="flex items-center space-x-2 md:hidden">
+            <CartSidebar />
             <Button
               variant="ghost"
               size="icon"
-              className="md:hidden hover-lift"
+              className="hover-lift"
               onClick={() => setIsMobileNavOpen(true)}
             >
               <Menu className="w-5 h-5" />
             </Button>
+          </div>
   
         </div>
       </header>

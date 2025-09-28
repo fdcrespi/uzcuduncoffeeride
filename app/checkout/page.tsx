@@ -51,6 +51,8 @@ interface OrderSummaryProps {
   isProcessing: boolean;
   handleCreatePreference: () => void;
   preferenceId: string | null;
+  isMobile: boolean;
+  onBack: () => void;
 }
 
 // Sub-component: ShippingForm
@@ -61,7 +63,6 @@ const ShippingForm: React.FC<ShippingFormProps> = ({ shippingData, setShippingDa
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Basic validation could be added here before proceeding
     onStepForward();
   };
 
@@ -123,98 +124,88 @@ const ShippingForm: React.FC<ShippingFormProps> = ({ shippingData, setShippingDa
 };
 
 // Sub-component: OrderSummary
-const OrderSummary: React.FC<OrderSummaryProps> = ({ items, totalPrice, shipping, finalTotal, isProcessing, handleCreatePreference, preferenceId }) => (
-  <div className="space-y-6">
-    <Card>
-      <CardHeader>
-        <CardTitle>Resumen del Pedido</CardTitle>
-        <CardDescription>
-          {items.length} {items.length === 1 ? "artículo" : "artículos"}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {items.map((item) => (
-          <div
-            key={item.product.id}
-            className="flex items-center space-x-4"
-          >
-            <div className="relative w-16 h-16 rounded-md overflow-hidden">
-              <Image
-                src={item.product.image || "/placeholder.svg"}
-                alt={item.product.name}
-                fill
-                className="object-cover"
-              />
+const OrderSummary: React.FC<OrderSummaryProps> = ({ items, totalPrice, shipping, finalTotal, isProcessing, handleCreatePreference, preferenceId, isMobile, onBack }) => (
+  <div className="flex flex-col h-full">
+    {/* Scrollable content area */}
+    <div className="flex-grow overflow-y-auto space-y-6 pr-2">
+      <Card>
+        <CardHeader>
+          <CardTitle>Resumen del Pedido</CardTitle>
+          <CardDescription>
+            {items.length} {items.length === 1 ? "artículo" : "artículos"}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {items.map((item) => (
+            <div key={item.product.id} className="flex items-center space-x-4">
+              <div className="relative w-16 h-16 rounded-md overflow-hidden">
+                <Image src={item.product.image || "/placeholder.svg"} alt={item.product.name} fill className="object-cover" />
+              </div>
+              <div className="flex-1">
+                <h4 className="font-medium">{item.product.name}</h4>
+                <p className="text-sm text-muted-foreground">Cantidad: {item.quantity}</p>
+              </div>
+              <div className="text-right">
+                <p className="font-medium">${(item.product.price * item.quantity).toLocaleString()}</p>
+              </div>
             </div>
-            <div className="flex-1">
-              <h4 className="font-medium">{item.product.name}</h4>
-              <p className="text-sm text-muted-foreground">
-                Cantidad: {item.quantity}
-              </p>
+          ))}
+          <Separator />
+          <div className="space-y-2">
+            <div className="flex justify-between">
+              <span>Subtotal:</span>
+              <span>${totalPrice.toLocaleString()}</span>
             </div>
-            <div className="text-right">
-              <p className="font-medium">
-                ${(item.product.price * item.quantity).toLocaleString()}
-              </p>
+            <div className="flex justify-between">
+              <span>Envío:</span>
+              <span>{shipping === 0 ? "Gratis" : `$${shipping}`}</span>
             </div>
-          </div>
-        ))}
-        <Separator />
-        <div className="space-y-2">
-          <div className="flex justify-between">
-            <span>Subtotal:</span>
-            <span>${totalPrice.toLocaleString()}</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Envío:</span>
-            <span>{shipping === 0 ? "Gratis" : `${shipping}`}</span>
+           {/*  <Separator />
+            <p>Modo de pago: Mercado Pago</p> */}
           </div>
           <Separator />
-          <div className="text-sm text-muted-foreground"></div>
-          <p>Modo de pago : Mercado Pago</p>
-        </div>
-        <Separator />
-        <div className="flex justify-between text-lg font-semibold">
-          <span>Total:</span>
-          <span>${finalTotal.toFixed(2)}</span>
-        </div>
-      </CardContent>
-    </Card>
-
-    <Card>
-      <CardContent className="pt-6">
-        <div className="flex items-center space-x-2 text-sm text-muted-foreground mb-4">
-          <Shield className="w-4 h-4" />
-          <span>Compra segura y protegida</span>
-        </div>
-        {preferenceId ? (
-          <Wallet initialization={{ preferenceId }} />
-        ) : (
-          <Button
-            onClick={handleCreatePreference}
-            className="w-full"
-            size="lg"
-            disabled={isProcessing}
-          >
-            {isProcessing ? "Procesando..." : "Confirmar y Pagar"}
-          </Button>
-        )}
-      </CardContent>
-    </Card>
-
-    {totalPrice < 100 && (
-      <Card className="border-amber-200 bg-amber-50">
-        <CardContent className="pt-6">
-          <p className="text-sm text-amber-800">
-            💡 Agrega ${(100 - totalPrice).toFixed(2)} más para obtener envío
-            gratuito
-          </p>
+          <div className="flex justify-between text-lg font-semibold">
+            <span>Total:</span>
+            <span>${finalTotal.toFixed(2)}</span>
+          </div>
         </CardContent>
       </Card>
-    )}
+      {totalPrice < 100 && (
+        <Card className="border-amber-200 bg-amber-50">
+          <CardContent className="pt-6">
+            <p className="text-sm text-amber-800">💡 Agrega ${(100 - totalPrice).toFixed(2)} más para obtener envío gratuito</p>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+
+    {/* Sticky footer with actions */}
+    <div className="flex-shrink-0 pt-4">
+      <Card>
+        <CardContent className="pt-1 space-y-2">
+          <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+            <Shield className="w-4 h-4" />
+            <span>Compra segura y protegida</span>
+          </div>
+          {preferenceId ? (
+            <Wallet initialization={{ preferenceId }} />
+          ) : (
+            <Button onClick={handleCreatePreference} className="w-full" size="lg" disabled={isProcessing}>
+              {isProcessing ? "Procesando..." : "Confirmar y Pagar"}
+            </Button>
+          )}
+          {isMobile && (
+            <Button onClick={onBack} className="w-full mt-3" size="lg" variant="outline">
+              Volver
+            </Button>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   </div>
 );
 
+// Main Component: CheckoutPage
 export default function CheckoutPage() {
   const { items, getTotalPrice } = useCart();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -227,7 +218,6 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     const mpKey = process.env.NEXT_PUBLIC_MERCADO_PAGO_PUBLIC_KEY;
-    console.log("Mercado Pago Public Key:", mpKey);
     if (mpKey) {
       initMercadoPago(mpKey, { locale: "es-AR" });
     }
@@ -287,7 +277,7 @@ export default function CheckoutPage() {
     );
   }
 
-  const orderSummaryProps: OrderSummaryProps = { items, totalPrice, shipping, finalTotal, isProcessing, handleCreatePreference, preferenceId };
+  const orderSummaryProps = { items, totalPrice, shipping, finalTotal, isProcessing, handleCreatePreference, preferenceId, isMobile, onBack: () => setStep(1) };
 
   return (
     <div className="min-h-screen bg-background">
@@ -308,7 +298,9 @@ export default function CheckoutPage() {
           step === 1 ? (
             <ShippingForm shippingData={shippingData} setShippingData={setShippingData} isMobile={isMobile} onStepForward={() => setStep(2)} />
           ) : (
-            <OrderSummary {...orderSummaryProps} />
+            <div style={{ height: 'calc(100vh - 144px)' }}>
+              <OrderSummary {...orderSummaryProps} />
+            </div>
           )
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

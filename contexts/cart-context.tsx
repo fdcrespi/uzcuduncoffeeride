@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { createContext, useContext, useReducer, useEffect } from "react"
+import { createContext, useContext, useReducer, useEffect, useState } from "react"
 import type { Product, CartItem, CartContextType } from "@/lib/types"
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
@@ -41,49 +41,54 @@ function cartReducer(state: CartItem[], action: CartAction): CartItem[] {
 }
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
-  const [items, dispatch] = useReducer(cartReducer, [])
+  const [items, dispatch] = useReducer(cartReducer, []);
+  const [lastItemAddedTimestamp, setLastItemAddedTimestamp] = useState<number | null>(null);
 
   // Load cart from localStorage on mount
   useEffect(() => {
-    const savedCart = localStorage.getItem("moto-cart")
+    const savedCart = localStorage.getItem("moto-cart");
     if (savedCart) {
       try {
-        const parsedCart = JSON.parse(savedCart)
-        dispatch({ type: "LOAD_CART", items: parsedCart })
+        const parsedCart = JSON.parse(savedCart);
+        dispatch({ type: "LOAD_CART", items: parsedCart });
       } catch (error) {
-        console.error("Error loading cart from localStorage:", error)
+        console.error("Error loading cart from localStorage:", error);
       }
     }
-  }, [])
+  }, []);
 
   // Save cart to localStorage whenever items change
   useEffect(() => {
-    localStorage.setItem("moto-cart", JSON.stringify(items))
-  }, [items])
+    localStorage.setItem("moto-cart", JSON.stringify(items));
+  }, [items]);
 
   const addItem = (product: Product) => {
-    dispatch({ type: "ADD_ITEM", product })
-  }
+    dispatch({ type: "ADD_ITEM", product });
+    setLastItemAddedTimestamp(Date.now());
+  };
 
   const removeItem = (productId: string) => {
-    dispatch({ type: "REMOVE_ITEM", productId })
-  }
+    dispatch({ type: "REMOVE_ITEM", productId });
+  };
 
   const updateQuantity = (productId: string, quantity: number) => {
-    dispatch({ type: "UPDATE_QUANTITY", productId, quantity })
-  }
+    dispatch({ type: "UPDATE_QUANTITY", productId, quantity });
+  };
 
   const clearCart = () => {
-    dispatch({ type: "CLEAR_CART" })
-  }
+    dispatch({ type: "CLEAR_CART" });
+  };
 
   const getTotalItems = () => {
-    return items.reduce((total, item) => total + item.quantity, 0)
-  }
+    return items.reduce((total, item) => total + item.quantity, 0);
+  };
 
   const getTotalPrice = () => {
-    return items.reduce((total, item) => total + item.product.price * item.quantity, 0)
-  }
+    return items.reduce(
+      (total, item) => total + item.product.price * item.quantity,
+      0
+    );
+  };
 
   const value: CartContextType = {
     items,
@@ -93,9 +98,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     clearCart,
     getTotalItems,
     getTotalPrice,
-  }
+    lastItemAddedTimestamp,
+    setLastItemAddedTimestamp,
+  };
 
-  return <CartContext.Provider value={value}>{children}</CartContext.Provider>
+  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
 
 export function useCart() {
