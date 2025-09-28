@@ -139,14 +139,16 @@ export default function CategoriesPage() {
   return (
     <div className="space-y-6">
       {/* Page header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col items-start gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Categorías</h2>
+          <h2 className="text-2xl font-bold tracking-tight md:text-3xl">Categorías</h2>
           <p className="text-muted-foreground">
             Gestiona las categorías y subcategorías de tus productos.
           </p>
         </div>
-        <CategoryFormDialog onSubmit={handleAddCategory} />
+        <div className="w-full flex justify-end md:w-auto">
+            <CategoryFormDialog onSubmit={handleAddCategory} />
+        </div>
       </div>
 
       {/* Categories table */}
@@ -203,7 +205,7 @@ export default function CategoriesPage() {
                             <Table>
                               <TableHeader>
                                 <TableRow>
-                                  <TableHead>Nombre</TableHead>
+                                  <TableHead>Subcategorias</TableHead>
                                   <TableHead className="text-right">Acciones</TableHead>
                                 </TableRow>
                               </TableHeader>

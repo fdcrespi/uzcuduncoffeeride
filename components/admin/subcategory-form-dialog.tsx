@@ -58,8 +58,8 @@ export function SubcategoryFormDialog({ onSubmit, className, rubroId, initialDat
       {!initialData && (
         <DialogTrigger asChild>
           <Button className={className} size="sm">
-            <Plus className="w-4 h-4 mr-2" />
-            Agregar Subcategoría
+            <Plus className="h-4 w-4 md:mr-2" />
+            <span className="hidden md:inline">Subcategoría</span>
           </Button>
         </DialogTrigger>
       )}

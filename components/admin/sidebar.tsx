@@ -27,11 +27,11 @@ const sidebarItems = [
     href: "/admin/orders",
     icon: ShoppingCart,
   },
-  {
+  /* {
     title: "Clientes",
     href: "/admin/customers",
     icon: Users,
-  },
+  }, */
   {
     title: "Reportes",
     href: "/admin/reports",

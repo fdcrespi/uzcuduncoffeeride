@@ -28,13 +28,13 @@ const stats = [
     trend: "up",
     icon: Package,
   },
-  {
+  /* {
     title: "Clientes",
     value: "234",
     change: "+8.1%",
     trend: "up",
     icon: Users,
-  },
+  }, */
 ]
 
 const recentOrders = [
@@ -133,7 +133,7 @@ export default function AdminDashboard() {
         <TopProductsCard products={topProducts} />
       </div>
 
-      <QuickActionsCard />
+      {/* <QuickActionsCard /> */}
     </div>
   )
 }

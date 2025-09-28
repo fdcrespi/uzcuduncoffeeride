@@ -113,22 +113,24 @@ export default function ProductsPage() {
   return (
     <div className="space-y-6">
       {/* Page header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col items-start gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Productos</h2>
+          <h2 className="text-2xl font-bold tracking-tight md:text-3xl">Productos</h2>
           <p className="text-muted-foreground">
             Gestiona tu inventario de motocicletas, accesorios y productos de cafetería
           </p>
         </div>
-        <ProductFormDialog
-            key={editingProduct ? 'edit' : 'add'} // Reset form when switching between add/edit
-            subcategories={subcategories}
-            onSubmit={editingProduct ? (data) => handleUpdateProduct(editingProduct.id, data) : handleAddProduct}
-            initialData={editingProduct}
-            onOpenChange={(isOpen) => {
-              if (!isOpen) setEditingProduct(null);
-            }}
-        />
+        <div className="w-full flex justify-end md:w-auto">
+            <ProductFormDialog
+                key={editingProduct ? 'edit' : 'add'} // Reset form when switching between add/edit
+                subcategories={subcategories}
+                onSubmit={editingProduct ? (data) => handleUpdateProduct(editingProduct.id, data) : handleAddProduct}
+                initialData={editingProduct}
+                onOpenChange={(isOpen) => {
+                  if (!isOpen) setEditingProduct(null);
+                }}
+            />
+        </div>
       </div>
 
       {/* Products table */}
