@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useCart } from "@/contexts/cart-context";
 import { ArrowLeft, Shield, Truck } from "lucide-react";
 import Image from "next/image";
@@ -160,8 +161,6 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ items, totalPrice, shipping
               <span>Envío:</span>
               <span>{shipping === 0 ? "Gratis" : `$${shipping}`}</span>
             </div>
-           {/*  <Separator />
-            <p>Modo de pago: Mercado Pago</p> */}
           </div>
           <Separator />
           <div className="flex justify-between text-lg font-semibold">
@@ -182,20 +181,24 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ items, totalPrice, shipping
     {/* Sticky footer with actions */}
     <div className="flex-shrink-0 pt-4">
       <Card>
-        <CardContent className="pt-1 space-y-2">
+        <CardContent className="pt-6 space-y-4">
           <div className="flex items-center space-x-2 text-sm text-muted-foreground">
             <Shield className="w-4 h-4" />
             <span>Compra segura y protegida</span>
           </div>
+          
           {preferenceId ? (
             <Wallet initialization={{ preferenceId }} />
+          ) : isProcessing ? (
+            <Skeleton className="h-11 w-full" />
           ) : (
-            <Button onClick={handleCreatePreference} className="w-full" size="lg" disabled={isProcessing}>
-              {isProcessing ? "Procesando..." : "Confirmar y Pagar"}
+            <Button onClick={handleCreatePreference} className="w-full" size="lg">
+              {"Confirmar y Pagar"}
             </Button>
           )}
+
           {isMobile && (
-            <Button onClick={onBack} className="w-full mt-3" size="lg" variant="outline">
+            <Button onClick={onBack} className="w-full" size="lg" variant="outline">
               Volver
             </Button>
           )}
@@ -261,7 +264,9 @@ export default function CheckoutPage() {
         variant: "destructive",
       });
     } finally {
-      setIsProcessing(false);
+      // Note: We don't set isProcessing to false here immediately.
+      // The button is replaced by the Wallet, so the processing state is implicitly over.
+      // If wallet fails to render, we might need more robust state handling.
     }
   };
 
