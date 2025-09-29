@@ -40,6 +40,8 @@ export default async function HomePage() {
       
       <Header />
       
+      <Header />
+
       <HeroSection />
 
       <CategoriesSection />

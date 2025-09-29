@@ -46,9 +46,9 @@ export async function POST(req: NextRequest) {
 
     const preferenceItems = items.map((item: any) => ({
       id: item.product.id,      
-      title: item.product.nombre,
+      title: item.product.name,
       quantity: item.quantity,
-      unit_price: item.product.precio,
+      unit_price: item.product.price,
       currency_id: "ARS",
     }));
 

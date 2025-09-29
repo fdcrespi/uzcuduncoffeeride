@@ -29,6 +29,8 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body className={`font-sans ${montserrat.variable} ${GeistMono.variable}`}>
+        <CartProvider>
+          {/* <Header /> */}
         <CartProvider>          
           <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
           <Toaster />

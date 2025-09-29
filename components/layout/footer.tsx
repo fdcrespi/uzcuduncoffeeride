@@ -1,3 +1,4 @@
+import data from "@/lib/data"
 import { Mail, Map, MapPin, Phone } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
@@ -79,34 +80,34 @@ export function Footer({ className }: FooterProps) {
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li>
                 <Link 
-                  href="https://maps.app.goo.gl/8Rjk9L9aCjwe2phx7"
+                  href={`${data.ubicacion_mapa}`}
                   className="flex gap-2"
                   target="_blank"
                 >
                   <MapPin />
-                  Av. del Trabajador 46
+                  {data.direccion} - CP {data.codigo_postal}
                 </Link>
               </li>
               <li className="flex gap-2">
                 <Map />
-                Tres Arroyos, Buenos Aires, Argentina
+                {data.ciudad}, {data.provincia}, {data.pais}
               </li>
               <li>
                 <a
-                  href="tel:+542983381888"
+                  href={`tel:${data.telefono}`}
                   className="flex gap-2"
                 >
                   <Phone />
-                  +54 (2983) 381888
+                  {data.telefono}
                 </a>
               </li>
               <li>
                 <a 
-                  href="mailto:uzcudunmotorstore@gmail.com"
+                  href={`mailto:${data.email}`}
                   className="flex gap-2"
                 >
                   <Mail />
-                  uzcudunmotorstore@gmail.com
+                  {data.email}
                 </a>
               </li>
             </ul>
