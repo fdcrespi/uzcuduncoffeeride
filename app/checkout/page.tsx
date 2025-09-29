@@ -25,6 +25,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState, ChangeEvent } from "react";
 import { toast } from "@/hooks/use-toast";
 import type { CartItem } from "@/lib/types";
+import { Header } from "@/components/layout/header";
 
 // Definición de tipos
 interface ShippingData {
@@ -69,7 +70,7 @@ const ShippingForm: React.FC<ShippingFormProps> = ({ shippingData, setShippingDa
     onStepForward();
   };
 
-  return (
+  return (    
     <form onSubmit={handleSubmit} id="shipping-form">
       <Card>
         <CardHeader>

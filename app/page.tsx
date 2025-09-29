@@ -1,47 +1,54 @@
-"use client"
+import { Footer } from "@/components/layout/footer";
+import { HeroSection } from "@/components/sections/hero-section";
+import { CategoriesSection } from "@/components/sections/categories-section";
+import { CafeSection } from "@/components/sections/cafe-section";
+import { ScrollWheel } from "@/components/scroll-animations";
+import { FeaturedProductsClient } from "@/components/sections/featured-products-client";
+import type { Product } from "@/lib/types";
+import { Header } from "@/components/layout/header";
 
-import { Footer } from "@/components/layout/footer"
-import { HeroSection } from "@/components/sections/hero-section"
-import { CategoriesSection } from "@/components/sections/categories-section"
-import { CafeSection } from "@/components/sections/cafe-section"
-import { ProductCard } from "@/components/product-card"
-import { ScrollWheel, useScrollAnimation } from "@/components/scroll-animations"
-import Link from "next/link"
+async function getFeaturedProducts(): Promise<Product[]> {
+  try {
+    // En componentes de servidor, debemos usar la URL absoluta de la API.
+    const response = await fetch(`${process.env.NEXT_PUBLIC_URL}/api/products`, {
+      cache: 'no-store', // Para asegurar que los productos sean aleatorios en cada visita
+    });
 
+    if (!response.ok) {
+      console.error('Error al cargar los productos');
+      return [];
+    }
 
+    const allProducts: Product[] = await response.json();
+    
+    // Mezclar y tomar hasta 3 productos
+    const shuffled = [...allProducts].sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, 3);
 
-export default function HomePage() {
-  useScrollAnimation()
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
+}
+
+export default async function HomePage() {
+  const featuredProducts = await getFeaturedProducts();
 
   return (
     <div className="min-h-screen bg-background">
       <ScrollWheel />
-
+      
+      <Header />
+      
       <HeroSection />
 
       <CategoriesSection />
 
-      {/* Featured Products */}
-      <section id="productos" className="py-16 px-4 bg-muted/30">
-        <div className="container mx-auto">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 text-balance animate-on-scroll">
-            Productos Destacados
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {/* {Products.map((product, index) => (
-              <div key={product.id} className={`animate-on-scroll animate-delay-${(index + 1) * 100}`}>
-                <Link href={`/products/${product.id}`} className="cursor-pointer">
-                  <ProductCard product={product} />
-                </Link>
-              </div>
-            ))} */}
-          </div>
-        </div>
-      </section>
+      <FeaturedProductsClient products={featuredProducts} />
 
       <CafeSection />
 
       <Footer />
     </div>
-  )
+  );
 }

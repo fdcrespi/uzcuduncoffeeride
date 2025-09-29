@@ -6,6 +6,7 @@ import { ProductCard } from '@/components/product-card'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { Product } from '@/lib/types'
 import Link from 'next/link'
+import { Header } from '@/components/layout/header'
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([])
@@ -32,13 +33,15 @@ export default function ProductsPage() {
   }, [])
 
   return (
+    <>
+    <Header />
     <div className="container mx-auto px-4 py-8">
-      <header className="text-center mb-8">
+      <div className="text-center mb-8">
         <h1 className="text-4xl font-bold tracking-tight">Nuestros Productos</h1>
         <p className="mt-2 text-lg text-muted-foreground">
           Explora nuestra selección de motos, accesorios y café de especialidad.
         </p>
-      </header>
+      </div>
 
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -62,5 +65,6 @@ export default function ProductsPage() {
         </div>
       )}
     </div>
+    </>
   )
 }
