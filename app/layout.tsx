@@ -32,7 +32,7 @@ export default function RootLayout({
     <html lang="es">
       <body className={`font-sans ${montserrat.variable} ${GeistMono.variable}`}>
         <CartProvider>
-          <Header />
+          {/* <Header /> */}
           <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
           <Toaster />
           <RemoveItemDialog />

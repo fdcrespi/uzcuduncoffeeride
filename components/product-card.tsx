@@ -1,12 +1,16 @@
 "use client"
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 // import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Star, ShoppingCart } from "lucide-react"
 // import { useCart } from "@/contexts/cart-context"
 import type { Product } from "@/lib/types"
 import Image from "next/image"
+import { Button } from "./ui/button"
+import { useCart } from "@/contexts/cart-context"
+import Link from "next/link"
+import data from "@/lib/data"
 // import { toast } from "@/hooks/use-toast"
 
 interface ProductCardProps {
@@ -14,11 +18,11 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product }: ProductCardProps) {
-  // const { addItem } = useCart()
+  const { addItem } = useCart()
 
-  // const handleAddToCart = () => {
-  //   addItem(product)
-  // }
+  const handleAddToCart = () => {
+    addItem(product)
+  }
 
   return (
     <Card className="group hover:shadow-xl transition-all duration-300 hover-lift">
@@ -48,19 +52,21 @@ export function ProductCard({ product }: ProductCardProps) {
 
         <p className="text-2xl font-bold text-primary">${product.precio}</p>
       </CardContent>
-      {/* <CardFooter>
+      <CardFooter>
         {product.category === "motorcycle" ? (
-          <Button className="w-full btn-motorcycle bg-transparent" variant="outline">
-            <ShoppingCart className="w-4 h-4 mr-2" />
-            Consultar
-          </Button>
+          <Link href={`https://wa.me/${data.telefono}?text=¡Hola!%20Quiero%20más%20información%20sobre%20tu%20producto%20${product.subrubro_nombre} - %20${product.nombre}`} className="w-full">
+            <Button className="w-full btn-motorcycle bg-transparent" variant="outline">
+              <ShoppingCart className="w-4 h-4 mr-2" />
+              Consultar
+            </Button>
+          </Link>
         ) : (
           <Button className="w-full btn-motorcycle" onClick={handleAddToCart} disabled={product.stock <= 0}>
             <ShoppingCart className="w-4 h-4 mr-2" />
             {product.stock > 0 ? "Agregar al Carrito" : "Sin Stock"}
           </Button>
         )}
-      </CardFooter> */}
+      </CardFooter>
     </Card>
   )
 }
