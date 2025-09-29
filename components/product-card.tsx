@@ -34,7 +34,7 @@ export function ProductCard({ product }: ProductCardProps) {
           height={250}
           className="w-full h-48 object-contain group-hover:scale-105 transition-transform duration-300"
         />
-        {product.category === "motorcycle" && (
+        {/* {product.category === "motorcycle" && (
           <Badge className="absolute top-2 left-2 bg-primary animate-pulse-glow">Nuevo</Badge>
         )}
         {product.category === "electric" && (
@@ -42,11 +42,11 @@ export function ProductCard({ product }: ProductCardProps) {
         )}
         {product.category === "coffee" && (
           <Badge className="absolute top-2 left-2 bg-amber-600 animate-pulse-glow">Especial</Badge>
-        )}
+        )} */}
       </div>
       <CardHeader>
-        <CardTitle className="text-lg group-hover:text-primary transition-colors">{product.nombre}</CardTitle>
-        <CardDescription>{product.descripcion}</CardDescription>
+        <CardTitle className="text-lg group-hover:text-primary transition-colors line-clamp-2">{product.nombre}</CardTitle>
+        {/* <CardDescription>{product.descripcion}</CardDescription> */}
       </CardHeader>
       <CardContent>
 
@@ -54,7 +54,7 @@ export function ProductCard({ product }: ProductCardProps) {
       </CardContent>
       <CardFooter>
         {product.category === "motorcycle" ? (
-          <Link href={`https://wa.me/${data.telefono}?text=¡Hola!%20Quiero%20más%20información%20sobre%20tu%20producto%20${product.subrubro_nombre} - %20${product.nombre}`} className="w-full">
+          <Link target="_blank" href={`https://wa.me/${data.telefono}?text=¡Hola!%20Quiero%20más%20información%20sobre%20tu%20producto%20${product.subrubro_nombre} - %20${product.nombre}`} className="w-full">
             <Button className="w-full btn-motorcycle bg-transparent" variant="outline">
               <ShoppingCart className="w-4 h-4 mr-2" />
               Consultar

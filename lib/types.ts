@@ -4,7 +4,7 @@ export interface Product {
   descripcion: string;
   precio: number;
   image: string;
-  category: "motorcycle" | "electric" | "accessory" | "coffee";
+  category: string;
   stock: number;
   subrubro_id?: string;
   subrubro_nombre?: string;
