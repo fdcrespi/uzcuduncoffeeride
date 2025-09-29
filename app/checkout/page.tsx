@@ -190,7 +190,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ items, totalPrice, shipping
                 <p className="font-medium">${(item.product.precio * item.quantity).toLocaleString()}</p>
               </div>
             </div>
-          ))}}
+          ))}
           <Separator />
           <div className="space-y-2">
             <div className="flex justify-between">
@@ -333,7 +333,7 @@ export default function CheckoutPage() {
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">Tu carrito está vacío</h1>
           <p className="text-muted-foreground mb-6">Agrega algunos productos antes de proceder al checkout</p>
-          <Link href="/"><Button><ArrowLeft className="w-4 h-4 mr-2" />Volver a la tienda</Button></Link>
+          {/* <Link href="/"><Button><ArrowLeft className="w-4 h-4 mr-2" />Volver a la tienda</Button></Link> */}
         </div>
       </div>
     );
@@ -343,7 +343,7 @@ export default function CheckoutPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {!isMobile && (
+       {/*{!isMobile && (
         <header className="border-b bg-card">
           <div className="container mx-auto px-4 py-4">
             <div className="flex items-center justify-between">
@@ -355,7 +355,7 @@ export default function CheckoutPage() {
             </div>
           </div>
         </header>
-      )}
+      )} */}
 
       <div className="container mx-auto px-4 py-8">
         {isMobile ? (
