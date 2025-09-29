@@ -27,9 +27,9 @@ function cartReducer(state: CartItem[], action: CartAction): CartItem[] {
     case "REMOVE_ITEM":
       return state.filter((item) => item.product.id !== action.productId)
     case "UPDATE_QUANTITY":
-      if (action.quantity <= 0) {
-        return state.filter((item) => item.product.id !== action.productId)
-      }
+      // if (action.quantity <= 0) {
+      //   return state.filter((item) => item.product.id !== action.productId)
+      // }
       return state.map((item) => (item.product.id === action.productId ? { ...item, quantity: action.quantity } : item))
     case "CLEAR_CART":
       return []
@@ -43,6 +43,8 @@ function cartReducer(state: CartItem[], action: CartAction): CartItem[] {
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, dispatch] = useReducer(cartReducer, []);
   const [lastItemAddedTimestamp, setLastItemAddedTimestamp] = useState<number | null>(null);
+  const [itemToRemove, setItemToRemove] = useState<CartItem | null>(null);
+
 
   // Load cart from localStorage on mount
   useEffect(() => {
@@ -72,8 +74,31 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   };
 
   const updateQuantity = (productId: string, quantity: number) => {
-    dispatch({ type: "UPDATE_QUANTITY", productId, quantity });
+    if (quantity <= 0) {
+      const item = items.find(item => item.product.id === productId);
+      if (item) {
+        setItemToRemove(item);
+      }
+    } else {
+      // Stock check logic will go here later
+      dispatch({ type: "UPDATE_QUANTITY", productId, quantity });
+    }
   };
+
+  const confirmRemoveItem = () => {
+    if (itemToRemove) {
+      dispatch({ type: "REMOVE_ITEM", productId: itemToRemove.product.id });
+      setItemToRemove(null);
+    }
+  };
+
+  const cancelRemoveItem = () => {
+    if (itemToRemove) {
+      dispatch({ type: "UPDATE_QUANTITY", productId: itemToRemove.product.id, quantity: 1 });
+      setItemToRemove(null);
+    }
+  };
+
 
   const clearCart = () => {
     dispatch({ type: "CLEAR_CART" });
@@ -100,6 +125,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     getTotalPrice,
     lastItemAddedTimestamp,
     setLastItemAddedTimestamp,
+    itemToRemove,
+    confirmRemoveItem,
+    cancelRemoveItem,
   };
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

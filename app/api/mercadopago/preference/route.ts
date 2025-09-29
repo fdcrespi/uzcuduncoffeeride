@@ -45,17 +45,18 @@ export async function POST(req: NextRequest) {
     }
 
     const preferenceItems = items.map((item: any) => ({
-      id: item.product.id,
+      id: item.product.id,      
       title: item.product.name,
       quantity: item.quantity,
       unit_price: item.product.price,
-      currency_id: "ARS", // Assuming Argentinian Peso
+      currency_id: "ARS",
     }));
 
     const preference = new Preference(client);
 
     const preferenceBody = {
       items: preferenceItems,
+      statement_descriptor: "Uzcudun Ride",
       payer: {
         name: shippingData.firstName,
         surname: shippingData.lastName,
@@ -75,6 +76,8 @@ export async function POST(req: NextRequest) {
         failure: backUrl,
         pending: backUrl,
       },
+      /* notification_url: process.env.MP_NOTIFICATION_URL, */ //Esto para cuando tengamos el endpoint del backend      
+      /*auto_return: "approved",*/  // Descomentar si queremos que redirija automáticamente al usuario cuando el pago esté aprobado, hay que implementar el endpoint en el backend y la notification_url
     };
 
     console.log("Creating preference with body:", JSON.stringify(preferenceBody, null, 2));
