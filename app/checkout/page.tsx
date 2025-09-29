@@ -21,11 +21,12 @@ import { useCart } from "@/contexts/cart-context";
 import { ArrowLeft, Shield, Truck } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState, ChangeEvent } from "react";
 import { toast } from "@/hooks/use-toast";
 import type { CartItem } from "@/lib/types";
 
-// Type definitions
+// Definición de tipos
 interface ShippingData {
   firstName: string;
   lastName: string;
@@ -57,7 +58,7 @@ interface OrderSummaryProps {
   updateQuantity: (productId: string, quantity: number) => void;
 }
 
-// Sub-component: ShippingForm
+// Sub-componente: ShippingForm
 const ShippingForm: React.FC<ShippingFormProps> = ({ shippingData, setShippingData, onStepForward }) => {
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setShippingData({ ...shippingData, [e.target.name]: e.target.value });
@@ -160,10 +161,10 @@ const QuantityControl: React.FC<QuantityControlProps> = ({ quantity, onUpdate })
 };
 
 
-// Sub-component: OrderSummary
+// Sub-componente: OrderSummary
 const OrderSummary: React.FC<OrderSummaryProps> = ({ items, totalPrice, shipping, finalTotal, isProcessing, handleCreatePreference, preferenceId, isMobile, onBack, updateQuantity }) => (
   <div className="flex flex-col h-full">
-    {/* Scrollable content area */}
+    {/* Área de contenido con scroll */}
     <div className="flex-grow overflow-y-auto space-y-6 pr-2">
       <Card>
         <CardHeader>
@@ -198,7 +199,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ items, totalPrice, shipping
             </div>
             <div className="flex justify-between">
               <span>Envío:</span>
-              <span>{shipping === 0 ? "Gratis" : `$${shipping}`}</span>
+              <span>{shipping === 0 ? "Gratis" : `${shipping}`}</span>
             </div>
           </div>
           <Separator />
@@ -217,7 +218,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ items, totalPrice, shipping
       )}
     </div>
 
-    {/* Sticky footer with actions */}
+    {/* Footer fijo con acciones */}
     <div className="flex-shrink-0 pt-4">
       <Card>
         <CardContent className="pt-6 space-y-4">
@@ -256,9 +257,10 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ items, totalPrice, shipping
   </div>
 );
 
-// Main Component: CheckoutPage
+// Componente Principal: CheckoutPage
 export default function CheckoutPage() {
   const { items, getTotalPrice, updateQuantity } = useCart();
+  const router = useRouter();
   const [isProcessing, setIsProcessing] = useState(false);
   const [step, setStep] = useState(1);
   const [shippingData, setShippingData] = useState<ShippingData>({
@@ -274,8 +276,17 @@ export default function CheckoutPage() {
     }
   }, []);
 
+  useEffect(() => {
+    // Si el carrito se vacía, invalida cualquier preferencia de pago existente
+    // y redirige al usuario de vuelta a la tienda.
+    if (items.length === 0 && !isProcessing) {
+      setPreferenceId(null);
+      router.push('/');
+    }
+  }, [items, isProcessing, router]);
+
   const totalPrice = getTotalPrice();
-  const shipping = totalPrice > 100 ? 0 : 15; // This will be dynamic later
+  const shipping = totalPrice > 100 ? 0 : 15; // Esto será dinámico más adelante
   const finalTotal = totalPrice + shipping;
 
   const handleCreatePreference = async () => {
@@ -312,9 +323,7 @@ export default function CheckoutPage() {
         variant: "destructive",
       });
     } finally {
-      // Note: We don't set isProcessing to false here immediately.
-      // The button is replaced by the Wallet, so the processing state is implicitly over.
-      // If wallet fails to render, we might need more robust state handling.
+      setIsProcessing(false);
     }
   };
 
