@@ -30,6 +30,10 @@ export async function POST(req: NextRequest) {
   try {
     const { items, shippingData } = await req.json();
 
+    console.log("Received items:", items);
+    console.log("Received shippingData:", shippingData);
+
+
     if (!items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json(
         { error: "Se requieren artículos en el carrito" },
@@ -46,9 +50,9 @@ export async function POST(req: NextRequest) {
 
     const preferenceItems = items.map((item: any) => ({
       id: item.product.id,      
-      title: item.product.name,
+      title: item.product.nombre,
       quantity: item.quantity,
-      unit_price: item.product.price,
+      unit_price: item.product.precio,
       currency_id: "ARS",
     }));
 

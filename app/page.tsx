@@ -39,8 +39,6 @@ export default async function HomePage() {
       <ScrollWheel />
       
       <Header />
-      
-      <Header />
 
       <HeroSection />
 
