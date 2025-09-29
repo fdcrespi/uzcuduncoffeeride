@@ -67,7 +67,9 @@ CREATE TABLE Producto (
     nombre varchar(50)  NOT NULL,
     descripcion varchar(150)  NULL,
     subrubro_id int  NOT NULL,
-    image varchar(255)  NULL
+    image varchar(255)  NULL,
+    destacado boolean  NOT NULL DEFAULT false,
+    visible boolean  NOT NULL DEFAULT true
 );
 
 -- Table: Rol

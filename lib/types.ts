@@ -8,6 +8,8 @@ export interface Product {
   stock: number;
   subrubro_id?: string;
   subrubro_nombre?: string;
+  destacado: boolean;
+  visible: boolean;  
 }
 
 
