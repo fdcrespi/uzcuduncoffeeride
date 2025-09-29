@@ -44,14 +44,14 @@ export function HeroSection() {
             Explorar Productos
             <ShoppingCart className="ml-2 w-5 h-5" />
           </Button>
-          <Button
+          {/* <Button
             size="lg"
             variant="outline"
             className="text-lg px-8 py-6 bg-black/40 border-white/60 text-white hover:bg-white/20 btn-motorcycle"
           >
             Visitar Cafetería
             <Coffee className="ml-2 w-5 h-5" />
-          </Button>
+          </Button> */}
         </div>
       </div>
     </section>

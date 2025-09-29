@@ -30,9 +30,9 @@ export function CafeSection() {
                 <span>Eventos y encuentros semanales</span>
               </div>
             </div>
-            <Button size="lg" className="mt-8 btn-motorcycle">
+            {/* <Button size="lg" className="mt-8 btn-motorcycle">
               Ver Menú Completo
-            </Button>
+            </Button> */}
           </div>
           <div className="relative animate-on-scroll animate-fade-in-right">
             <div className="hover-lift">
