@@ -7,6 +7,7 @@ import { Suspense } from "react"
 import { CartProvider } from "@/contexts/cart-context"
 import { Toaster } from "@/components/ui/toaster"
 import { RemoveItemDialog } from "@/components/cart/remove-item-dialog"
+import { Header } from "@/components/layout/header"
 import "./globals.css"
 
 const montserrat = Montserrat({
@@ -31,6 +32,7 @@ export default function RootLayout({
     <html lang="es">
       <body className={`font-sans ${montserrat.variable} ${GeistMono.variable}`}>
         <CartProvider>
+          <Header />
           <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
           <Toaster />
           <RemoveItemDialog />

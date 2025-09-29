@@ -28,7 +28,7 @@ export function Header({ className }: HeaderProps) {
               </div>
               <span className="text-xl font-bold text-foreground">MotoGear & Café</span>
             </div> */}
-          <Image src="logo-black.png" alt="Logo uzcudun coffee and ride" width={100} height={80} className="ml-4"/>
+          <Image src="/logo-black.png" alt="Logo uzcudun coffee and ride" width={100} height={80} className="ml-4"/>
           
 
           <nav className="hidden md:flex items-center space-x-4">

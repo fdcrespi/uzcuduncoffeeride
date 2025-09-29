@@ -28,7 +28,7 @@ export function ProductCard({ product }: ProductCardProps) {
           alt={product.name}
           width={300}
           height={250}
-          className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+          className="w-full h-48 object-contain group-hover:scale-105 transition-transform duration-300"
         />
         {product.category === "motorcycle" && (
           <Badge className="absolute top-2 left-2 bg-primary animate-pulse-glow">Nuevo</Badge>

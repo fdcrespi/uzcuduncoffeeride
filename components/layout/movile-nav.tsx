@@ -42,7 +42,7 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
               <SheetTitle className="text-lg font-bold">MotoGear & Café</SheetTitle>
             </div>
           </div> */}
-          <Image src="logo-black.png" width={80} height={60} alt="logo uzcudun coffee and ride"/> 
+          <Image src="/logo-black.png" width={80} height={60} alt="logo uzcudun coffee and ride"/> 
         </SheetHeader>
 
         <nav className="p-6">
