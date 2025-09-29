@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button"
 import { ShoppingCart, Coffee } from "lucide-react"
 import Image from "next/image"
+import Link from "next/link"
 import { useEffect, useState } from "react"
 
 export function HeroSection() {
@@ -40,10 +41,12 @@ export function HeroSection() {
           próxima aventura
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in-up animate-delay-400">
-          <Button size="lg" className="text-lg px-8 py-6 btn-motorcycle">
-            Explorar Productos
-            <ShoppingCart className="ml-2 w-5 h-5" />
-          </Button>
+          <Link href="/products">
+            <Button size="lg" className="text-lg px-8 py-6 btn-motorcycle">
+              Explorar Productos
+              <ShoppingCart className="ml-2 w-5 h-5" />
+            </Button>
+          </Link>
           {/* <Button
             size="lg"
             variant="outline"

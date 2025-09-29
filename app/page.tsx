@@ -8,6 +8,7 @@ import { CafeSection } from "@/components/sections/cafe-section"
 import { ProductCard } from "@/components/product-card"
 import { ScrollWheel, useScrollAnimation } from "@/components/scroll-animations"
 import type { Product } from "@/lib/types"
+import Link from "next/link"
 
 const sampleProducts: Product[] = [
   {
@@ -17,9 +18,7 @@ const sampleProducts: Product[] = [
     price: 18500,
     image: "/modern-sport-motorcycle-in-showroom.jpg",
     category: "motorcycle",
-    inStock: true,
-    rating: 5,
-    reviews: 24,
+    inStock: true,    
   },
   {
     id: "2",
@@ -28,9 +27,7 @@ const sampleProducts: Product[] = [
     price: 3200,
     image: "/electric-scooter-modern-design.jpg",
     category: "electric",
-    inStock: true,
-    rating: 4,
-    reviews: 18,
+    inStock: true,    
   },
   {
     id: "3",
@@ -40,8 +37,7 @@ const sampleProducts: Product[] = [
     image: "/motorcycle-helmet-premium-black.jpg",
     category: "accessory",
     inStock: true,
-    rating: 5,
-    reviews: 42,
+    
   },
   {
     id: "4",
@@ -50,9 +46,7 @@ const sampleProducts: Product[] = [
     price: 24,
     image: "/premium-coffee-beans-package-motorcycle-theme.jpg",
     category: "coffee",
-    inStock: true,
-    rating: 5,
-    reviews: 67,
+    inStock: true,    
   },
 ]
 
@@ -78,7 +72,9 @@ export default function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {sampleProducts.map((product, index) => (
               <div key={product.id} className={`animate-on-scroll animate-delay-${(index + 1) * 100}`}>
-                <ProductCard product={product} />
+                <Link href={`/products/${product.id}`} className="cursor-pointer">
+                  <ProductCard product={product} />
+                </Link>
               </div>
             ))}
           </div>

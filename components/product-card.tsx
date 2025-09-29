@@ -1,24 +1,24 @@
 "use client"
 
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+// import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Star, ShoppingCart } from "lucide-react"
-import { useCart } from "@/contexts/cart-context"
+// import { useCart } from "@/contexts/cart-context"
 import type { Product } from "@/lib/types"
 import Image from "next/image"
-import { toast } from "@/hooks/use-toast"
+// import { toast } from "@/hooks/use-toast"
 
 interface ProductCardProps {
   product: Product
 }
 
 export function ProductCard({ product }: ProductCardProps) {
-  const { addItem } = useCart()
+  // const { addItem } = useCart()
 
-  const handleAddToCart = () => {
-    addItem(product)
-  }
+  // const handleAddToCart = () => {
+  //   addItem(product)
+  // }
 
   return (
     <Card className="group hover:shadow-xl transition-all duration-300 hover-lift">
@@ -45,20 +45,10 @@ export function ProductCard({ product }: ProductCardProps) {
         <CardDescription>{product.description}</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="flex items-center mb-2">
-          {[...Array(5)].map((_, i) => (
-            <Star
-              key={i}
-              className={`w-4 h-4 transition-colors ${
-                i < Math.floor(product.rating) ? "fill-primary text-primary" : "text-muted-foreground"
-              }`}
-            />
-          ))}
-          <span className="ml-2 text-sm text-muted-foreground">({product.reviews} reseñas)</span>
-        </div>
+
         <p className="text-2xl font-bold text-primary">${product.price}</p>
       </CardContent>
-      <CardFooter>
+      {/* <CardFooter>
         {product.category === "motorcycle" ? (
           <Button className="w-full btn-motorcycle bg-transparent" variant="outline">
             <ShoppingCart className="w-4 h-4 mr-2" />
@@ -70,7 +60,7 @@ export function ProductCard({ product }: ProductCardProps) {
             {product.inStock ? "Agregar al Carrito" : "Sin Stock"}
           </Button>
         )}
-      </CardFooter>
+      </CardFooter> */}
     </Card>
   )
 }

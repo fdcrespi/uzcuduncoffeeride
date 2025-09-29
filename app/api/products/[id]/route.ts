@@ -1,74 +1,68 @@
 import { db } from '@/lib/db';
 import { NextResponse } from 'next/server';
 
+// La estructura del producto que esperamos de la base de datos
+type ProductCategory = "motorcycle" | "electric" | "accessory" | "coffee";
+
+interface ProductFromDB {
+  id: number;
+  nombre: string;
+  descripcion: string;
+  precio: number;
+  image: string;
+  category: ProductCategory;
+  stock: number;
+}
+
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
-    const { rows } = await db.query(`
-      SELECT
-        p.id,
-        p.nombre,
-        p.descripcion,
+    const productId = parseInt(params.id, 10);
+    if (isNaN(productId)) {
+      return new NextResponse('ID de producto inválido', { status: 400 });
+    }
+
+    const sucursalId = 1; // Asumimos una única sucursal
+
+    const result = await db.query<ProductFromDB>(
+      `
+      SELECT 
+        p.id, 
+        p.nombre, 
+        p.descripcion, 
         p.image,
-        p.subrubro_id,
-        s.nombre as subrubro_nombre,
-        sp.precio,
-        sp.stock
-      FROM producto p
-      LEFT JOIN subrubro s ON p.subrubro_id = s.id
-      LEFT JOIN sucursal_productos sp ON p.id = sp.producto_id
-      WHERE p.id = $1 AND sp.sucursal_id = 1
-    `, [params.id]);
-
-    if (rows.length === 0) {
-      return NextResponse.json({ message: 'Product not found' }, { status: 404 });
-    }
-
-    return NextResponse.json(rows[0]);
-  } catch (error) {
-    console.error('Error fetching product:', error);
-    return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
-  }
-}
-
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
-  const client = await db.connect();
-  try {
-    const { nombre, descripcion, image, subrubro_id, precio, stock } = await request.json();
-
-    await client.query('BEGIN');
-
-    await client.query(
-      'UPDATE producto SET nombre = $1, descripcion = $2, image = $3, subrubro_id = $4 WHERE id = $5',
-      [nombre, descripcion, image, subrubro_id, params.id]
+        sp.precio, 
+        sp.stock,
+        r.nombre as category
+      FROM Producto p
+      INNER JOIN Sucursal_Productos sp ON p.id = sp.producto_id
+      INNER JOIN Subrubro sr ON p.subrubro_id = sr.id
+      INNER JOIN Rubro r ON sr.rubro_id = r.id
+      WHERE p.id = $1 AND sp.sucursal_id = $2
+      `,
+      [productId, sucursalId]
     );
 
-    await client.query(
-      'UPDATE sucursal_productos SET precio = $1, stock = $2 WHERE producto_id = $3 AND sucursal_id = $4',
-      [precio, stock, params.id, 1]
-    );
-
-    await client.query('COMMIT');
-
-    return NextResponse.json({ id: params.id, nombre, descripcion, image, subrubro_id, precio, stock });
-
-  } catch (error) {
-    await client.query('ROLLBACK');
-    console.error('Error updating product:', error);
-    return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
-  } finally {
-    client.release();
-  }
-}
-
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
-  try {
-    await db.query('DELETE FROM producto WHERE id = $1', [params.id]);
-    return new NextResponse(null, { status: 204 });
-  } catch (error: any) {
-    console.error('Error deleting product:', error);
-    if (error.code === '23503') { // foreign_key_violation
-      return NextResponse.json({ message: 'No se puede eliminar el producto porque está asociado a uno o más pedidos.' }, { status: 409 });
+    if (result.rows.length === 0) {
+      return new NextResponse('Producto no encontrado', { status: 404 });
     }
-    return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
+
+    const p = result.rows[0];
+
+    // Mapeamos al formato que espera el frontend
+    const product = {
+      id: String(p.id),
+      name: p.nombre,
+      description: p.descripcion,
+      price: p.precio,
+      image: p.image || '/placeholder.svg',
+      category: p.category,
+      inStock: p.stock > 0,
+      stock: p.stock, // También pasamos el número de stock
+    };
+
+    return NextResponse.json(product);
+  } catch (error) {
+    console.error(`Error al obtener el producto ${params.id}:`, error);
+    return new NextResponse('Error Interno del Servidor', { status: 500 });
   }
 }

@@ -1,66 +1,56 @@
 import { db } from '@/lib/db';
 import { NextResponse } from 'next/server';
 
-export async function GET() {
-  try {
-    const { rows } = await db.query(`
-      SELECT
-        p.id,
-        p.nombre,
-        p.descripcion,
-        p.image,
-        p.subrubro_id,
-        s.nombre as subrubro_nombre,
-        sp.precio,
-        sp.stock
-      FROM producto p
-      LEFT JOIN subrubro s ON p.subrubro_id = s.id
-      LEFT JOIN sucursal_productos sp ON p.id = sp.producto_id
-      WHERE sp.sucursal_id = 1
-      ORDER BY p.id DESC
-    `);
-    return NextResponse.json(rows);
-  } catch (error) {
-    console.error('Error fetching products:', error);
-    return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
-  }
+// Este tipo define la estructura de los productos que devolverá nuestra API.
+// Corresponde a lo que necesita el componente ProductCard, pero sin rating/reviews.
+type ProductCategory = "motorcycle" | "electric" | "accessory" | "coffee";
+
+interface ProductFromDB {
+  id: number;
+  nombre: string;
+  descripcion: string;
+  precio: number;
+  image: string;
+  category: ProductCategory;
+  stock: number;
 }
 
-export async function POST(request: Request) {
-  const client = await db.connect();
+export async function GET() {
   try {
-    const { nombre, descripcion, image, subrubro_id, precio, stock } = await request.json();
+    // Por ahora, asumimos que siempre trabajamos con la sucursal principal (ID 1).
+    const sucursalId = 1; 
+    
+    const result = await db.query<ProductFromDB>(`
+      SELECT 
+        p.id, 
+        p.nombre, 
+        p.descripcion, 
+        p.image,
+        sp.precio, 
+        sp.stock,
+        r.nombre as category
+      FROM Producto p
+      INNER JOIN Sucursal_Productos sp ON p.id = sp.producto_id
+      INNER JOIN Subrubro sr ON p.subrubro_id = sr.id
+      INNER JOIN Rubro r ON sr.rubro_id = r.id
+      WHERE sp.sucursal_id = $1
+    `, [sucursalId]);
 
-    await client.query('BEGIN');
+    // Mapeamos el resultado de la base de datos a la estructura que espera el frontend.
+    const products = result.rows.map(p => ({
+      id: String(p.id),
+      name: p.nombre,
+      description: p.descripcion,
+      price: p.precio,
+      image: p.image || '/placeholder.svg', // Usamos una imagen por defecto si no hay una.
+      category: p.category,
+      inStock: p.stock > 0, // El stock se convierte en un booleano 'inStock'.
+    }));
 
-    const productResult = await client.query(
-      'INSERT INTO producto (nombre, descripcion, image, subrubro_id) VALUES ($1, $2, $3, $4) RETURNING id, nombre, descripcion, image, subrubro_id',
-      [nombre, descripcion, image, subrubro_id]
-    );
-    const newProduct = productResult.rows[0];
-
-    const stockPriceResult = await client.query(
-      'INSERT INTO sucursal_productos (producto_id, sucursal_id, precio, stock) VALUES ($1, $2, $3, $4) RETURNING precio, stock',
-      [newProduct.id, 1, precio, stock]
-    );
-    const newStockPrice = stockPriceResult.rows[0];
-
-    await client.query('COMMIT');
-
-    const result = {
-      ...newProduct,
-      precio: newStockPrice.precio,
-      stock: newStockPrice.stock,
-      subrubro_nombre: '' // Sub-category name is not available here, the client will have to fetch it or handle it
-    };
-
-    return NextResponse.json(result, { status: 201 });
-
+    return NextResponse.json(products);
   } catch (error) {
-    await client.query('ROLLBACK');
-    console.error('Error creating product:', error);
-    return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
-  } finally {
-    client.release();
+    console.error('Error al obtener los productos:', error);
+    // En caso de un error, devolvemos una respuesta con código 500.
+    return new NextResponse('Error Interno del Servidor', { status: 500 });
   }
 }

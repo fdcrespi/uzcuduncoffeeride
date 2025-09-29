@@ -6,8 +6,6 @@ export interface Product {
   image: string
   category: "motorcycle" | "electric" | "accessory" | "coffee"
   inStock: boolean
-  rating: number
-  reviews: number
 }
 
 export interface CartItem {
