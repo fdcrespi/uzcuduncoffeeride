@@ -131,8 +131,8 @@ export function ProductFormDialog({ subcategories, onSubmit, initialData, onOpen
 
   const handleSubmit = () => {
     if (!formData.image) {
-        toast.error("Por favor, sube una imagen para el producto.");
-        return;
+      toast.error("Por favor, sube una imagen para el producto.");
+      return;
     }
     if (!formData.subrubro_id) {
         toast.error("Por favor, selecciona una subcategoría.");

@@ -99,7 +99,7 @@ export async function POST(request: Request) {
         precio,
         stock,
       };
-
+      
       return new NextResponse(JSON.stringify(newProduct), { status: 201 });
 
     } catch (error) {
