@@ -10,19 +10,10 @@ import { useCart } from '@/contexts/cart-context'
 import { toast } from '@/hooks/use-toast'
 
 // Definimos un tipo extendido para el producto que incluye el stock numérico
-interface ProductDetail {
-  id: string
-  name: string
-  description: string
-  price: number
-  image: string
-  category: string
-  inStock: boolean
-  stock: number
-}
+import { Product } from '@/lib/types'
 
 export default function ProductDetailPage() {
-  const [product, setProduct] = useState<ProductDetail | null>(null)
+  const [product, setProduct] = useState<Product | null>(null)
   const [loading, setLoading] = useState(true)
   const [quantity, setQuantity] = useState(1)
 
@@ -58,7 +49,7 @@ export default function ProductDetailPage() {
       addItem(product)
       toast({
         title: "¡Agregado!",
-        description: `Se ha añadido ${product.name} al carrito.`,
+        description: `Se ha añadido ${product.nombre} al carrito.`,
       })
     }
   }
@@ -91,7 +82,7 @@ export default function ProductDetailPage() {
           <div className="relative aspect-square bg-muted rounded-lg overflow-hidden mx-auto" style={{ maxWidth: '500px' }}>
             <Image
               src={product.image || '/placeholder.svg'}
-              alt={product.name}
+              alt={product.nombre}
               fill
               className="object-cover"
             />
@@ -101,35 +92,35 @@ export default function ProductDetailPage() {
 
         {/* Columna de Detalles y Acciones */}
         <div className="flex flex-col pt-4">
-          <h1 className="text-3xl md:text-4xl font-bold text-left mb-4">{product.name}</h1>
+          <h1 className="text-3xl md:text-4xl font-bold text-left mb-4">{product.nombre}</h1>
           
-          <p className="text-4xl font-extrabold text-black mb-6 text-left">${product.price.toFixed(2)}</p>
+          <p className="text-4xl font-extrabold text-black mb-6 text-left">${product.precio.toFixed(2)}</p>
 
           <div className="mb-6">
             <h3 className="font-semibold text-lg">Stock disponible</h3>
             <div className="flex items-center gap-4 mt-2">
                 <p className="text-md text-black">
                     Cantidad: {quantity}
-                    {product.inStock && <span className="text-gray-500 ml-2">({product.stock} disponibles)</span>}
+                    {product.stock > 0 && <span className="text-gray-500 ml-2">({product.stock} disponibles)</span>}
                 </p>
             </div>
           </div>
 
           <div className="flex flex-col gap-3 w-full max-w-xs">
-            <Button size="lg" className="bg-primary hover:bg-primary/90" onClick={handleBuyNow} disabled={!product.inStock}>
+            <Button size="lg" className="bg-primary hover:bg-primary/90" onClick={handleBuyNow} disabled={product.stock <= 0}>
               Comprar ahora
             </Button>
-            <Button size="lg" variant="outline" onClick={handleAddToCart} disabled={!product.inStock}>
+            <Button size="lg" variant="outline" onClick={handleAddToCart} disabled={product.stock <= 0}>
               Agregar al carrito
             </Button>
           </div>
-          {!product.inStock && (
+          {product.stock <= 0 && (
               <p className="text-red-600 font-semibold mt-4">Producto sin stock</p>
           )}
 
           <div className="mt-8 pt-6 border-t">
             <h3 className="font-semibold text-lg mb-2">Características</h3>
-            <p className="text-muted-foreground">{product.description || "No hay descripción disponible."}</p>
+            <p className="text-muted-foreground">{product.descripcion || "No hay descripción disponible."}</p>
           </div>
         </div>
       </div>

@@ -1,12 +1,15 @@
 export interface Product {
-  id: string
-  name: string
-  description: string
-  price: number
-  image: string
-  category: "motorcycle" | "electric" | "accessory" | "coffee"
-  inStock: boolean
+  id: string;
+  nombre: string;
+  descripcion: string;
+  precio: number;
+  image: string;
+  category: "motorcycle" | "electric" | "accessory" | "coffee";
+  stock: number;
+  subrubro_id?: string;
+  subrubro_nombre?: string;
 }
+
 
 export interface CartItem {
   product: Product

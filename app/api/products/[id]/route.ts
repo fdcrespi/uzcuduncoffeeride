@@ -23,21 +23,19 @@ export async function GET(request: Request, { params }: { params: { id: string }
 
     const sucursalId = 1; // Asumimos una única sucursal
 
-    const result = await db.query<ProductFromDB>(
+    const result = await db.query(
       `
       SELECT 
         p.id, 
         p.nombre, 
         p.descripcion, 
         p.image,
+        p.subrubro_id,
         sp.precio, 
-        sp.stock,
-        r.nombre as category
+        sp.stock
       FROM Producto p
-      INNER JOIN Sucursal_Productos sp ON p.id = sp.producto_id
-      INNER JOIN Subrubro sr ON p.subrubro_id = sr.id
-      INNER JOIN Rubro r ON sr.rubro_id = r.id
-      WHERE p.id = $1 AND sp.sucursal_id = $2
+      LEFT JOIN Sucursal_Productos sp ON p.id = sp.producto_id
+      WHERE p.id = $1 AND (sp.sucursal_id = $2 OR sp.sucursal_id IS NULL)
       `,
       [productId, sucursalId]
     );
@@ -48,16 +46,14 @@ export async function GET(request: Request, { params }: { params: { id: string }
 
     const p = result.rows[0];
 
-    // Mapeamos al formato que espera el frontend
     const product = {
       id: String(p.id),
-      name: p.nombre,
-      description: p.descripcion,
-      price: p.precio,
+      nombre: p.nombre,
+      descripcion: p.descripcion,
+      precio: p.precio !== null ? Number(p.precio) : 0,
       image: p.image || '/placeholder.svg',
-      category: p.category,
-      inStock: p.stock > 0,
-      stock: p.stock, // También pasamos el número de stock
+      stock: p.stock !== null ? Number(p.stock) : 0,
+      subrubro_id: String(p.subrubro_id),
     };
 
     return NextResponse.json(product);

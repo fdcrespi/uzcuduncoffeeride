@@ -44,7 +44,7 @@ export function RemoveItemDialog() {
         <AlertDialogHeader>
           <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
           <AlertDialogDescription>
-            Estás a punto de eliminar "{itemToRemove.product.name}" de tu carrito.
+            Estás a punto de eliminar "{itemToRemove.product.nombre}" de tu carrito.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

@@ -188,11 +188,11 @@ export function ProductFormDialog({ subcategories, onSubmit, initialData, onOpen
           <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">
               <Label htmlFor="precio">Precio</Label>
-              <Input id="precio" type="number" placeholder="0.00" value={formData.precio} onChange={handleChange} />
+              <Input id="precio" type="number" placeholder="" value={formData.precio} onChange={handleChange} />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="stock">Stock</Label>
-              <Input id="stock" type="number" placeholder="0" value={formData.stock} onChange={handleChange} />
+              <Input id="stock" type="number" placeholder="" value={formData.stock} onChange={handleChange} />
             </div>
           </div>
           <div className="grid gap-2">

@@ -25,7 +25,7 @@ export function ProductCard({ product }: ProductCardProps) {
       <div className="relative overflow-hidden">
         <Image
           src={product.image || "/placeholder.svg"}
-          alt={product.name}
+          alt={product.nombre}
           width={300}
           height={250}
           className="w-full h-48 object-contain group-hover:scale-105 transition-transform duration-300"
@@ -41,12 +41,12 @@ export function ProductCard({ product }: ProductCardProps) {
         )}
       </div>
       <CardHeader>
-        <CardTitle className="text-lg group-hover:text-primary transition-colors">{product.name}</CardTitle>
-        <CardDescription>{product.description}</CardDescription>
+        <CardTitle className="text-lg group-hover:text-primary transition-colors">{product.nombre}</CardTitle>
+        <CardDescription>{product.descripcion}</CardDescription>
       </CardHeader>
       <CardContent>
 
-        <p className="text-2xl font-bold text-primary">${product.price}</p>
+        <p className="text-2xl font-bold text-primary">${product.precio}</p>
       </CardContent>
       {/* <CardFooter>
         {product.category === "motorcycle" ? (
@@ -55,9 +55,9 @@ export function ProductCard({ product }: ProductCardProps) {
             Consultar
           </Button>
         ) : (
-          <Button className="w-full btn-motorcycle" onClick={handleAddToCart} disabled={!product.inStock}>
+          <Button className="w-full btn-motorcycle" onClick={handleAddToCart} disabled={product.stock <= 0}>
             <ShoppingCart className="w-4 h-4 mr-2" />
-            {product.inStock ? "Agregar al Carrito" : "Sin Stock"}
+            {product.stock > 0 ? "Agregar al Carrito" : "Sin Stock"}
           </Button>
         )}
       </CardFooter> */}

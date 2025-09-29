@@ -17,10 +17,9 @@ interface ProductFromDB {
 
 export async function GET() {
   try {
-    // Por ahora, asumimos que siempre trabajamos con la sucursal principal (ID 1).
-    const sucursalId = 1; 
+    const sucursalId = 1; // Asumimos la sucursal principal
     
-    const result = await db.query<ProductFromDB>(`
+    const result = await db.query(`
       SELECT 
         p.id, 
         p.nombre, 
@@ -28,29 +27,32 @@ export async function GET() {
         p.image,
         sp.precio, 
         sp.stock,
+        sr.id as subrubro_id,
+        sr.nombre as subrubro_nombre,
         r.nombre as category
       FROM Producto p
-      INNER JOIN Sucursal_Productos sp ON p.id = sp.producto_id
-      INNER JOIN Subrubro sr ON p.subrubro_id = sr.id
-      INNER JOIN Rubro r ON sr.rubro_id = r.id
-      WHERE sp.sucursal_id = $1
+      LEFT JOIN Sucursal_Productos sp ON p.id = sp.producto_id
+      LEFT JOIN Subrubro sr ON p.subrubro_id = sr.id
+      LEFT JOIN Rubro r ON sr.rubro_id = r.id
+      WHERE sp.sucursal_id = $1 OR sp.sucursal_id IS NULL
+      ORDER BY p.id DESC
     `, [sucursalId]);
 
-    // Mapeamos el resultado de la base de datos a la estructura que espera el frontend.
     const products = result.rows.map(p => ({
       id: String(p.id),
-      name: p.nombre,
-      description: p.descripcion,
-      price: p.precio,
-      image: p.image || '/placeholder.svg', // Usamos una imagen por defecto si no hay una.
+      nombre: p.nombre,
+      descripcion: p.descripcion,
+      precio: p.precio !== null ? Number(p.precio) : 0,
+      image: p.image || '/placeholder.svg',
+      stock: p.stock !== null ? Number(p.stock) : 0,
+      subrubro_id: String(p.subrubro_id),
+      subrubro_nombre: p.subrubro_nombre,
       category: p.category,
-      inStock: p.stock > 0, // El stock se convierte en un booleano 'inStock'.
     }));
 
     return NextResponse.json(products);
   } catch (error) {
     console.error('Error al obtener los productos:', error);
-    // En caso de un error, devolvemos una respuesta con código 500.
     return new NextResponse('Error Interno del Servidor', { status: 500 });
   }
 }

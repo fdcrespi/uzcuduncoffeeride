@@ -177,20 +177,20 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ items, totalPrice, shipping
           {items.map((item) => (
             <div key={item.product.id} className="flex items-start space-x-4">
               <div className="relative w-16 h-16 rounded-md overflow-hidden">
-                <Image src={item.product.image || "/placeholder.svg"} alt={item.product.name} fill className="object-cover" />
+                <Image src={item.product.image || "/placeholder.svg"} alt={item.product.nombre} fill className="object-cover" />
               </div>
               <div className="flex-1">
-                <h4 className="font-medium leading-tight">{item.product.name}</h4>
+                <h4 className="font-medium leading-tight">{item.product.nombre}</h4>
                 <QuantityControl
                   quantity={item.quantity}
                   onUpdate={(newQuantity) => updateQuantity(item.product.id, newQuantity)}
                 />
               </div>
               <div className="text-right">
-                <p className="font-medium">${(item.product.price * item.quantity).toLocaleString()}</p>
+                <p className="font-medium">${(item.product.precio * item.quantity).toLocaleString()}</p>
               </div>
             </div>
-          ))}
+          ))}}
           <Separator />
           <div className="space-y-2">
             <div className="flex justify-between">
