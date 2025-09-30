@@ -10,6 +10,10 @@ export async function POST(request: Request) {
     const data = await request.formData();
     const file: File | null = data.get('file') as unknown as File;
 
+    console.log('Received file:', file);
+    console.log('File type:', file?.type);
+    console.log('File size (bytes):', file?.size);
+
     if (!file) {
       return NextResponse.json({ success: false, message: 'No se ha subido ningún archivo.' }, { status: 400 });
     }

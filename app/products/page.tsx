@@ -1,12 +1,15 @@
 
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, use } from 'react'
 import { ProductCard } from '@/components/product-card'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { Product } from '@/lib/types'
 import Link from 'next/link'
 import { Header } from '@/components/layout/header'
+import { io } from "socket.io-client";
+
+const socket = io(process.env.NEXT_PUBLIC_URL!);
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([])
@@ -31,6 +34,37 @@ export default function ProductsPage() {
 
     fetchProducts()
   }, [])
+
+  useEffect(() => {
+    socket.on('connect', () => {
+      console.log('Conectado al servidor de WebSocket');
+    });
+    socket.on('updateProducto', () => {
+      console.log('Producto actualizado, recargando lista...');
+      // Volver a cargar los productos
+      setLoading(true);
+      fetch('/api/products')
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Error al cargar los productos');
+          }
+          return response.json();
+        })
+        .then(data => {
+          setProducts(data);
+        })
+        .catch(error => {
+          console.error(error);
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    });
+    
+    return () => {
+      socket.off('updateProducto');
+    };
+  }, []);
 
   return (
     <>
