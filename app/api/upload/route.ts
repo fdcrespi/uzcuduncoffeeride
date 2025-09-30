@@ -37,7 +37,6 @@ export async function POST(request: Request) {
 
     const path = join(process.cwd(), 'public', 'uploads', filename);
     await writeFile(path, buffer);
-    console.log(`Archivo guardado en: ${path}`);
 
     return NextResponse.json({ success: true, url: `/uploads/${filename}` });
 

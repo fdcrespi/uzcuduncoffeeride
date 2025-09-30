@@ -14,6 +14,9 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 
+import io from 'socket.io-client';
+const socket = io(process.env.NEXT_PUBLIC_URL!);
+
 // Interfaces to type the data
 interface Subcategory {
   id: string;
@@ -92,6 +95,7 @@ export default function ProductsPage() {
     if (response.ok) {
       await fetchProducts(); // Refetch to get updated data
       setEditingProduct(null);
+      socket.emit('updateProducto', 'Producto actualizado'); // Notify server about the update
     } else {
       const errorData = await response.json();
       setErrorDialog({ isOpen: true, message: errorData.message || 'Error al actualizar el producto.' });

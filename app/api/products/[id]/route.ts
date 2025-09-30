@@ -14,9 +14,6 @@ interface ProductFromDB {
   stock: number;
 }
 
-import io from 'socket.io-client';
-const socket = io(process.env.NEXT_PUBLIC_URL!);
-
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
     const productId = parseInt(params.id, 10);
@@ -105,7 +102,6 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       await client.query('COMMIT');
 
       const updatedProduct = { id: productId, nombre, descripcion, subrubro_id, image, precio, stock };
-      socket.emit('updateProducto', 'producto actualizado');
    
       return new NextResponse(JSON.stringify(updatedProduct), { status: 200 });
 
