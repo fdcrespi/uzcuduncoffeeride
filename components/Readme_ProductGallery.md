@@ -19,7 +19,32 @@ Incluye:
 Este componente funciona tanto con **pnpm** como con **npm**.  
 Usá el mismo package manager que ya tenga tu proyecto (⚠️ **no mezclar**).  
 
-### 👉 Con **pnpm** (recomendado si tu proyecto ya lo usa)
+### 👉 Con **pnpm**
 
 ```bash
 pnpm add framer-motion@10.16.4 @use-gesture/react@10.2.27 @react-spring/web@9.7.3
+```
+
+Opcional (para carousel avanzado en miniaturas):
+```bash
+pnpm add embla-carousel-react@8.0.0
+```
+
+### 👉 Con **npm**
+
+```bash
+npm install framer-motion@10.16.4 @use-gesture/react@10.2.27 @react-spring/web@9.7.3
+```
+
+Opcional (para carousel avanzado en miniaturas):
+```bash
+npm install embla-carousel-react@8.0.0
+```
+
+⚠️ *Importante:*
+
+Si tu proyecto ya tiene pnpm-lock.yaml, usá pnpm.
+
+Si tiene package-lock.json, usá npm.
+
+No usar ambos a la vez.
