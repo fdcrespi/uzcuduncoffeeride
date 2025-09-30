@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
+import { QuantityControl } from "@/components/ui/quantity-control";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCart } from "@/contexts/cart-context";
 import { ArrowLeft, Shield, Truck } from "lucide-react";
@@ -122,44 +123,7 @@ const ShippingForm: React.FC<ShippingFormProps> = ({ shippingData, setShippingDa
   );
 };
 
-interface QuantityControlProps {
-  quantity: number;
-  onUpdate: (newQuantity: number) => void;
-}
 
-const QuantityControl: React.FC<QuantityControlProps> = ({ quantity, onUpdate }) => {
-  return (
-    <div className="flex items-center gap-1 mt-2">
-      <Button
-        variant="outline"
-        size="icon"
-        className="h-6 w-6"
-        onClick={() => onUpdate(quantity - 1)}
-      >
-        -
-      </Button>
-      <Input
-        type="number"
-        className="h-8 w-12 text-center"
-        value={quantity}
-        onChange={(e) => {
-          const newQuantity = parseInt(e.target.value, 10);
-          if (!isNaN(newQuantity) && newQuantity >= 0) {
-            onUpdate(newQuantity);
-          }
-        }}
-      />
-      <Button
-        variant="outline"
-        size="icon"
-        className="h-6 w-6"
-        onClick={() => onUpdate(quantity + 1)}
-      >
-        +
-      </Button>
-    </div>
-  );
-};
 
 
 // Sub-componente: OrderSummary
@@ -182,10 +146,11 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ items, totalPrice, shipping
               </div>
               <div className="flex-1">
                 <h4 className="font-medium leading-tight">{item.product.nombre}</h4>
-                <QuantityControl
+                <span className="text-sm text-muted-foreground">{item.quantity}</span>
+                {/* <QuantityControl
                   quantity={item.quantity}
                   onUpdate={(newQuantity) => updateQuantity(item.product.id, newQuantity)}
-                />
+                /> */}
               </div>
               <div className="text-right">
                 <p className="font-medium">${(item.product.precio * item.quantity).toLocaleString()}</p>
@@ -210,13 +175,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ items, totalPrice, shipping
           </div>
         </CardContent>
       </Card>
-      {totalPrice < 100 && (
-        <Card className="border-amber-200 bg-amber-50">
-          <CardContent className="pt-6">
-            <p className="text-sm text-amber-800">💡 Agrega ${(100 - totalPrice).toFixed(2)} más para obtener envío gratuito</p>
-          </CardContent>
-        </Card>
-      )}
+
     </div>
 
     {/* Footer fijo con acciones */}

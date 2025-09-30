@@ -3,15 +3,18 @@
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Card, CardContent } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { ShoppingCart, Plus, Minus, Trash2 } from "lucide-react"
+import { ShoppingCart } from "lucide-react"
 import { useCart } from "@/contexts/cart-context"
 import Image from "next/image"
 import Link from "next/link"
 import { useState } from "react"
+import { QuantityControl } from "./ui/quantity-control"
+import { Separator } from "./ui/separator"
 
 export function CartSidebar() {
-  const { items, updateQuantity, removeItem, getTotalItems, getTotalPrice } = useCart()
+  const { items, updateQuantity, getTotalItems, getTotalPrice } = useCart()
   const [isOpen, setIsOpen] = useState(false)
 
   const totalItems = getTotalItems()
@@ -29,7 +32,7 @@ export function CartSidebar() {
           )}
         </Button>
       </SheetTrigger>
-      <SheetContent className="w-full sm:max-w-lg">
+      <SheetContent className="w-full sm:max-w-lg flex flex-col">
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
             <ShoppingCart className="w-5 h-5" />
@@ -45,72 +48,66 @@ export function CartSidebar() {
             <Button onClick={() => setIsOpen(false)}>Continuar Comprando</Button>
           </div>
         ) : (
-          <div className="flex flex-col h-full">
-            <ScrollArea className="flex-1 -mx-6 px-6">
-              <div className="space-y-4 py-4">
-                {items.map((item) => (
-                  <div key={item.product.id} className="flex items-center space-x-4">
-                    <div className="relative w-16 h-16 rounded-md overflow-hidden">
-                      <Image
-                        src={item.product.image || "/placeholder.svg"}
-                        alt={item.product.nombre}
-                        fill
-                        className="object-cover"
-                      />
+          <>
+            <div className="flex-grow overflow-y-auto pr-2 space-y-4 mx-4">
+              {/* Card principal para el contenido */}
+              <Card>
+                <CardContent className="pt-6 space-y-4">
+                  {items.map((item) => (
+                    <div key={item.product.id} className="flex items-start space-x-4">
+                      <div className="relative w-12 h-12 rounded-md overflow-hidden">
+                        <Image
+                          src={item.product.image || "/placeholder.svg"}
+                          alt={item.product.nombre}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-medium leading-tight truncate">{item.product.nombre}</h4>
+                        <QuantityControl
+                          quantity={item.quantity}
+                          onUpdate={(newQuantity) => updateQuantity(item.product.id, newQuantity)}
+                        />
+                      </div>
+                      <div className="text-right">
+                        <p className="font-medium text-sm">${(item.product.precio * item.quantity).toLocaleString()}</p>
+                      </div>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <h4 className="text-sm font-medium truncate">{item.product.nombre}</h4>
-                      <p className="text-sm text-muted-foreground">${item.product.precio.toLocaleString()}</p>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="w-8 h-8 bg-transparent"
-                        onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
-                      >
-                        <Minus className="w-3 h-3" />
-                      </Button>
-                      <span className="w-8 text-center text-sm">{item.quantity}</span>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="w-8 h-8 bg-transparent"
-                        onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
-                      >
-                        <Plus className="w-3 h-3" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="w-8 h-8 text-destructive hover:text-destructive"
-                        onClick={() => removeItem(item.product.id)}
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </Button>
-                    </div>
+                  ))}
+                  <Separator />
+                  <div className="flex justify-between text-lg font-semibold">
+                    <span>Total:</span>
+                    <span>${totalPrice.toLocaleString()}</span>
                   </div>
-                ))}
-              </div>
-            </ScrollArea>
+                </CardContent>
+              </Card>
 
-            <div className="space-y-4 pt-4 border-t">
-              <div className="flex items-center justify-between text-lg font-semibold">
-                <span>Total:</span>
-                <span>${totalPrice.toLocaleString()}</span>
-              </div>
-              <div className="space-y-2">
-                <Link href="/checkout" onClick={() => setIsOpen(false)}>
-                  <Button className="w-full" size="lg">
-                    Proceder al Checkout
-                  </Button>
-                </Link>
-                <Button variant="outline" className="w-full bg-transparent" onClick={() => setIsOpen(false)}>
-                  Continuar Comprando
-                </Button>
-              </div>
+              {totalPrice < 100000 && (
+                <Card className="border-amber-200 bg-amber-50">
+                  <CardContent className="py-4">
+                    <p className="text-sm text-amber-800">💡 Agrega ${(100000 - totalPrice).toFixed(2)} más para obtener envío gratuito</p>
+                  </CardContent>
+                </Card>
+              )}
             </div>
-          </div>
+
+            {/* Footer fijo con acciones en su propia Card */}
+            <div className="flex-shrink-0 pt-6 mx-4 mb-8">
+              <Card>
+                <CardContent className="pt-4 space-y-2 mb-4">
+                  <Link href="/checkout" onClick={() => setIsOpen(false)}>
+                    <Button className="w-full" size="lg">
+                      Datos de Envío y Pago
+                    </Button>
+                  </Link>
+                  <Button variant="outline" className="w-full mt-4" onClick={() => setIsOpen(false)}>
+                    Volver a la tienda
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          </>
         )}
       </SheetContent>
     </Sheet>
