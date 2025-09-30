@@ -78,7 +78,8 @@ export default function ProductsPage() {
     });
 
     if (response.ok) {
-      await fetchProducts(); // Refetch to get the full product data with subcategory name
+      await fetchProducts();
+      socket.emit('updateProducto', 'Producto actualizado'); // Refetch to get the full product data with subcategory name
     } else {
       const errorData = await response.json();
       setErrorDialog({ isOpen: true, message: errorData.message || 'Error al crear el producto.' });
@@ -109,6 +110,7 @@ export default function ProductsPage() {
 
     if (response.ok) {
       setProducts(products.filter(p => p.id !== id));
+      socket.emit('updateProducto', 'Producto actualizado');
     } else {
       const errorData = await response.json();
       setErrorDialog({ isOpen: true, message: errorData.message || 'Ocurrió un error al eliminar el producto.' });
