@@ -1,7 +1,7 @@
 
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, use } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
@@ -12,6 +12,10 @@ import { toast } from '@/hooks/use-toast'
 // Definimos un tipo extendido para el producto que incluye el stock numérico
 import { Product } from '@/lib/types'
 import { Header } from '@/components/layout/header'
+
+//socket io
+import { io } from "socket.io-client";
+const socket = io(process.env.NEXT_PUBLIC_URL!);
 
 export default function ProductDetailPage() {
   const [product, setProduct] = useState<Product | null>(null)
@@ -45,6 +49,35 @@ export default function ProductDetailPage() {
     }
   }, [id])
 
+  useEffect(() => {
+    socket.on('connect', () => {
+      console.log('Conectado al servidor de WebSocket');
+    });
+    socket.on('updateProducto', () => {
+      console.log('Producto actualizado, recargando detalles...');
+      // Volver a cargar el producto actual
+      if (id) {
+        setLoading(true);
+        fetch(`/api/products/${id}`)
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('Error al cargar el producto');
+            }
+            return response.json();
+          })
+          .then(data => {
+            setProduct(data);
+          })
+          .catch(error => {
+            console.error(error);
+          })
+          .finally(() => {
+            setLoading(false);
+          });
+      }
+    });
+  }, [id]);
+
   const handleAddToCart = () => {
     if (product) {
       addItem(product)
@@ -75,6 +108,9 @@ export default function ProductDetailPage() {
     )
   }
 
+
+  
+
   return (
     <>
       <Header />
@@ -97,14 +133,17 @@ export default function ProductDetailPage() {
           <div className="flex flex-col pt-4">
             <h1 className="text-3xl md:text-4xl font-bold text-left mb-4">{product.nombre}</h1>
             
-            <p className="text-4xl font-extrabold text-black mb-6 text-left">${product.precio.toFixed(2)}</p>
+            <p className="text-4xl font-extrabold text-black mb-6 text-left">${product.precio.toLocaleString("es-AR")}</p>
 
             <div className="mb-6">
               <h3 className="font-semibold text-lg">Stock disponible</h3>
               <div className="flex items-center gap-4 mt-2">
                   <p className="text-md text-black">
                       Cantidad: {quantity}
-                      {product.stock > 0 && <span className="text-gray-500 ml-2">({product.stock} disponibles)</span>}
+                      {product.stock > 0 ? 
+                        <span className="text-gray-500 ml-2">({product.stock} disponibles)</span>
+                        : <span className="text-red-600 ml-2">(Sin stock)</span>
+                      }
                   </p>
               </div>
             </div>

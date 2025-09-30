@@ -50,7 +50,7 @@ export function ProductCard({ product }: ProductCardProps) {
       </CardHeader>
       <CardContent>
 
-        <p className="text-2xl font-bold text-primary">${product.precio}</p>
+        <p className="text-2xl font-bold text-primary">${(product.precio).toLocaleString("es-AR")}</p>
       </CardContent>
       <CardFooter>
         {product.category === "motorcycle" ? (
