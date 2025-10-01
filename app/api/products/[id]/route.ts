@@ -1,5 +1,8 @@
 import { db } from '@/lib/db';
 import { NextResponse } from 'next/server';
+import path from 'path';
+import { unlink } from 'fs/promises';
+
 
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
@@ -115,22 +118,57 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 }
 
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
-  try {
-    const productId = parseInt(params.id, 10);
-    if (isNaN(productId)) {
-      return new NextResponse(JSON.stringify({ message: 'ID de producto inválido' }), { status: 400 });
-    }
+  const productId = parseInt(params.id, 10);
+  if (isNaN(productId)) {
+    return new NextResponse(JSON.stringify({ message: 'ID de producto inválido' }), { status: 400 });
+  }
 
-    const result = await db.query('DELETE FROM Producto WHERE id = $1 RETURNING id', [productId]);
+  // helpers locales (podés moverlos arriba del archivo si preferís)
+  const isLocalUploadUrl = (url?: string | null) => typeof url === 'string' && url.startsWith('/uploads/');
+  const toAbsolutePathFromPublic = (url: string) => {
+    const rel = url.replace(/^\//, '');
+    return path.join(process.cwd(), 'public', rel);
+  };
+
+  const client = await db.connect();
+  try {
+    await client.query('BEGIN');
+
+    // 1) Traer URLs de imágenes antes de borrar el producto
+    const imgs = await client.query(
+      `SELECT url FROM Producto_Imagen WHERE producto_id = $1`,
+      [productId]
+    );
+    const urls: string[] = imgs.rows.map((r: any) => r.url).filter((u: any) => typeof u === 'string');
+
+    // 2) Borrar el producto (activará CASCADE para Producto_Imagen y Portada)
+    const result = await client.query('DELETE FROM Producto WHERE id = $1 RETURNING id', [productId]);
 
     if (result.rowCount === 0) {
+      await client.query('ROLLBACK');
       return new NextResponse(JSON.stringify({ message: 'Producto no encontrado' }), { status: 404 });
     }
 
-    return new NextResponse(null, { status: 204 });
+    await client.query('COMMIT');
 
+    // 3) Borrar archivos físicos locales de forma no-bloqueante
+    for (const url of urls) {
+      if (isLocalUploadUrl(url)) {
+        const filePath = toAbsolutePathFromPublic(url);
+        unlink(filePath).catch((e: any) => {
+          if (e?.code !== 'ENOENT') {
+            console.warn('No se pudo eliminar archivo del producto:', filePath, e);
+          }
+        });
+      }
+    }
+
+    return new NextResponse(null, { status: 204 });
   } catch (error) {
+    await client.query('ROLLBACK');
     console.error(`Error al eliminar el producto ${params.id}:`, error);
     return new NextResponse(JSON.stringify({ message: 'Error Interno del Servidor' }), { status: 500 });
+  } finally {
+    client.release();
   }
 }

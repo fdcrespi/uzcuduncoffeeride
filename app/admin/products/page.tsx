@@ -14,7 +14,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 
-import { ProductImagesDialog } from "@/components/admin/product-images-dialog" // 👈 nuevo
+import { ProductImagesDialog } from "@/components/admin/product-images-dialog"
 
 import io from 'socket.io-client';
 const socket = io(process.env.NEXT_PUBLIC_URL!);
@@ -43,7 +43,7 @@ export default function ProductsPage() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [errorDialog, setErrorDialog] = useState<{ isOpen: boolean; message: string }>({ isOpen: false, message: '' });
 
-  // 👇 estado para el diálogo de imágenes
+  // estado para el diálogo de imágenes
   const [imagesDialog, setImagesDialog] = useState<{
     open: boolean;
     productId: string | number | null;
@@ -126,7 +126,7 @@ export default function ProductsPage() {
     }
   };
 
-  // 👇 abrir diálogo de imágenes para un producto
+  // abrir diálogo de imágenes para un producto
   const openImagesFor = (product: Product) => {
     setImagesDialog({ open: true, productId: product.id, productName: product.nombre });
   };
@@ -165,7 +165,7 @@ export default function ProductsPage() {
             products={products}
             onEdit={setEditingProduct}
             onDelete={handleDeleteProduct}
-            onManageImages={openImagesFor} // 👈 nueva acción
+            onManageImages={openImagesFor}
           />
         </CardContent>
       </Card>
@@ -201,6 +201,6 @@ export default function ProductsPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
-  )
+    </div>
+  )
 }

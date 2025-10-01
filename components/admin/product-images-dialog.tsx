@@ -1,6 +1,26 @@
 "use client";
 
 import * as React from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { Trash2, Star, UploadCloud } from "lucide-react";
 
 type ImageItem = {
   id: number;
@@ -24,14 +44,15 @@ export function ProductImagesDialog({
 }: ProductImagesDialogProps) {
   const [loading, setLoading] = React.useState(false);
   const [images, setImages] = React.useState<ImageItem[]>([]);
-  const [newUrls, setNewUrls] = React.useState<string>("");
   const [dragIndex, setDragIndex] = React.useState<number | null>(null);
   const [savingOrder, setSavingOrder] = React.useState(false);
+  const [files, setFiles] = React.useState<File[]>([]);
+  const [imageToDelete, setImageToDelete] = React.useState<ImageItem | null>(null);
+  const inputRef = React.useRef<HTMLInputElement | null>(null);
 
-  // Fetch al abrir
   React.useEffect(() => {
     if (!open) return;
-    (async () => {
+    const fetchImages = async () => {
       setLoading(true);
       try {
         const res = await fetch(`/api/products/${productId}/images`, { cache: "no-store" });
@@ -40,71 +61,78 @@ export function ProductImagesDialog({
         setImages(data);
       } catch (e) {
         console.error(e);
-        alert("No se pudieron cargar las imágenes del producto.");
+        toast.error("No se pudieron cargar las imágenes del producto.");
       } finally {
         setLoading(false);
       }
-    })();
+    };
+    fetchImages();
   }, [open, productId]);
 
-  // Agregar URLs (una por línea)
-  const handleAddImages = async () => {
-    const urls = newUrls
-      .split("\n")
-      .map(s => s.trim())
-      .filter(Boolean);
+  const handlePickFiles = () => inputRef.current?.click();
 
-    if (urls.length === 0) {
-      alert("Pegá al menos una URL de imagen (una por línea).");
+  const handleFilesSelected: React.ChangeEventHandler<HTMLInputElement> = (e) => {
+    const selected = Array.from(e.target.files || []);
+    if (selected.length) setFiles(selected);
+  };
+
+  const handleUploadFiles = async () => {
+    if (!files.length) {
+      toast.warning("Seleccioná al menos una imagen.");
       return;
     }
+    const form = new FormData();
+    for (const f of files) form.append("files", f);
 
+    setLoading(true);
+    toast.info("Subiendo imágenes...");
     try {
-      setLoading(true);
-      const res = await fetch(`/api/products/${productId}/images`, {
+      const res = await fetch(`/api/products/${productId}/images/upload`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ images: urls }),
+        body: form,
       });
       if (!res.ok) {
         const j = await res.json().catch(() => ({}));
-        throw new Error(j.message || "Error al insertar imágenes");
+        throw new Error(j.message || "Error al subir imágenes");
       }
-      // Refetch
       const ref = await fetch(`/api/products/${productId}/images`, { cache: "no-store" });
       const data: ImageItem[] = await ref.json();
       setImages(data);
-      setNewUrls("");
+      setFiles([]);
+      if (inputRef.current) inputRef.current.value = "";
+      toast.success("Imágenes subidas correctamente.");
     } catch (e) {
       console.error(e);
-      alert((e as Error).message);
+      toast.error((e as Error).message);
     } finally {
       setLoading(false);
     }
   };
 
-  // Borrar
-  const handleDelete = async (imageId: number) => {
-    if (!confirm("¿Eliminar esta imagen?")) return;
+  const handleDelete = async () => {
+    if (!imageToDelete) return;
     try {
-      const res = await fetch(`/api/products/${productId}/images/${imageId}`, {
+      const res = await fetch(`/api/products/${productId}/images/${imageToDelete.id}`, {
         method: "DELETE",
       });
       if (res.status === 404) {
-        alert("La imagen no existe (puede que ya haya sido borrada).");
+        toast.error("La imagen no existe (puede que ya haya sido borrada).");
       } else if (!res.ok) {
         const j = await res.json().catch(() => ({}));
         throw new Error(j.message || "Error al borrar imagen");
       }
-      setImages(prev => prev.filter(i => i.id !== imageId));
+      setImages((prev) => prev.filter((i) => i.id !== imageToDelete.id));
+      toast.success("Imagen eliminada.");
     } catch (e) {
       console.error(e);
-      alert((e as Error).message);
+      toast.error((e as Error).message);
+    } finally {
+      setImageToDelete(null);
     }
   };
 
-  // Marcar principal
   const handleMakePrincipal = async (imageId: number) => {
+    toast.info("Marcando como principal...");
     try {
       const res = await fetch(`/api/products/${productId}/images/${imageId}`, {
         method: "PATCH",
@@ -115,41 +143,37 @@ export function ProductImagesDialog({
         const j = await res.json().catch(() => ({}));
         throw new Error(j.message || "No se pudo marcar como principal");
       }
-      setImages(prev =>
-        prev.map(img => ({
+      setImages((prev) =>
+        prev.map((img) => ({
           ...img,
           is_principal: img.id === imageId,
         }))
       );
+      toast.success("Imagen principal actualizada.");
     } catch (e) {
       console.error(e);
-      alert((e as Error).message);
+      toast.error((e as Error).message);
     }
   };
 
-  // Drag & drop nativo
   const onDragStart = (index: number) => setDragIndex(index);
-  const onDragOver: React.DragEventHandler<HTMLDivElement> = e => {
-    e.preventDefault();
-  };
+  const onDragOver: React.DragEventHandler<HTMLDivElement> = (e) => e.preventDefault();
   const onDrop = async (dropIndex: number) => {
     if (dragIndex === null || dragIndex === dropIndex) {
       setDragIndex(null);
       return;
     }
-    // Reordenar local
     const next = [...images];
     const [moved] = next.splice(dragIndex, 1);
     next.splice(dropIndex, 0, moved);
-    // Normalizar orden 1..N
     const normalized = next.map((img, idx) => ({ ...img, orden: idx + 1 }));
     setImages(normalized);
     setDragIndex(null);
 
-    // Persistir
+    setSavingOrder(true);
+    toast.info("Guardando nuevo orden...");
     try {
-      setSavingOrder(true);
-      const orderPayload = normalized.map(i => ({ id: i.id, orden: i.orden }));
+      const orderPayload = normalized.map((i) => ({ id: i.id, orden: i.orden }));
       const res = await fetch(`/api/products/${productId}/images/reorder`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -159,10 +183,10 @@ export function ProductImagesDialog({
         const j = await res.json().catch(() => ({}));
         throw new Error(j.message || "No se pudo guardar el nuevo orden");
       }
+      toast.success("Orden guardado.");
     } catch (e) {
       console.error(e);
-      alert((e as Error).message);
-      // En caso de error, refetch para sincronizar
+      toast.error((e as Error).message);
       try {
         const ref = await fetch(`/api/products/${productId}/images`, { cache: "no-store" });
         const data: ImageItem[] = await ref.json();
@@ -173,133 +197,166 @@ export function ProductImagesDialog({
     }
   };
 
+  const onDropZone: React.DragEventHandler<HTMLDivElement> = (e) => {
+    e.preventDefault();
+    const dropped = Array.from(e.dataTransfer.files || []).filter((f) => f.type.startsWith("image/"));
+    if (dropped.length) setFiles((prev) => [...prev, ...dropped]);
+  };
+
   return (
-    <div
-      className={`fixed inset-0 z-50 ${open ? "" : "hidden"}`}
-      aria-hidden={!open}
-      role="dialog"
-    >
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/50"
-        onClick={() => onOpenChange(false)}
-      />
-      {/* Panel */}
-      <div className="absolute left-1/2 top-1/2 w-[min(960px,92vw)] -translate-x-1/2 -translate-y-1/2 rounded-xl bg-white p-4 shadow-xl">
-        <div className="mb-3 flex items-center justify-between gap-2">
-          <div>
-            <h3 className="text-lg font-semibold">
-              Imágenes — {productName ?? `Producto #${productId}`}
-            </h3>
-            <p className="text-sm text-muted-foreground">
-              Agregá, ordená (drag & drop), marcá ⭐ principal o borrá imágenes.
-            </p>
-          </div>
-          <button
-            className="rounded-md border px-3 py-1.5 text-sm hover:bg-gray-50"
-            onClick={() => onOpenChange(false)}
-          >
-            Cerrar
-          </button>
-        </div>
+    <>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-1/2 w-full md:max-w-4xl h-[70vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle>Imágenes de {productName ?? `Producto #${productId}`}</DialogTitle>
+            <DialogDescription>
+              Arrastrá y soltá las imágenes para reordenarlas. Podés subir nuevas o marcar una como principal.
+            </DialogDescription>
+          </DialogHeader>
 
-        {/* Agregar URLs */}
-        <div className="mb-4 grid gap-2">
-          <label className="text-sm font-medium">Pegar URLs (una por línea)</label>
-          <textarea
-            value={newUrls}
-            onChange={e => setNewUrls(e.target.value)}
-            rows={3}
-            className="w-full resize-y rounded-md border p-2 text-sm outline-none focus:ring-2 focus:ring-black/10"
-            placeholder="https://...jpg
-https://...png"
-          />
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleAddImages}
-              disabled={loading || !newUrls.trim()}
-              className="rounded-md bg-black px-3 py-1.5 text-sm text-white disabled:opacity-60"
-            >
-              {loading ? "Guardando..." : "Agregar"}
-            </button>
-            <span className="text-xs text-muted-foreground">
-              Consejo: podés pegar varias a la vez.
-            </span>
-          </div>
-        </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 flex-1 overflow-hidden">
+            {/* Columna de subida */}
+            <div className="md:col-span-1 flex flex-col gap-4 p-1 overflow-y-auto">
+              <div
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={onDropZone}
+                className="flex flex-col items-center justify-center gap-3 rounded-md border-2 border-dashed p-4 text-center h-48"
+              >
+                <UploadCloud className="w-10 h-10 text-muted-foreground" />
+                <p className="text-sm text-muted-foreground">Arrastrá imágenes aquí o</p>
+                <Button type="button" variant="outline" size="sm" onClick={handlePickFiles}>
+                  Seleccionar Archivos
+                </Button>
+                <input
+                  ref={inputRef}
+                  title="imagen"
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  className="hidden"
+                  onChange={handleFilesSelected}
+                />
+              </div>
 
-        {/* Grid de imágenes */}
-        <div className="relative">
-          {savingOrder && (
-            <div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-white/60 text-sm">
-              Guardando orden...
-            </div>
-          )}
-          {loading ? (
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="aspect-square animate-pulse rounded-lg bg-gray-200" />
-              ))}
-            </div>
-          ) : images.length === 0 ? (
-            <div className="rounded-lg border p-6 text-center text-sm text-muted-foreground">
-              Este producto aún no tiene imágenes.
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-              {images.map((img, idx) => (
-                <div
-                  key={img.id}
-                  className="group relative aspect-square overflow-hidden rounded-lg border"
-                  draggable
-                  onDragStart={() => onDragStart(idx)}
-                  onDragOver={onDragOver}
-                  onDrop={() => onDrop(idx)}
-                  title="Arrastrá para reordenar"
-                >
-                  {/* Imagen */}
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={img.url}
-                    alt={`Imagen ${idx + 1}`}
-                    className="h-full w-full object-cover"
-                  />
-
-                  {/* Orden badge */}
-                  <div className="pointer-events-none absolute left-2 top-2 rounded bg-black/60 px-1.5 py-0.5 text-xs text-white">
-                    #{img.orden}
+              {files.length > 0 && (
+                <div className="flex flex-col gap-2">
+                  <h4 className="font-semibold text-sm">Archivos listos para subir:</h4>
+                  <div className="grid grid-cols-3 gap-2">
+                    {files.map((f, i) => {
+                      const url = URL.createObjectURL(f);
+                      return (
+                        <div key={`${f.name}-${i}`} className="relative aspect-square overflow-hidden rounded-md border">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={url} alt={f.name} className="h-full w-full object-cover" />
+                        </div>
+                      );
+                    })}
                   </div>
-
-                  {/* Acciones */}
-                  <div className="absolute inset-x-0 bottom-0 flex translate-y-full items-center justify-between gap-2 bg-black/50 p-2 text-white opacity-0 transition-all group-hover:translate-y-0 group-hover:opacity-100">
-                    <button
-                      onClick={() => handleMakePrincipal(img.id)}
-                      className={`rounded px-2 py-1 text-xs ${
-                        img.is_principal ? "bg-yellow-400 text-black" : "bg-white/20 hover:bg-white/30"
-                      }`}
-                      title="Marcar como principal"
-                    >
-                      {img.is_principal ? "⭐ Principal" : "☆ Principal"}
-                    </button>
-                    <button
-                      onClick={() => handleDelete(img.id)}
-                      className="rounded bg-white/20 px-2 py-1 text-xs hover:bg-white/30"
-                      title="Eliminar"
-                    >
-                      🗑️ Eliminar
-                    </button>
-                  </div>
-
-                  {/* Borde si es principal */}
-                  {img.is_principal && (
-                    <div className="pointer-events-none absolute inset-0 rounded-lg ring-2 ring-yellow-400" />
-                  )}
+                  <Button
+                    type="button"
+                    onClick={handleUploadFiles}
+                    disabled={loading}
+                    size="sm"
+                  >
+                    {loading ? "Subiendo..." : `Subir ${files.length} imágen(es)`}
+                  </Button>
                 </div>
-              ))}
+              )}
+               <p className="text-xs text-muted-foreground text-center mt-2">
+                Tipos permitidos: JPG, PNG, WEBP. Máx. 5MB.
+              </p>
             </div>
-          )}
-        </div>
-      </div>
-    </div>
+
+            {/* Columna de imágenes */}
+            <div className="md:col-span-2 relative overflow-y-auto p-1">
+              {savingOrder && (
+                <div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-background/80 backdrop-blur-sm text-sm">
+                  Guardando orden...
+                </div>
+              )}
+              {loading ? (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <div key={i} className="aspect-square animate-pulse rounded-lg bg-muted" />
+                  ))}
+                </div>
+              ) : images.length === 0 ? (
+                <div className="flex items-center justify-center h-full rounded-lg border border-dashed">
+                  <p className="text-center text-sm text-muted-foreground">
+                    Este producto aún no tiene imágenes.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                  {images.map((img, idx) => (
+                    <div
+                      key={img.id}
+                      className="group relative aspect-square overflow-hidden rounded-lg border"
+                      draggable
+                      onDragStart={() => onDragStart(idx)}
+                      onDragOver={onDragOver}
+                      onDrop={() => onDrop(idx)}
+                      title="Arrastrá para reordenar"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={img.url} alt={`Imagen ${idx + 1}`} className="h-full w-full object-cover transition-transform group-hover:scale-105" />
+
+                      <div className="pointer-events-none absolute left-2 top-2 rounded-full bg-black/60 px-2 py-0.5 text-xs font-medium text-white">
+                        #{img.orden}
+                      </div>
+
+                      <div className="absolute inset-x-0 bottom-0 flex translate-y-full items-center justify-end gap-1 bg-gradient-to-t from-black/70 to-transparent p-2 opacity-0 transition-all group-hover:translate-y-0 group-hover:opacity-100">
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => handleMakePrincipal(img.id)}
+                          title="Marcar como principal"
+                        >
+                          <Star className={`h-4 w-4 ${img.is_principal ? "text-yellow-400 fill-yellow-400" : ""}`} />
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => setImageToDelete(img)}
+                          title="Eliminar"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+
+                      {img.is_principal && <div className="pointer-events-none absolute inset-0 rounded-lg ring-2 ring-yellow-400 ring-offset-2 ring-offset-background" />}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog open={!!imageToDelete} onOpenChange={() => setImageToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar eliminación</AlertDialogTitle>
+            <AlertDialogDescription>
+              ¿Estás seguro de que deseas eliminar esta imagen? Esta acción no se puede deshacer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 text-white hover:bg-red-700"
+              onClick={handleDelete}
+            >
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }
+
+
