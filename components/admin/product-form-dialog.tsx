@@ -130,10 +130,10 @@ export function ProductFormDialog({ subcategories, onSubmit, initialData, onOpen
   };
 
   const handleSubmit = () => {
-    if (!formData.image) {
+    /* if (!formData.image) {
       toast.error("Por favor, sube una imagen para el producto.");
       return;
-    }
+    } */
     if (!formData.subrubro_id) {
         toast.error("Por favor, selecciona una subcategoría.");
         return;
@@ -199,7 +199,7 @@ export function ProductFormDialog({ subcategories, onSubmit, initialData, onOpen
             <Label htmlFor="descripcion">Descripción</Label>
             <Textarea id="descripcion" placeholder="Descripción del producto..." value={formData.descripcion} onChange={handleChange} />
           </div>
-          <div className="grid gap-2">
+          {/* <div className="grid gap-2">
             <Label>Imagen del Producto</Label>
             <Input id="file-upload" type="file" accept="image/*" onChange={handleFileChange} className="hidden" disabled={isUploading} />
             <Button asChild variant="outline">
@@ -226,7 +226,7 @@ export function ProductFormDialog({ subcategories, onSubmit, initialData, onOpen
                 )}
               </div>
             )}
-          </div>
+          </div> */}
         </div>
         <DialogFooter>
           <Button type="submit" onClick={handleSubmit} disabled={isUploading}>

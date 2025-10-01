@@ -1,19 +1,6 @@
 import { db } from '@/lib/db';
 import { NextResponse } from 'next/server';
 
-// La estructura del producto que esperamos de la base de datos
-type ProductCategory = "motorcycle" | "electric" | "accessory" | "coffee";
-
-interface ProductFromDB {
-  id: number;
-  nombre: string;
-  descripcion: string;
-  precio: number;
-  image: string;
-  category: ProductCategory;
-  stock: number;
-}
-
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
     const productId = parseInt(params.id, 10);
@@ -29,32 +16,46 @@ export async function GET(request: Request, { params }: { params: { id: string }
         p.id, 
         p.nombre, 
         p.descripcion, 
-        p.image,
         p.subrubro_id,
         sp.precio, 
-        sp.stock
+        sp.stock,
+        pp.cover_url,
+      COALESCE(
+          (
+            SELECT json_agg(json_build_object('id', pi.id, 'url', pi.url, 'is_principal', pi.is_principal, 'orden', pi.orden)
+                            ORDER BY pi.orden ASC)
+            FROM Producto_Imagen pi 
+            WHERE pi.producto_id = p.id
+          ), '[]'::json
+        ) AS images
       FROM Producto p
-      LEFT JOIN Sucursal_Productos sp ON p.id = sp.producto_id
-      WHERE p.id = $1 AND (sp.sucursal_id = $2 OR sp.sucursal_id IS NULL)
+      LEFT JOIN Sucursal_Productos sp 
+        ON p.id = sp.producto_id AND sp.sucursal_id = $2
+      LEFT JOIN Producto_Portada pp 
+        ON pp.producto_id = p.id
+      WHERE p.id = $1
       `,
       [productId, sucursalId]
     );
+
 
     if (result.rows.length === 0) {
       return new NextResponse('Producto no encontrado', { status: 404 });
     }
 
-    const p = result.rows[0];
+    const row = result.rows[0];
 
     const product = {
-      id: String(p.id),
-      nombre: p.nombre,
-      descripcion: p.descripcion,
-      precio: p.precio !== null ? Number(p.precio) : 0,
-      image: p.image || '/placeholder.svg',
-      stock: p.stock !== null ? Number(p.stock) : 0,
-      subrubro_id: String(p.subrubro_id),
+      id: String(row.id),
+      nombre: row.nombre,
+      descripcion: row.descripcion,
+      precio: row.precio !== null ? Number(row.precio) : 0,
+      stock: row.stock !== null ? Number(row.stock) : 0,
+      subrubro_id: String(row.subrubro_id),
+      image: row.cover_url || '/placeholder.svg', // compat con admin/table
+      images: row.images, // array de { id, url, is_principal, orden }
     };
+
 
     return NextResponse.json(product);
   } catch (error) {
@@ -70,10 +71,10 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       return new NextResponse(JSON.stringify({ message: 'ID de producto inválido' }), { status: 400 });
     }
 
-    const { nombre, descripcion, subrubro_id, image, precio, stock } = await request.json();
+    const { nombre, descripcion, subrubro_id, precio, stock } = await request.json();
     const sucursalId = 1; // Asumimos la sucursal principal
 
-    if (!nombre || !subrubro_id || !image) {
+    if (!nombre || !subrubro_id) {
       return new NextResponse(JSON.stringify({ message: 'Faltan campos requeridos' }), { status: 400 });
     }
 
@@ -85,10 +86,10 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       // 1. Actualizar la tabla Producto
       const productQuery = `
         UPDATE Producto
-        SET nombre = $1, descripcion = $2, subrubro_id = $3, image = $4
-        WHERE id = $5;
+        SET nombre = $1, descripcion = $2, subrubro_id = $3
+        WHERE id = $4;
       `;
-      await client.query(productQuery, [nombre, descripcion, parseInt(subrubro_id), image, productId]);
+      await client.query(productQuery, [nombre, descripcion, parseInt(subrubro_id), productId]);
 
       // 2. UPSERT en la tabla Sucursal_Productos
       const sucursalProductQuery = `
@@ -101,7 +102,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 
       await client.query('COMMIT');
 
-      const updatedProduct = { id: productId, nombre, descripcion, subrubro_id, image, precio, stock };
+      const updatedProduct = { id: productId, nombre, descripcion, subrubro_id, precio, stock };
    
       return new NextResponse(JSON.stringify(updatedProduct), { status: 200 });
 

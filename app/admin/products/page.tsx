@@ -27,6 +27,7 @@ interface Product {
   id: string;
   nombre: string;
   descripcion: string;
+  // portada (proviene de Producto_Portada.cover_url)
   image: string;
   subrubro_id: string;
   subrubro_nombre: string;
