@@ -14,6 +14,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 
+import { ProductImagesDialog } from "@/components/admin/product-images-dialog" // 👈 nuevo
+
 import io from 'socket.io-client';
 const socket = io(process.env.NEXT_PUBLIC_URL!);
 
@@ -40,6 +42,13 @@ export default function ProductsPage() {
   const [subcategories, setSubcategories] = useState<Subcategory[]>([])
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [errorDialog, setErrorDialog] = useState<{ isOpen: boolean; message: string }>({ isOpen: false, message: '' });
+
+  // 👇 estado para el diálogo de imágenes
+  const [imagesDialog, setImagesDialog] = useState<{
+    open: boolean;
+    productId: string | number | null;
+    productName?: string;
+  }>({ open: false, productId: null });
 
   const fetchProducts = async () => {
     try {
@@ -71,7 +80,6 @@ export default function ProductsPage() {
   }, []);
 
   const handleAddProduct = async (data: Omit<Product, 'id' | 'subrubro_nombre'>) => {
-    console.log('Adding product with data:', data);
     const response = await fetch('/api/products', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -80,7 +88,7 @@ export default function ProductsPage() {
 
     if (response.ok) {
       await fetchProducts();
-      socket.emit('updateProducto', 'Producto actualizado'); // Refetch to get the full product data with subcategory name
+      socket.emit('updateProducto', 'Producto actualizado');
     } else {
       const errorData = await response.json();
       setErrorDialog({ isOpen: true, message: errorData.message || 'Error al crear el producto.' });
@@ -95,9 +103,9 @@ export default function ProductsPage() {
     });
 
     if (response.ok) {
-      await fetchProducts(); // Refetch to get updated data
+      await fetchProducts();
       setEditingProduct(null);
-      socket.emit('updateProducto', 'Producto actualizado'); // Notify server about the update
+      socket.emit('updateProducto', 'Producto actualizado');
     } else {
       const errorData = await response.json();
       setErrorDialog({ isOpen: true, message: errorData.message || 'Error al actualizar el producto.' });
@@ -118,6 +126,11 @@ export default function ProductsPage() {
     }
   };
 
+  // 👇 abrir diálogo de imágenes para un producto
+  const openImagesFor = (product: Product) => {
+    setImagesDialog({ open: true, productId: product.id, productName: product.nombre });
+  };
+
   return (
     <div className="space-y-6">
       {/* Page header */}
@@ -126,50 +139,4 @@ export default function ProductsPage() {
           <h2 className="text-2xl font-bold tracking-tight md:text-3xl">Productos</h2>
           <p className="text-muted-foreground">
             Gestiona tu inventario de motocicletas, accesorios y productos de cafetería
-          </p>
-        </div>
-        <div className="w-full flex justify-end md:w-auto">
-            <ProductFormDialog
-                key={editingProduct ? 'edit' : 'add'} // Reset form when switching between add/edit
-                subcategories={subcategories}
-                onSubmit={editingProduct ? (data) => handleUpdateProduct(editingProduct.id, data) : handleAddProduct}
-                initialData={editingProduct}
-                onOpenChange={(isOpen) => {
-                  if (!isOpen) setEditingProduct(null);
-                }}
-            />
-        </div>
-      </div>
-
-      {/* Products table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Lista de Productos ({products.length})</CardTitle>
-          <CardDescription>Gestiona todos tus productos desde esta vista</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ProductsTable
-            products={products}
-            onEdit={setEditingProduct}
-            onDelete={handleDeleteProduct}
-          />
-        </CardContent>
-      </Card>
-
-      {/* Error Dialog */}
-      <AlertDialog open={errorDialog.isOpen} onOpenChange={(open) => setErrorDialog({ ...errorDialog, isOpen: open })}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Error</AlertDialogTitle>
-            <AlertDialogDescription>
-              {errorDialog.message}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogAction onClick={() => setErrorDialog({ isOpen: false, message: '' })}>OK</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </div>
-  )
-}
+          <
