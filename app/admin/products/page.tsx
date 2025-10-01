@@ -139,4 +139,68 @@ export default function ProductsPage() {
           <h2 className="text-2xl font-bold tracking-tight md:text-3xl">Productos</h2>
           <p className="text-muted-foreground">
             Gestiona tu inventario de motocicletas, accesorios y productos de cafetería
-          <
+          </p>
+        </div>
+        <div className="w-full flex justify-end md:w-auto">
+          <ProductFormDialog
+            key={editingProduct ? 'edit' : 'add'} // Reset form when switching between add/edit
+            subcategories={subcategories}
+            onSubmit={editingProduct ? (data) => handleUpdateProduct(editingProduct.id, data) : handleAddProduct}
+            initialData={editingProduct}
+            onOpenChange={(isOpen) => {
+              if (!isOpen) setEditingProduct(null);
+            }}
+          />
+        </div>
+      </div>
+
+      {/* Products table */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Lista de Productos ({products.length})</CardTitle>
+          <CardDescription>Gestiona todos tus productos desde esta vista</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ProductsTable
+            products={products}
+            onEdit={setEditingProduct}
+            onDelete={handleDeleteProduct}
+            onManageImages={openImagesFor} // 👈 nueva acción
+          />
+        </CardContent>
+      </Card>
+
+      {/* Dialogo de imágenes */}
+      {imagesDialog.productId != null && (
+        <ProductImagesDialog
+          productId={imagesDialog.productId}
+          productName={imagesDialog.productName}
+          open={imagesDialog.open}
+          onOpenChange={async (open) => {
+            setImagesDialog(prev => ({ ...prev, open }));
+            // al cerrar, refrescar lista por si cambió la portada
+            if (!open) {
+              await fetchProducts();
+              socket.emit('updateProducto', 'Producto actualizado');
+            }
+          }}
+        />
+      )}
+
+      {/* Error Dialog */}
+      <AlertDialog open={errorDialog.isOpen} onOpenChange={(open) => setErrorDialog({ ...errorDialog, isOpen: open })}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Error</AlertDialogTitle>
+            <AlertDialogDescription>
+              {errorDialog.message}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setErrorDialog({ isOpen: false, message: '' })}>OK</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  )
+}
