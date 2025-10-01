@@ -32,9 +32,10 @@ interface ProductsTableProps {
   products: Product[]
   onEdit?: (product: Product) => void
   onDelete?: (productId: string) => void
+  onManageImages?: (product: Product) => void // 👈 nueva prop
 }
 
-export function ProductsTable({ products, onEdit, onDelete }: ProductsTableProps) {
+export function ProductsTable({ products, onEdit, onDelete, onManageImages }: ProductsTableProps) {
   const [productToDelete, setProductToDelete] = useState<Product | null>(null)
 
   return (
@@ -54,7 +55,7 @@ export function ProductsTable({ products, onEdit, onDelete }: ProductsTableProps
             <TableRow key={product.id}>
               <TableCell>
                 <div className="flex items-center space-x-3">
-                  <div className="relative w-10 h-10 rounded-md overflow-hidden">
+                  <div className="relative h-10 w-10 overflow-hidden rounded-md">
                     <Image src={product.image || "/placeholder.svg"} alt={product.nombre} fill className="object-cover" />
                   </div>
                   <div>
@@ -70,22 +71,34 @@ export function ProductsTable({ products, onEdit, onDelete }: ProductsTableProps
                 ${product.precio?.toLocaleString("es-AR")}
               </TableCell>
               <TableCell className="text-right">
-                <span className={product.stock < 10 ? "text-red-600 font-bold" : ""}>
+                <span className={product.stock < 10 ? "font-bold text-red-600" : ""}>
                   {product.stock}
                 </span>
               </TableCell>
               <TableCell className="text-right">
                 <div className="flex items-center justify-end space-x-2">
-                  <Button variant="ghost" size="icon" onClick={() => onEdit?.(product)}>
-                    <Edit className="w-4 h-4" />
+                  {/* Botón Imágenes */}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onManageImages?.(product)}
+                  >
+                    Imágenes
                   </Button>
+
+                  {/* Editar */}
+                  <Button variant="ghost" size="icon" onClick={() => onEdit?.(product)}>
+                    <Edit className="h-4 w-4" />
+                  </Button>
+
+                  {/* Eliminar */}
                   <Button
                     variant="ghost"
                     size="icon"
                     className="text-red-600 hover:text-red-700"
                     onClick={() => setProductToDelete(product)}
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
               </TableCell>
