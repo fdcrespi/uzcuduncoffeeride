@@ -293,16 +293,39 @@ DROP TRIGGER IF EXISTS trg_producto_imagen_ensure_single_principal ON Producto_I
 CREATE TRIGGER trg_producto_imagen_ensure_single_principal
 BEFORE UPDATE ON Producto_Imagen
 FOR EACH ROW EXECUTE FUNCTION producto_imagen_ensure_single_principal();
-    END IF;
 
-    RETURN NEW;
+CREATE OR REPLACE FUNCTION update_stock_producto()
+RETURNS TRIGGER AS $$
+DECLARE
+    v_producto_id INT;
+    v_sucursal_id INT;
+    v_cantidad_diff INT;
+BEGIN
+    IF TG_OP = 'INSERT' THEN
+        v_producto_id := NEW.producto_id;
+        v_cantidad_diff := NEW.cantidad;
+    ELSIF TG_OP = 'UPDATE' THEN
+        v_producto_id := NEW.producto_id;
+        v_cantidad_diff := NEW.cantidad - OLD.cantidad;
+    ELSIF TG_OP = 'DELETE' THEN
+        v_producto_id := OLD.producto_id;
+        v_cantidad_diff := -OLD.cantidad;
+    END IF; 
+    SELECT sucursal_id INTO v_sucursal_id
+    FROM Pedido
+    WHERE id = COALESCE(NEW.pedido_id, OLD.pedido_id);
+    UPDATE Sucursal_Productos
+    SET stock = stock - v_cantidad_diff
+    WHERE producto_id = v_producto_id AND sucursal_id = v_sucursal_id;
+    RETURN NULL;
 END;
 $$ LANGUAGE plpgsql;
 
-DROP TRIGGER IF EXISTS trg_producto_imagen_ensure_single_principal ON Producto_Imagen;
-CREATE TRIGGER trg_producto_imagen_ensure_single_principal
-BEFORE UPDATE ON Producto_Imagen
-FOR EACH ROW EXECUTE FUNCTION producto_imagen_ensure_single_principal();
+DROP TRIGGER IF EXISTS trg_update_stock_producto ON Pedido_Productos;
+CREATE TRIGGER trg_update_stock_producto
+AFTER INSERT OR UPDATE OR DELETE ON Pedido_Productos
+FOR EACH ROW
+EXECUTE FUNCTION update_stock_producto();
 
 -- =====================
 -- Vista de portada
