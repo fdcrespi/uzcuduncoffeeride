@@ -67,7 +67,7 @@ CREATE TABLE Producto (
     nombre varchar(50)  NOT NULL,
     descripcion varchar(150)  NULL,
     subrubro_id int  NOT NULL,
-    image varchar(255)  NULL,
+    --image varchar(255)  NULL,  (migramos a Producto_Imagen)
     destacado boolean  NOT NULL DEFAULT false,
     visible boolean  NOT NULL DEFAULT true
 );
@@ -132,6 +132,28 @@ CREATE TABLE Usuario (
     sucursal_id int  NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS Producto_Imagen (
+    id SERIAL PRIMARY KEY,
+    producto_id INT NOT NULL REFERENCES Producto(id) ON DELETE CASCADE,
+    url VARCHAR(255) NOT NULL,
+    is_principal BOOLEAN NOT NULL DEFAULT FALSE,
+    orden INT NOT NULL DEFAULT 1,
+    peso_mb NUMERIC(5,2),
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Índices/constraints
+CREATE UNIQUE INDEX IF NOT EXISTS ux_prod_img_principal
+ON Producto_Imagen (producto_id)
+WHERE is_principal = TRUE;
+
+CREATE UNIQUE INDEX IF NOT EXISTS ux_prod_img_orden
+ON Producto_Imagen (producto_id, orden);
+
+CREATE INDEX IF NOT EXISTS ix_prod_img_producto
+ON Producto_Imagen (producto_id);
+
+
 -- foreign keys
 -- Reference: Estado_Pedido_Estado (table: Estado_Pedido)
 ALTER TABLE Estado_Pedido ADD CONSTRAINT fk_EstadoPedido_Estado FOREIGN KEY (estado_id)
@@ -195,9 +217,122 @@ ALTER TABLE Usuario ADD CONSTRAINT fk_Usuario_Sucursal FOREIGN KEY (sucursal_id)
 
 -- End of file.
 
+CREATE OR REPLACE FUNCTION producto_imagen_defaults()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF NEW.orden IS NULL THEN
+    SELECT COALESCE(MAX(orden) + 1, 1) INTO NEW.orden
+    FROM Producto_Imagen WHERE producto_id = NEW.producto_id;
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM Producto_Imagen
+    WHERE producto_id = NEW.producto_id AND is_principal = TRUE
+  ) THEN
+    NEW.is_principal := TRUE;
+    IF NEW.orden IS NULL OR NEW.orden > 1 THEN
+      NEW.orden := 1;
+    END IF;
+  END IF;
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_producto_imagen_defaults ON Producto_Imagen;
+CREATE TRIGGER trg_producto_imagen_defaults
+BEFORE INSERT ON Producto_Imagen
+FOR EACH ROW EXECUTE FUNCTION producto_imagen_defaults();
+
+CREATE OR REPLACE FUNCTION producto_imagen_promote_after_delete()
+RETURNS TRIGGER AS $$
+DECLARE
+  _tiene_principal BOOLEAN;
+BEGIN
+  SELECT EXISTS (
+    SELECT 1 FROM Producto_Imagen
+    WHERE producto_id = OLD.producto_id AND is_principal = TRUE
+  ) INTO _tiene_principal;
+
+  IF NOT _tiene_principal THEN
+    UPDATE Producto_Imagen
+    SET is_principal = TRUE
+    WHERE id = (
+      SELECT id FROM Producto_Imagen
+      WHERE producto_id = OLD.producto_id
+      ORDER BY orden ASC
+      LIMIT 1
+    );
+  END IF;
+
+  RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_producto_imagen_promote_after_delete ON Producto_Imagen;
+CREATE TRIGGER trg_producto_imagen_promote_after_delete
+AFTER DELETE ON Producto_Imagen
+FOR EACH ROW EXECUTE FUNCTION producto_imagen_promote_after_delete();
+
+CREATE OR REPLACE FUNCTION producto_imagen_ensure_single_principal()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF NEW.is_principal = TRUE THEN
+        UPDATE Producto_Imagen
+        SET is_principal = FALSE
+        WHERE producto_id = NEW.producto_id
+        AND id <> NEW.id
+        AND is_principal = TRUE;
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_producto_imagen_ensure_single_principal ON Producto_Imagen;
+CREATE TRIGGER trg_producto_imagen_ensure_single_principal
+BEFORE UPDATE ON Producto_Imagen
+FOR EACH ROW EXECUTE FUNCTION producto_imagen_ensure_single_principal();
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_producto_imagen_ensure_single_principal ON Producto_Imagen;
+CREATE TRIGGER trg_producto_imagen_ensure_single_principal
+BEFORE UPDATE ON Producto_Imagen
+FOR EACH ROW EXECUTE FUNCTION producto_imagen_ensure_single_principal();
+
+-- =====================
+-- Vista de portada
+-- =====================
+
+CREATE OR REPLACE VIEW Producto_Portada AS
+SELECT
+    p.id AS producto_id,
+    COALESCE(pi_principal.url, pi_first.url) AS cover_url
+FROM Producto p
+LEFT JOIN LATERAL (
+    SELECT url
+    FROM Producto_Imagen
+    WHERE producto_id = p.id AND is_principal = TRUE
+    LIMIT 1
+    ) pi_principal ON TRUE
+LEFT JOIN LATERAL (
+    SELECT url
+    FROM Producto_Imagen
+    WHERE producto_id = p.id
+    ORDER BY orden ASC
+    LIMIT 1
+) pi_first ON TRUE;
+
+
 -- Poblate
 insert into Rol (descripcion) VALUES ('administrador'), ('superusuario'), ('usuario');
 insert into Comercio (razon_social, cuit, nombre_fantasia) VALUES ('UZCUDUN COFFEE RIDE S.A.S.', '23453981649', 'UZCUDUN COFFEE RIDE');
 insert into Status_Sucursal (nombre) values ('abierto');
 insert into Sucursal (nombre, domicilio_calle, domicilio_nro, domicilio_piso, domicilio_dpto, telefono, status_sucursal_id, comercio_id) VALUES ('UZCUDUN COFFEE RIDE', 'Martín Miguel de Güemes 3301, B7600 Mar del Plata, Provincia de Buenos Aires', 3301, 0, 0, 0, 1, 1);
 insert into usuario (email, pass, nombre, apellido, rol_id, sucursal_id) values ('juanjosemolfese@gmail.com', 'juanjo', 'juan', 'molfese', 2, 1), ('fdcrespi@gmail.com', 'federico', 'federico', 'crespi', 2, 1);
+
+COMMIT;

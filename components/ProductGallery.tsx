@@ -136,6 +136,7 @@ export default function ProductGallery({
           {images.map((img, idx) => (
             <button
               key={idx}
+              title="Ver imagen"
               onClick={() => setActiveIndex(idx)}
               className={clsx(
                 "relative rounded border-2 overflow-hidden flex-shrink-0 transition-all duration-200",
