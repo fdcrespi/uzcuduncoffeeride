@@ -47,10 +47,12 @@ CREATE TABLE Pedido (
     pago boolean  NOT NULL,
     modo_entrega_id int  NOT NULL,
     mp_id bigint  NULL,
-    payer_first_name varchar(50)  NULL,
+    payer_name varchar(50)  NULL,
     payer_address varchar(150)  NULL,
+    payer_phone varchar(50)  NULL,
     total float NOT NULL,
-    status varchar(50) NOT NULL DEFAULT 'pending',
+    delivery float NOT NULL DEFAULT 0,
+    status varchar(50) NOT NULL DEFAULT 'pending'
 );
 
 -- Table: Pedido_Productos
@@ -312,12 +314,9 @@ BEGIN
         v_producto_id := OLD.producto_id;
         v_cantidad_diff := -OLD.cantidad;
     END IF; 
-    SELECT sucursal_id INTO v_sucursal_id
-    FROM Pedido
-    WHERE id = COALESCE(NEW.pedido_id, OLD.pedido_id);
     UPDATE Sucursal_Productos
     SET stock = stock - v_cantidad_diff
-    WHERE producto_id = v_producto_id AND sucursal_id = v_sucursal_id;
+    WHERE producto_id = v_producto_id;
     RETURN NULL;
 END;
 $$ LANGUAGE plpgsql;
@@ -353,6 +352,8 @@ LEFT JOIN LATERAL (
 
 
 -- Poblate
+insert into Cliente (domicilio, telefono, nombre) VALUES ('Martín Miguel de Güemes 3301, B7600 Mar del Plata, Provincia de Buenos Aires', 2234999999, 'Cliente Genérico');
+insert into Modo_Entrega (descripcion) VALUES ('delivery'), ('take away');
 insert into Rol (descripcion) VALUES ('administrador'), ('superusuario'), ('usuario');
 insert into Comercio (razon_social, cuit, nombre_fantasia) VALUES ('UZCUDUN COFFEE RIDE S.A.S.', '23453981649', 'UZCUDUN COFFEE RIDE');
 insert into Status_Sucursal (nombre) values ('abierto');

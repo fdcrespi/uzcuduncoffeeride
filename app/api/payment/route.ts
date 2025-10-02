@@ -4,7 +4,7 @@ import { MercadoPagoConfig, Payment } from "mercadopago";
 import { db } from "@/lib/db";
 
 const mercadopago = new MercadoPagoConfig({
-  accessToken: process.env.MP_ACCESS_TOKEN!,
+  accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN!,
 });
 
 import io from 'socket.io-client';
@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
   const paymentId = request.nextUrl.searchParams.get("id");
 
   //console.log(paymentId);
-  console.log("=== NOTIFICACION DE PAGO RECIBIDA DE MP ===");
+  //console.log("=== NOTIFICACION DE PAGO RECIBIDA DE MP ===");
 
   new Promise<void>(async (resolve, reject) => {
     try {
@@ -57,14 +57,16 @@ export async function POST(request: NextRequest) {
 
       try {
         //Insertar el pedido en la base de datos
-        
+        //console.log("Insertando pedido en la base de datos...", pedido);
         const resultPedido = await db.query(
-          `INSERT INTO Pedido (pago, modo_entrega_id, mp_id, payer_first_name, payer_address, payer_phone, total, delivery) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+          `INSERT INTO Pedido (pago, modo_entrega_id, mp_id, payer_name, payer_address, payer_phone, total, delivery) 
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+          RETURNING id`,
           [
             true,
             pedido.option === "delivery" ? 1 : 2,
             pedido.id,
-            pedido.payer_first_name,            
+            pedido.payer_first_name,
             pedido.address,
             pedido.phone,
             pedido.amount,
@@ -73,11 +75,13 @@ export async function POST(request: NextRequest) {
         );
         //const resultPedido = ;
         //console.log("Pedido insertado en la base de datos:", resultPedido);
+        //console.log("Id.", resultPedido.rows[0].id,);
+
         const pedidoCart = JSON.parse(pedido.cart);
         for (const item of pedidoCart) {
           await db.query(
-            `INSERT INTO Pedido_Productos (pedido_id, producto_id, cantidad, precio) VALUES (?, ?, ?, ?)`,
-            [resultPedido.rows[0].id, item.id, item.cantidad, item.precio]
+            `INSERT INTO Pedido_Productos (pedido_id, producto_id, cantidad, precio) VALUES ($1, $2, $3, $4) RETURNINg *`,
+            [resultPedido.rows[0].id, parseInt(item.id), item.cantidad, item.precio]
           );
         }
         socket.emit('addPedido', 'Sync Process Completed');
