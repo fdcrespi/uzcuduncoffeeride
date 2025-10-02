@@ -27,13 +27,15 @@ export function ProductCard({ product }: ProductCardProps) {
   return (
     <Card className="group hover:shadow-xl transition-all duration-300 hover-lift">
       <div className="relative overflow-hidden">
-        <Image
-          src={product.image || "/placeholder.svg"}
-          alt={product.nombre}
-          width={300}
-          height={250}
-          className="w-full h-48 object-contain group-hover:scale-105 transition-transform duration-300"
-        />
+        <Link href={`/products/${product.id}`}>
+          <Image
+            src={product.image || "/placeholder.svg"}
+            alt={product.nombre}
+            width={300}
+            height={250}
+            className="w-full h-48 object-contain group-hover:scale-105 transition-transform duration-300"
+          />
+        </Link>
         {/* {product.category === "motorcycle" && (
           <Badge className="absolute top-2 left-2 bg-primary animate-pulse-glow">Nuevo</Badge>
         )}
