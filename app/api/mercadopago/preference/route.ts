@@ -56,8 +56,6 @@ export async function POST(req: NextRequest) {
       currency_id: "ARS",
     }));
 
-    const preference = new Preference(client);
-
     const preferenceBody = {
       items: preferenceItems,
       statement_descriptor: "Uzcudun Ride",
@@ -76,16 +74,16 @@ export async function POST(req: NextRequest) {
         },
       },
       back_urls: {
-        success: backUrl,
-        failure: backUrl,
-        pending: backUrl,
+        success: `${process.env.NEXT_PUBLIC_SITE}/checkout/success`, // Ruta para pago exitoso
+        failure: `${process.env.NEXT_PUBLIC_SITE}/checkout/failure`, // Ruta para pago fallido
+        pending: `${process.env.NEXT_PUBLIC_SITE}/checkout/pending`, // Ruta para pago pendiente
       },
-      /* notification_url: process.env.MP_NOTIFICATION_URL, */ //Esto para cuando tengamos el endpoint del backend      
-      /*auto_return: "approved",*/  // Descomentar si queremos que redirija automáticamente al usuario cuando el pago esté aprobado, hay que implementar el endpoint en el backend y la notification_url
+      notification_url: process.env.MP_NOTIFICATION_URL, //Esto para cuando tengamos el endpoint del backend      
+      auto_return: "approved",  // Descomentar si queremos que redirija automáticamente al usuario cuando el pago esté aprobado, hay que implementar el endpoint en el backend y la notification_url
     };
-
-    console.log("Creating preference with body:", JSON.stringify(preferenceBody, null, 2));
-
+   
+    //console.log("Creating preference with body:", JSON.stringify(preferenceBody, null, 2));
+    const preference = new Preference(client);
     const result = await preference.create({ body: preferenceBody });
 
     return NextResponse.json({ id: result.id });
