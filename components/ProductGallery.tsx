@@ -286,10 +286,10 @@ export default function ProductGallery({
             <div
               ref={thumbRef}
               className={clsx(
-                "thumb-scroll rounded-md border",
+                "thumb-scroll rounded-md",
                 isVertical
-                  ? "hidden h-[500px] w-24 overflow-y-auto bg-white/60 p-2 md:block"
-                  : "mt-3 flex w-full max-w-full justify-start overflow-x-auto overscroll-x-contain bg-white/60"
+                  ? "hidden h-[500px] w-24 overflow-y-auto p-2 md:block"
+                  : "mt-3 flex w-full max-w-full justify-start overflow-x-auto overscroll-x-contain"
               )}
             >
               <div className={clsx(isVertical ? "flex flex-col items-center gap-2" : "flex items-center gap-2")}>
