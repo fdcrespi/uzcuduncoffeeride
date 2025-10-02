@@ -42,7 +42,7 @@ export function HeroSection() {
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in-up animate-delay-400">
           <Link href="/products">
-            <Button size="lg" className="text-lg px-8 py-6 btn-motorcycle">
+            <Button size="lg" className="text-lg px-8 py-6 btn-motorcycle cursor-pointer">
               Explorar Productos
               <ShoppingCart className="ml-2 w-5 h-5" />
             </Button>

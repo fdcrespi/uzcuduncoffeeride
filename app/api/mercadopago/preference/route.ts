@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { MercadoPagoConfig, Preference } from "mercadopago";
+import { metadata } from "@/app/layout";
 
 export async function POST(req: NextRequest) {
   console.log("Reading environment variables...");
@@ -80,6 +81,20 @@ export async function POST(req: NextRequest) {
       },
       notification_url: process.env.MP_NOTIFICATION_URL, //Esto para cuando tengamos el endpoint del backend      
       auto_return: "approved",  // Descomentar si queremos que redirija automáticamente al usuario cuando el pago esté aprobado, hay que implementar el endpoint en el backend y la notification_url
+      metadata: {
+        cart: items.map((item: any) => ({
+          id: item.product.id,
+          nombre: item.product.nombre,
+          cantidad: item.quantity,
+          precio: item.product.precio,
+        })),
+        option: shippingData.option || "delivery", // "delivery" o "pickup"
+        name: `${shippingData.firstName} ${shippingData.lastName}`,
+        address: shippingData.address,
+        phone: shippingData.phone,
+        delivery_price: shippingData.deliveryPrice || 0
+      },
+      // Otros campos opcionales como "external_reference", "expires", etc., se pueden agregar aquí según sea necesario
     };
    
     //console.log("Creating preference with body:", JSON.stringify(preferenceBody, null, 2));

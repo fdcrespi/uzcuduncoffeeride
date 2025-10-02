@@ -47,12 +47,16 @@ export function Header({ className }: HeaderProps) {
             <a href="#cafe" className="text-sm font-medium hover:text-primary transition-colors">
               Cafetería
             </a>
+            <a href="/products" className="text-sm font-medium hover:text-primary transition-colors">
+              Tienda
+            </a>
+            
           </nav>
 
           <div className="hidden items-center space-x-2 md:flex">
-            <Button variant="ghost" size="icon" className="hover-lift">
+            {/* <Button variant="ghost" size="icon" className="hover-lift">
               <Search className="w-6 h-6" />
-            </Button>
+            </Button> */}
             {/* <Button variant="ghost" size="icon" className="hover-lift">
               <User className="w-5 h-5" />
             </Button> */}

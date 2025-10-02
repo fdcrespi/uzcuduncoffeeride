@@ -49,7 +49,8 @@ CREATE TABLE Pedido (
     mp_id bigint  NULL,
     payer_first_name varchar(50)  NULL,
     payer_address varchar(150)  NULL,
-    total float NOT NULL
+    total float NOT NULL,
+    status varchar(50) NOT NULL DEFAULT 'pending',
 );
 
 -- Table: Pedido_Productos

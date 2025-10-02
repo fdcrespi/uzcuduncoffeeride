@@ -19,6 +19,7 @@ export async function POST(request: NextRequest) {
   const paymentId = request.nextUrl.searchParams.get("id");
 
   //console.log(paymentId);
+  console.log("=== NOTIFICACION DE PAGO RECIBIDA DE MP ===");
 
   new Promise<void>(async (resolve, reject) => {
     try {

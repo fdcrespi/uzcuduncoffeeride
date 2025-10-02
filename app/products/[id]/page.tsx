@@ -202,6 +202,16 @@ export default function ProductDetailPage() {
             </div>
           </div>
         </div>
+
+        <div className="my-12 border-t" /> {/* Separador */}
+
+        {/* Boton para regresar */}
+        <div className="flex justify-center">
+          <Button variant="link" onClick={() => router.back()} className="cursor-pointer">
+            &larr; Volver
+          </Button>
+        </div>
+        
       </div>
     </>
   );

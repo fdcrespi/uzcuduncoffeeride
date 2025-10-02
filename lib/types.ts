@@ -32,3 +32,16 @@ export interface CartContextType {
   confirmRemoveItem: () => void
   cancelRemoveItem: () => void
 }
+
+
+export interface Order {
+  id: string;
+  fecha_emision: string;
+  cliente_id: number;
+  pago: boolean;
+  payer_name: string;
+  payer_address: string;
+  total: number;
+  delivery: boolean;
+  status: 'pending' | 'shipped' | 'delivered' | 'canceled';
+}
