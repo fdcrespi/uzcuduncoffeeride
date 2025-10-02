@@ -128,11 +128,11 @@ export default function ProductDetailPage() {
     <>
       <Header />
       <div className="container mx-auto px-4 py-8 md:py-12">
-        <div className="grid gap-8 md:grid-cols-2 md:gap-12">
+        <div className="grid w-full gap-8 md:grid-cols-2 md:gap-12">
           {/* Columna de Imagen / Galería */}
-          <div className="w-full">
+          <div className="w-full min-w-0">
             {/* 🔸 Si hay varias imágenes, mostramos la galería. Si es una sola (fallback), igual la galería la muestra ok */}
-            <div className="mx-auto max-w-[500px]">
+            <div className="w-full mx-auto max-w-lg">
               <ProductGallery
                 images={galleryImages}
                 layout="auto"       // vertical en desktop, horizontal en mobile (según lo definido)
