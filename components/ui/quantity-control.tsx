@@ -22,7 +22,7 @@ export const QuantityControl: React.FC<QuantityControlProps> = ({ quantity, onUp
       </Button>
       <Input
         type="number"
-        className="h-8 w-12 text-center"
+        className="h-8 w-14 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
         value={quantity}
         onChange={(e) => {
           const newQuantity = parseInt(e.target.value, 10);

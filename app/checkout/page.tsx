@@ -146,11 +146,11 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ items, totalPrice, shipping
               </div>
               <div className="flex-1">
                 <h4 className="font-medium leading-tight">{item.product.nombre}</h4>
-                <span className="text-sm text-muted-foreground">{item.quantity}</span>
-                {/* <QuantityControl
+                <QuantityControl
                   quantity={item.quantity}
+                  // A futuro, controlar que no se pase del stock máximo al incrementar.
                   onUpdate={(newQuantity) => updateQuantity(item.product.id, newQuantity)}
-                /> */}
+                />
               </div>
               <div className="text-right">
                 <p className="font-medium">${(item.product.precio * item.quantity).toLocaleString()}</p>

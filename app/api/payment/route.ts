@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
         const pedidoCart = JSON.parse(pedido.cart);
         for (const item of pedidoCart) {
           await db.query(
-            `INSERT INTO Pedido_Productos (pedido_id, producto_id, cantidad, precio) VALUES ($1, $2, $3, $4) RETURNINg *`,
+            `INSERT INTO Pedido_Productos (pedido_id, producto_id, cantidad, precio) VALUES ($1, $2, $3, $4) RETURNING *`,
             [resultPedido.rows[0].id, parseInt(item.id), item.cantidad, item.precio]
           );
         }
