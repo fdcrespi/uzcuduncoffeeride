@@ -3,7 +3,7 @@
 CREATE TABLE Cliente (
     id SERIAL PRIMARY KEY ,
     domicilio varchar(150)  NOT NULL,
-    telefono int  NOT NULL,
+    telefono bigint  NOT NULL,
     nombre varchar(150)  NOT NULL
 );
 
@@ -352,7 +352,7 @@ LEFT JOIN LATERAL (
 
 
 -- Poblate
-insert into Cliente (domicilio, telefono, nombre) VALUES ('Martín Miguel de Güemes 3301, B7600 Mar del Plata, Provincia de Buenos Aires', 2234999999, 'Cliente Genérico');
+insert into Cliente (domicilio, telefono, nombre) VALUES ('Martín Miguel de Güemes 3301, B7600 Mar del Plata, Provincia de Buenos Aires', 999, 'Cliente Genérico');
 insert into Modo_Entrega (descripcion) VALUES ('delivery'), ('take away');
 insert into Rol (descripcion) VALUES ('administrador'), ('superusuario'), ('usuario');
 insert into Comercio (razon_social, cuit, nombre_fantasia) VALUES ('UZCUDUN COFFEE RIDE S.A.S.', '23453981649', 'UZCUDUN COFFEE RIDE');
