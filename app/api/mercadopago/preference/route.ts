@@ -3,9 +3,9 @@ import { MercadoPagoConfig, Preference } from "mercadopago";
 import { metadata } from "@/app/layout";
 
 export async function POST(req: NextRequest) {
-  console.log("Reading environment variables...");
+  /* console.log("Reading environment variables...");
   console.log("MERCADOPAGO_ACCESS_TOKEN exists:", !!process.env.MERCADOPAGO_ACCESS_TOKEN);
-  console.log("NEXT_PUBLIC_URL:", process.env.NEXT_PUBLIC_URL);
+  console.log("NEXT_PUBLIC_URL:", process.env.NEXT_PUBLIC_URL); */
 
   const accessToken = process.env.MERCADOPAGO_ACCESS_TOKEN;
 
