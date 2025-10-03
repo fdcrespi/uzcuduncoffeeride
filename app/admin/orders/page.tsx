@@ -8,14 +8,16 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Search, Eye, Package, Truck, CheckCircle, Clock, X } from "lucide-react"
 import { Order } from "@/lib/types"
-import { a } from "@react-spring/web"
+import { toast } from "sonner"
+import { io } from "socket.io-client";
 
+const socket = io(process.env.NEXT_PUBLIC_URL!);
 
 const statusConfig = {
   pending: { label: "Pendiente", variant: "outline" as const, icon: Clock },
-  processing: { label: "Procesando", variant: "secondary" as const, icon: Package },
+  delivered: { label: "Entregado", variant: "secondary" as const, icon: Package },
   shipped: { label: "Enviado", variant: "default" as const, icon: Truck },
-  completed: { label: "Completado", variant: "default" as const, icon: CheckCircle },
+  canceled: { label: "Cancelado", variant: "default" as const, icon: CheckCircle },
 }
 
 export default function OrdersPage() {
@@ -23,42 +25,99 @@ export default function OrdersPage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all");
+  const [filteredOrders, setFilteredOrders] = useState<Order[]>([])
 
   useEffect(() => {
     // Simulate fetching data from an API
     const fetchOrders = async () => {
       const data = await fetch("/api/orders").then((res) => res.json())
       setLoading(false);
+      setOrders(data);
+      setFilteredOrders(data);
     }
 
     fetchOrders()
+  }, []);
 
-  }, [])
+   useEffect(() => {
+      socket.on('connect', () => {
+        console.log('Conectado al servidor de WebSocket');
+      });
+      socket.on('addPedido', () => {
+        console.log('Pedido nuevo, recargando lista...');
+        // Volver a cargar los productos
+        setLoading(true);
+        fetch('/api/orders')
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('Error al cargar los pedidos');
+            }
+            return response.json();
+          })
+          .then(data => {
+            setOrders(data);
+          })
+          .catch(error => {
+            console.error(error);
+          })
+          .finally(() => {
+            setLoading(false);
+          });
+      });
+      
+      return () => {
+        socket.off('addPedido');
+      };
+    }, []);
+
+  useEffect(() => {
+    let filtered = [...orders]
+
+    // filtro por estado
+    if (statusFilter !== "all") {
+      filtered = filtered.filter((order) => order.status === statusFilter)
+    }
+
+    // filtro por búsqueda
+    if (searchTerm.trim() !== "") {
+      filtered = filtered.filter(
+        (order) =>
+          order.id.toString().includes(searchTerm) ||
+          order.payer_name.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    }
+
+    setFilteredOrders(filtered)
+  }, [statusFilter, searchTerm, orders])
 
   if (loading) {
     return <div>Cargando pedidos...</div>
   }
 
-  const filteredOrders = orders.filter((order) => {
-    const matchesSearch = order.id.toLowerCase().includes(searchTerm.toLowerCase())
-      /* order.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.email.toLowerCase().includes(searchTerm.toLowerCase()) */
-    const matchesStatus = statusFilter === "all"
-    return matchesSearch && matchesStatus
-  })
-
-  const updateOrderStatus = (
+  const updateOrderStatus = async (
     orderId: string,
     newStatus: Order["status"]
   ) => {
-    setOrders(
-      orders.map((order) =>
-        order.id === orderId
-          ? { ...order, status: newStatus }
-          : order
-      )
-    );
+
+    const res = await fetch(`/api/orders/${orderId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: newStatus })
+    })
+    if (res.status === 200) {
+      setOrders(
+        orders.map((order) =>
+          order.id === orderId
+            ? { ...order, status: newStatus }
+            : order
+        )
+      );   
+      socket.emit('updatePedido', 'Pedido actualizado');
+    } else {
+      toast.error("Ha ocurrido un error al actualizar el pedido");
+    }
   }
+
 
   return (
     <div className="space-y-6">
@@ -87,7 +146,7 @@ export default function OrdersPage() {
           <CardContent>
             <div className="text-2xl font-bold">{orders.filter((o) => o.status === "pending").length}</div>
           </CardContent>
-        </Card>     
+        </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Completados</CardTitle>
@@ -97,7 +156,7 @@ export default function OrdersPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{orders.filter((o) => o.status === "shipped" || o.status === "delivered" ).length}</div>
+            <div className="text-2xl font-bold">{orders.filter((o) => o.status === "shipped" || o.status === "delivered").length}</div>
           </CardContent>
         </Card>
         <Card>
@@ -122,7 +181,7 @@ export default function OrdersPage() {
               <div className="relative">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Buscar por ID, cliente o email..."
+                  placeholder="Buscar por ID, cliente"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-8"
@@ -136,9 +195,9 @@ export default function OrdersPage() {
               <SelectContent>
                 <SelectItem value="all">Todos los Estados</SelectItem>
                 <SelectItem value="pending">Pendiente</SelectItem>
-                <SelectItem value="processing">Procesando</SelectItem>
+                <SelectItem value="delivered">Entregado</SelectItem>
                 <SelectItem value="shipped">Enviado</SelectItem>
-                <SelectItem value="completed">Completado</SelectItem>
+                <SelectItem value="canceled">Cancelado</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -157,7 +216,6 @@ export default function OrdersPage() {
               <TableRow>
                 <TableHead>Pedido</TableHead>
                 <TableHead>Cliente</TableHead>
-                <TableHead>Productos</TableHead>
                 <TableHead>Total</TableHead>
                 <TableHead>Estado</TableHead>
                 <TableHead>Fecha</TableHead>
@@ -181,7 +239,7 @@ export default function OrdersPage() {
                         <div className="text-sm text-muted-foreground">{order.payer_address}</div>
                       </div>
                     </TableCell>
-                   {/*  <TableCell>
+                    {/*  <TableCell>
                       <div className="text-sm">{order.products.join(", ")}</div>
                     </TableCell> */}
                     <TableCell>
@@ -189,7 +247,7 @@ export default function OrdersPage() {
                     </TableCell>
                     <TableCell>
                       <Select value={order.status} onValueChange={(value) => updateOrderStatus(order.id, value as Order["status"])}>
-                        <SelectTrigger className="w-[130px]">
+                        <SelectTrigger className="w-[150px]">
                           <SelectValue>
                             <div className="flex items-center space-x-2">
                               <statusInfo.icon className="w-3 h-3" />
@@ -207,25 +265,25 @@ export default function OrdersPage() {
                           <SelectItem value="shipped">
                             <div className="flex items-center space-x-2">
                               <Package className="w-3 h-3" />
-                              <span>Procesando</span>
+                              <span>Enviado</span>
                             </div>
                           </SelectItem>
                           <SelectItem value="delivered">
                             <div className="flex items-center space-x-2">
                               <Truck className="w-3 h-3" />
-                              <span>Enviado</span>
+                              <span>Entregado</span>
                             </div>
                           </SelectItem>
                           <SelectItem value="canceled">
                             <div className="flex items-center space-x-2">
                               <CheckCircle className="w-3 h-3" />
-                              <span>Completado</span>
+                              <span>Cancelado</span>
                             </div>
                           </SelectItem>
                         </SelectContent>
                       </Select>
                     </TableCell>
-                    <TableCell>{order.fecha_emision}</TableCell>
+                    <TableCell>{new Date(order.fecha_emision).toLocaleString()}</TableCell>
                     <TableCell className="text-right">
                       <Button variant="ghost" size="icon">
                         <Eye className="w-4 h-4" />

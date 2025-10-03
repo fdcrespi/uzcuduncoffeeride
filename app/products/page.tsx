@@ -5,7 +5,6 @@ import { useState, useEffect, use } from 'react'
 import { ProductCard } from '@/components/product-card'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { Product } from '@/lib/types'
-import Link from 'next/link'
 import { Header } from '@/components/layout/header'
 import { io } from "socket.io-client";
 

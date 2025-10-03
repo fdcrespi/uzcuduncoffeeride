@@ -79,6 +79,16 @@ export default function ProductsPage() {
     fetchSubcategories();
   }, []);
 
+  useEffect(() => {
+    socket.on('updateProducto', () => {
+      // Volver a cargar los productos
+      fetchProducts();
+    });
+    return () => {
+      socket.off('updateProducto');
+    };
+  }, []);
+
   const handleAddProduct = async (data: Omit<Product, 'id' | 'subrubro_nombre'>) => {
     const response = await fetch('/api/products', {
       method: 'POST',

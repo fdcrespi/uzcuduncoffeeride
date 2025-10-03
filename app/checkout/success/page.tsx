@@ -20,6 +20,7 @@ export default function SuccessPage() {
   //console.log("External Reference:", external_reference);
   useEffect(() => {
     socket.emit('updateProducto', 'Producto actualizado');
+    socket.emit('addPedido', 'Nuevo pedido realizado');
   }, []);
 
   return (

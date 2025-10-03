@@ -60,7 +60,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     if (rows.length === 0) {
       return new NextResponse('Pedido no encontrado', { status: 404 });
     }
-    return NextResponse.json(rows[0]);
+    return NextResponse.json(rows[0], { status: 200 });
   } catch (error) {
     console.error('Error updating order:', error);
     return new NextResponse('Error Interno del Servidor', { status: 500 });

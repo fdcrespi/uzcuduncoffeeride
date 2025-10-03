@@ -22,8 +22,13 @@ app.prepare().then(() => {
 
     socket.on('addPedido', (data) => {
       console.log('Recieved from API ::', data);
-      io.emit('updatePedido', data);
+      io.emit('addPedido', data);
     });
+
+    socket.on('updatePedido', (data) => {
+      console.log('Recieved from API ::', data)
+      io.emit('updatePedido');
+    })
 
     socket.on('updateProducto', (data) => {
       console.log('Recieved from API ::', data);

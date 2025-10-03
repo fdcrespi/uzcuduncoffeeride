@@ -5,6 +5,10 @@ import { LayoutDashboard, Package, Shapes, ShoppingCart, BarChart3, Settings, Lo
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
+import { io } from "socket.io-client"
+import { useEffect, useState } from "react"
+
+const socket = io(process.env.NEXT_PUBLIC_URL!)
 
 const sidebarItems = [
   {
@@ -49,7 +53,44 @@ interface AdminSidebarProps {
 }
 
 export function AdminSidebar({ className }: AdminSidebarProps) {
-  const pathname = usePathname()
+  const pathname = usePathname();
+  const [cantidadPedidos, setCantidadPedidos] = useState(0);
+
+  useEffect(() => {
+    getCantidadPedidos();
+  }, []);
+
+   useEffect(() => {
+      socket.on('connect', () => {
+        console.log('Conectado al servidor de WebSocket');
+      });
+      socket.on('addPedido', () => {
+        console.log('Producto actualizado, recargando lista...');
+        // Volver a cargar los productos
+        getCantidadPedidos();
+      });
+      
+      socket.on('updatePedido', () => {
+        console.log('Pedido actualizado, recargando cantidad...');
+        getCantidadPedidos();
+      }) 
+      return () => {
+        socket.off('addPedido');
+      };
+    }, []);
+
+  const getCantidadPedidos = async () => {
+    console.log("actualizando cantidad");
+    try {
+      const res = await fetch('/api/orders');
+      if (!res.ok) throw new Error("Failed to fetch orders");
+      const data = await res.json();
+      const pendientes = data.filter((order: { status: string; }) => order.status === 'pending');
+      setCantidadPedidos(pendientes.length);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   return (
     <div className={cn("pb-12 w-64", className)}>
@@ -73,6 +114,11 @@ export function AdminSidebar({ className }: AdminSidebarProps) {
               >
                 <item.icon className="w-4 h-4" />
                 <span>{item.title}</span>
+                {item.title === "Pedidos" && cantidadPedidos > 0 && (
+                  <span className="ml-auto inline-flex items-center justify-center px-2 py-0.5 text-sm font-medium leading-none text-red-100 bg-red-600 rounded-full">
+                    {cantidadPedidos}
+                  </span>
+                )}
               </Link>
             ))}
           </div>
