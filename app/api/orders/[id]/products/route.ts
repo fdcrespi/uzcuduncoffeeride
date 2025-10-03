@@ -1,14 +1,14 @@
 import { db } from "@/lib/db";
 import { NextResponse } from "next/server";
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request, { params }: { params: { id: number } }) {
   try {
-    const orderId = parseInt(params.id, 10);
+    const orderId = params.id
     if (isNaN(orderId)) {
       return new NextResponse('ID de pedido inválido', { status: 400 });
     }
     const { rows } = await db.query(
-      `SELECT p.id, p.nombre, p.descripcion, op.cantidad, op.precio_unitario
+      `SELECT *
        FROM Pedido_Productos op
         JOIN Producto p ON op.producto_id = p.id
         WHERE op.pedido_id = $1`,
