@@ -16,7 +16,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
   const pageTitle = category ? `Categoría: ${category}` : "Nuestros Productos";
   const pageDescription = category 
     ? `Explora nuestra selección de productos en la categoría ${category}.`
-    : "Explora nuestra selección de motos, accesorios y café de especialidad.";
+    : "Explora nuestra selección de motos, accesorios y vehículos eléctricos.";
 
   return (
     <>
