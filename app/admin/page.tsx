@@ -3,8 +3,9 @@
 import { StatsCard } from "@/components/ui/stats-card"
 import { RecentOrdersCard } from "@/components/admin/recent-orders-card"
 import { TopProductsCard } from "@/components/admin/top-products-card"
-import { QuickActionsCard } from "@/components/admin/quick-actions-card"
-import { DollarSign, ShoppingCart, Package, Users, Coffee, Bike, Zap } from "lucide-react"
+import { DollarSign, ShoppingCart, Package, Coffee, Bike, Zap } from "lucide-react"
+import { useEffect, useState } from "react"
+import { Order } from "@/lib/types"
 
 const stats = [
   {
@@ -35,41 +36,6 @@ const stats = [
     trend: "up",
     icon: Users,
   }, */
-]
-
-const recentOrders = [
-  {
-    id: "ORD-001",
-    customer: "Juan Pérez",
-    product: "Casco AGV K6",
-    amount: "$450",
-    status: "completed" as const,
-    date: "2024-01-15",
-  },
-  {
-    id: "ORD-002",
-    customer: "María García",
-    product: "NIU NGT",
-    amount: "$3,200",
-    status: "pending" as const,
-    date: "2024-01-15",
-  },
-  {
-    id: "ORD-003",
-    customer: "Carlos López",
-    product: "Café Ruta 66",
-    amount: "$24",
-    status: "completed" as const,
-    date: "2024-01-14",
-  },
-  {
-    id: "ORD-004",
-    customer: "Ana Martín",
-    product: "Yamaha R6 2024",
-    amount: "$18,500",
-    status: "processing" as const,
-    date: "2024-01-14",
-  },
 ]
 
 const topProducts = [
@@ -104,6 +70,28 @@ const topProducts = [
 ]
 
 export default function AdminDashboard() {
+  const [recentOrders, setRecentOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setLoading(true);
+    fetch('/api/orders')
+      .then(response => {
+        if (!response.ok) {
+          throw new Error("Failed to fetch orders");
+        }
+        return response.json();
+      })
+      .then(data => {
+        setRecentOrders(data);
+        setLoading(false);
+      })
+      .catch(error => {
+        console.error(error);
+        setLoading(false);
+      });
+  }, []);
+
   return (
     <div className="space-y-6">
       {/* Page header */}

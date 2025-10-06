@@ -24,7 +24,7 @@ export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("")
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("pending");
   const [filteredOrders, setFilteredOrders] = useState<Order[]>([])
 
   useEffect(() => {
@@ -44,7 +44,7 @@ export default function OrdersPage() {
         console.log('Conectado al servidor de WebSocket');
       });
       socket.on('addPedido', () => {
-        console.log('Pedido nuevo, recargando lista...');
+
         // Volver a cargar los productos
         setLoading(true);
         fetch('/api/orders')
@@ -74,9 +74,12 @@ export default function OrdersPage() {
     let filtered = [...orders]
 
     // filtro por estado
-    if (statusFilter !== "all") {
+    if (statusFilter === "shipped" || statusFilter === "delivered") {
+      filtered = filtered.filter((order) => order.status === "shipped" || order.status === "delivered") 
+    } else if (statusFilter !== "all") {
       filtered = filtered.filter((order) => order.status === statusFilter)
     }
+
 
     // filtro por búsqueda
     if (searchTerm.trim() !== "") {
@@ -129,7 +132,7 @@ export default function OrdersPage() {
 
       {/* Stats cards */}
       <div className="grid gap-4 md:grid-cols-4">
-        <Card>
+        <Card className={`cursor-pointer ${statusFilter === "all" ? "bg-[#F5F5F5]" : ""}`} onClick={() => setStatusFilter("all")}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Pedidos</CardTitle>
             <Package className="h-4 w-4 text-muted-foreground" />
@@ -138,7 +141,7 @@ export default function OrdersPage() {
             <div className="text-2xl font-bold">{orders.length}</div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className={`cursor-pointer ${statusFilter === "pending" ? "bg-[#F5F5F5]" : ""}`} onClick={() => setStatusFilter("pending")}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Pendientes</CardTitle>
             <Clock className="h-4 w-4 text-muted-foreground" />
@@ -147,7 +150,7 @@ export default function OrdersPage() {
             <div className="text-2xl font-bold">{orders.filter((o) => o.status === "pending").length}</div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className={`cursor-pointer ${statusFilter === "shipped" || statusFilter === "delivered" ? "bg-[#F5F5F5]" : ""}`} onClick={() => setStatusFilter("shipped")}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Completados</CardTitle>
             <div className="flex space-x-1">
@@ -159,7 +162,7 @@ export default function OrdersPage() {
             <div className="text-2xl font-bold">{orders.filter((o) => o.status === "shipped" || o.status === "delivered").length}</div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className={`cursor-pointer ${statusFilter === "canceled" ? "bg-[#F5F5F5]" : ""}`} onClick={() => setStatusFilter("canceled")}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Canceladas</CardTitle>
             <X className="h-4 w-4 text-muted-foreground" />
@@ -188,7 +191,7 @@ export default function OrdersPage() {
                 />
               </div>
             </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
+            {/* <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Estado" />
               </SelectTrigger>
@@ -199,7 +202,7 @@ export default function OrdersPage() {
                 <SelectItem value="shipped">Enviado</SelectItem>
                 <SelectItem value="canceled">Cancelado</SelectItem>
               </SelectContent>
-            </Select>
+            </Select> */}
           </div>
         </CardContent>
       </Card>
