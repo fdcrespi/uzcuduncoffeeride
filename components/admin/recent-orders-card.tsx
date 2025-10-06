@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Eye } from "lucide-react"
 import { Order } from "@/lib/types"
+import Link from "next/link"
 
 
 interface RecentOrdersCardProps {
@@ -67,9 +68,11 @@ export function RecentOrdersCard({ orders, className }: RecentOrdersCardProps) {
                   <p className="text-xs text-muted-foreground">{order.pago ? "Pagado" : "No pagado"}</p>
                 </div>
                 <Badge variant={getStatusVariant(order.status)}>{getStatusText(order.status)}</Badge>
-                <Button variant="ghost" size="icon" onClick={() => window.open(`/admin/orders/${order.id}`)}>
-                  <Eye className="h-4 w-4" />
-                </Button>
+                <Link href={`/admin/orders/${order.id}`}>
+                  <Button variant="ghost" size="icon" className="hover:bg-accent hover:text-accent-foreground cursor-pointer">
+                    <Eye className="h-4 w-4" />
+                  </Button>
+                </Link>
               </div>
             </div>
           ))}

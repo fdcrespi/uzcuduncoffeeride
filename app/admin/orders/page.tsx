@@ -133,7 +133,7 @@ export default function OrdersPage() {
 
       {/* Stats cards */}
       <div className="grid gap-4 md:grid-cols-4">
-        <Card className={`cursor-pointer ${statusFilter === "all" ? "bg-[#F5F5F5]" : ""}`} onClick={() => setStatusFilter("all")}>
+        <Card className={`cursor-pointer ${statusFilter === "all" ? "bg-[#F5F5F5] shadow-xl" : ""}`} onClick={() => setStatusFilter("all")}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Pedidos</CardTitle>
             <Package className="h-4 w-4 text-muted-foreground" />
@@ -142,7 +142,7 @@ export default function OrdersPage() {
             <div className="text-2xl font-bold">{orders.length}</div>
           </CardContent>
         </Card>
-        <Card className={`cursor-pointer ${statusFilter === "pending" ? "bg-[#F5F5F5]" : ""}`} onClick={() => setStatusFilter("pending")}>
+        <Card className={`cursor-pointer ${statusFilter === "pending" ? "bg-[#F5F5F5] shadow-xl" : ""}`} onClick={() => setStatusFilter("pending")}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Pendientes</CardTitle>
             <Clock className="h-4 w-4 text-muted-foreground" />
@@ -151,7 +151,7 @@ export default function OrdersPage() {
             <div className="text-2xl font-bold">{orders.filter((o) => o.status === "pending").length}</div>
           </CardContent>
         </Card>
-        <Card className={`cursor-pointer ${statusFilter === "shipped" || statusFilter === "delivered" ? "bg-[#F5F5F5]" : ""}`} onClick={() => setStatusFilter("shipped")}>
+        <Card className={`cursor-pointer ${statusFilter === "shipped" || statusFilter === "delivered" ? "bg-[#F5F5F5] shadow-xl" : ""}`} onClick={() => setStatusFilter("shipped")}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Completados</CardTitle>
             <div className="flex space-x-1">
@@ -163,7 +163,7 @@ export default function OrdersPage() {
             <div className="text-2xl font-bold">{orders.filter((o) => o.status === "shipped" || o.status === "delivered").length}</div>
           </CardContent>
         </Card>
-        <Card className={`cursor-pointer ${statusFilter === "canceled" ? "bg-[#F5F5F5]" : ""}`} onClick={() => setStatusFilter("canceled")}>
+        <Card className={`cursor-pointer ${statusFilter === "canceled" ? "bg-[#F5F5F5] shadow-xl" : ""}`} onClick={() => setStatusFilter("canceled")}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Canceladas</CardTitle>
             <X className="h-4 w-4 text-muted-foreground" />
