@@ -45,3 +45,11 @@ export interface Order {
   delivery: boolean;
   status: 'pending' | 'shipped' | 'delivered' | 'canceled';
 }
+
+export interface OrderProduct {
+  pedido_id: number;
+  product_id: number;
+  cantidad: number;
+  precio: number;
+  nombre: string;
+}

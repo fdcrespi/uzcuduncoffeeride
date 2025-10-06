@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
         payer_dni: payment.payer?.identification?.number,
         payer_phone:
           payment.payer?.phone?.area_code + "-" + payment.payer?.phone?.number, */
-        cart: JSON.stringify(payment.metadata.cart),
+        cart: payment.metadata.cart,
         option: payment.metadata?.option,
         name: payment.metadata?.name,
         address: payment.metadata?.address,
@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
         //console.log("Pedido insertado en la base de datos:", resultPedido);
         //console.log("Id.", resultPedido.rows[0].id,);
 
-        const pedidoCart = JSON.parse(pedido.cart);
+        const pedidoCart = pedido.cart;
         for (const item of pedidoCart) {
           await db.query(
             `INSERT INTO Pedido_Productos (pedido_id, producto_id, cantidad, precio) VALUES ($1, $2, $3, $4) RETURNING *`,

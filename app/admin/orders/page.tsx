@@ -10,6 +10,7 @@ import { Search, Eye, Package, Truck, CheckCircle, Clock, X } from "lucide-react
 import { Order } from "@/lib/types"
 import { toast } from "sonner"
 import { io } from "socket.io-client";
+import Link from "next/link"
 
 const socket = io(process.env.NEXT_PUBLIC_URL!);
 
@@ -288,9 +289,11 @@ export default function OrdersPage() {
                     </TableCell>
                     <TableCell>{new Date(order.fecha_emision).toLocaleString()}</TableCell>
                     <TableCell className="text-right">
-                      <Button variant="ghost" size="icon">
-                        <Eye className="w-4 h-4" />
-                      </Button>
+                      <Link href={`/admin/orders/${order.id}`}>
+                        <Button variant="ghost" size="icon" className="w-8 h-8 cursor-pointer">
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                      </Link>
                     </TableCell>
                   </TableRow>
                 )
