@@ -101,9 +101,7 @@ export function FeaturedProductsClient() {
                 {products.length > 0 ? (
                   products.map((product, index) => (
                     <div key={product.id} className={`animate-on-scroll animate-delay-${(index + 1) * 100}`}>
-                      <Link href={`/products/${product.id}`} className="cursor-pointer">
-                        <ProductCard product={product} />
-                      </Link>
+                      <ProductCard product={product} />
                     </div>
                   ))
                 ) : (
