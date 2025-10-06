@@ -3,107 +3,87 @@
 import { StatsCard } from "@/components/ui/stats-card"
 import { RecentOrdersCard } from "@/components/admin/recent-orders-card"
 import { TopProductsCard } from "@/components/admin/top-products-card"
-import { QuickActionsCard } from "@/components/admin/quick-actions-card"
-import { DollarSign, ShoppingCart, Package, Users, Coffee, Bike, Zap } from "lucide-react"
+import { DollarSign, ShoppingCart, Package, Coffee, Bike, Zap } from "lucide-react"
+import { useEffect, useState } from "react"
+import { Order, Product } from "@/lib/types"
 
 const stats = [
   {
     title: "Ventas Totales",
-    value: "$45,231",
-    change: "+20.1%",
     trend: "up",
     icon: DollarSign,
   },
   {
     title: "Pedidos",
-    value: "156",
-    change: "+12.5%",
+/*  change: "+12.5%", */
+    trend: "up",
+    icon: ShoppingCart,
+  },
+  {
+    title: "Pedidos pendientes",
     trend: "up",
     icon: ShoppingCart,
   },
   {
     title: "Productos",
-    value: "89",
-    change: "+3.2%",
+    /* change: "+3.2%", */
     trend: "up",
     icon: Package,
   },
-  /* {
-    title: "Clientes",
-    value: "234",
-    change: "+8.1%",
-    trend: "up",
-    icon: Users,
-  }, */
-]
-
-const recentOrders = [
-  {
-    id: "ORD-001",
-    customer: "Juan Pérez",
-    product: "Casco AGV K6",
-    amount: "$450",
-    status: "completed" as const,
-    date: "2024-01-15",
-  },
-  {
-    id: "ORD-002",
-    customer: "María García",
-    product: "NIU NGT",
-    amount: "$3,200",
-    status: "pending" as const,
-    date: "2024-01-15",
-  },
-  {
-    id: "ORD-003",
-    customer: "Carlos López",
-    product: "Café Ruta 66",
-    amount: "$24",
-    status: "completed" as const,
-    date: "2024-01-14",
-  },
-  {
-    id: "ORD-004",
-    customer: "Ana Martín",
-    product: "Yamaha R6 2024",
-    amount: "$18,500",
-    status: "processing" as const,
-    date: "2024-01-14",
-  },
-]
-
-const topProducts = [
-  {
-    name: "Casco AGV K6",
-    category: "Accesorios",
-    sales: 45,
-    revenue: "$20,250",
-    icon: Package,
-  },
-  {
-    name: "Café Ruta 66",
-    category: "Cafetería",
-    sales: 89,
-    revenue: "$2,136",
-    icon: Coffee,
-  },
-  {
-    name: "NIU NGT",
-    category: "Eléctricos",
-    sales: 12,
-    revenue: "$38,400",
-    icon: Zap,
-  },
-  {
-    name: "Yamaha R6 2024",
-    category: "Motocicletas",
-    sales: 3,
-    revenue: "$55,500",
-    icon: Bike,
-  },
+  
 ]
 
 export default function AdminDashboard() {
+  const [recentOrders, setRecentOrders] = useState<Order[]>([]);
+  const [totalSales, setTotalSales] = useState<number>(0);	
+  const [products, setProducts] = useState<Product[]>([]);
+  const [pendingOrders, setPendingOrders] = useState<number>(0);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setLoading(true);
+    fetch('/api/orders')
+      .then(response => {
+        if (!response.ok) {
+          throw new Error("Failed to fetch orders");
+        }
+        return response.json();
+      })
+      .then(data => {
+        // calcular las ventas totales
+        const total = data.reduce((acc: number, order: Order) => acc + order.total, 0);
+        setTotalSales(total);
+        // filtrar los ultimos 5 pedidos
+        const pending = data.filter((order: Order) => order.status === "pending").length;
+        setPendingOrders(pending);
+        setRecentOrders(data.slice(0, 5));
+        setLoading(false);
+      })
+      .catch(error => {
+        console.error(error);
+        setLoading(false);
+      });
+  }, []);
+
+  useEffect(() => {
+    setLoading(true);
+    fetch('/api/orders/products')
+      .then(response => {
+        if (!response.ok) {
+          throw new Error("Failed to fetch products");
+        }
+        return response.json();
+      })
+      .then(data => {
+        setProducts(data);
+        setLoading(false);
+      })
+      .catch(error => {
+        console.error(error);
+        setLoading(false);
+      });
+  }, []);
+
   return (
     <div className="space-y-6">
       {/* Page header */}
@@ -117,12 +97,18 @@ export default function AdminDashboard() {
           <StatsCard
             key={stat.title}
             title={stat.title}
-            value={stat.value}
+            value={
+              stat.title === "Ventas Totales" ? `$${totalSales.toFixed(2)}` :
+              stat.title === "Pedidos" ? recentOrders.length.toString() :
+              stat.title === "Pedidos pendientes" ? pendingOrders.toString() :
+              stat.title === "Productos" ? products.length.toString() : ""
+            }
             icon={stat.icon}
-            trend={{
+            className={`${stat.title === "Pedidos pendientes" && pendingOrders > 0 ? "text-red-600 border border-red-600" : ""}`}
+          /*   trend={{
               value: Number.parseFloat(stat.change.replace("%", "").replace("+", "")),
               isPositive: stat.trend === "up",
-            }}
+            }} */
           />
         ))}
       </div>
@@ -130,7 +116,7 @@ export default function AdminDashboard() {
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
         <RecentOrdersCard orders={recentOrders} />
 
-        <TopProductsCard products={topProducts} />
+        <TopProductsCard products={products} />
       </div>
 
       {/* <QuickActionsCard /> */}

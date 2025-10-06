@@ -2,15 +2,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Eye } from "lucide-react"
+import { Order } from "@/lib/types"
+import Link from "next/link"
 
-interface Order {
-  id: string
-  customer: string
-  product: string
-  amount: string
-  status: "completed" | "pending" | "processing"
-  date: string
-}
 
 interface RecentOrdersCardProps {
   orders: Order[]
@@ -18,14 +12,19 @@ interface RecentOrdersCardProps {
 }
 
 export function RecentOrdersCard({ orders, className }: RecentOrdersCardProps) {
+
+  console.log(orders)
   const getStatusText = (status: string) => {
     switch (status) {
-      case "completed":
-        return "Completado"
-      case "processing":
-        return "Procesando"
+     //'pending' | 'shipped' | 'delivered' | 'canceled'
       case "pending":
         return "Pendiente"
+      case "shipped":
+        return "Enviado"
+      case "delivered":
+        return "Entregado"
+      case "canceled":
+        return "Cancelado"
       default:
         return status
     }
@@ -33,12 +32,14 @@ export function RecentOrdersCard({ orders, className }: RecentOrdersCardProps) {
 
   const getStatusVariant = (status: string) => {
     switch (status) {
-      case "completed":
-        return "default"
-      case "processing":
-        return "secondary"
       case "pending":
         return "outline"
+      case "shipped":
+        return "secondary"
+      case "delivered":
+        return "default"
+      case "canceled":
+        return "destructive"
       default:
         return "outline"
     }
@@ -56,19 +57,22 @@ export function RecentOrdersCard({ orders, className }: RecentOrdersCardProps) {
             <div key={order.id} className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
                 <div>
-                  <p className="text-sm font-medium">{order.customer}</p>
-                  <p className="text-xs text-muted-foreground">{order.product}</p>
+                  <p className="text-sm font-medium">{order.payer_name}</p>
+                  <p className="text-xs text-muted-foreground">{(new Date(order.fecha_emision)).toLocaleDateString("es-AR")}</p>
                 </div>
               </div>
               <div className="flex items-center space-x-4">
-                <Badge variant={getStatusVariant(order.status)}>{getStatusText(order.status)}</Badge>
+                
                 <div className="text-right">
-                  <p className="text-sm font-medium">{order.amount}</p>
-                  <p className="text-xs text-muted-foreground">{order.date}</p>
+                  <p className="text-sm font-medium">{order.total.toLocaleString("es-AR", { style: "currency", currency: "ARS" })}</p>
+                  <p className="text-xs text-muted-foreground">{order.pago ? "Pagado" : "No pagado"}</p>
                 </div>
-                <Button variant="ghost" size="icon">
-                  <Eye className="h-4 w-4" />
-                </Button>
+                <Badge variant={getStatusVariant(order.status)}>{getStatusText(order.status)}</Badge>
+                <Link href={`/admin/orders/${order.id}`}>
+                  <Button variant="ghost" size="icon" className="hover:bg-accent hover:text-accent-foreground cursor-pointer">
+                    <Eye className="h-4 w-4" />
+                  </Button>
+                </Link>
               </div>
             </div>
           ))}

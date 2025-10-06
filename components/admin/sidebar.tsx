@@ -36,7 +36,7 @@ const sidebarItems = [
     href: "/admin/users",
     icon: Users,
   }, 
-  {
+  /* {
     title: "Reportes",
     href: "/admin/reports",
     icon: BarChart3,
@@ -45,7 +45,7 @@ const sidebarItems = [
     title: "Configuración",
     href: "/admin/settings",
     icon: Settings,
-  },
+  }, */
 ]
 
 interface AdminSidebarProps {
