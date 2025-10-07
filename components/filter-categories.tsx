@@ -28,8 +28,8 @@ export function FilterCategories({ categorias }: { categorias: Category[] }) {
     };
   }, []);
 
-  const handleCategoryClick = (categoryId: string) => {
-    router.push(`/products?category=${categoryId}`);
+  const handleCategoryClick = (categoryName: string) => {
+    router.push(`/products?category=${categoryName}`);
     if (isMobile) {
       setIsOpen(false);
     }
@@ -66,11 +66,11 @@ export function FilterCategories({ categorias }: { categorias: Category[] }) {
           {categorias.map((cat) => (
             <button
               key={cat.id}
-              className={`cursor-pointer flex justify-between items-center px-3 py-2 rounded-md text-sm font-medium transition-all ${category == cat.id
+              className={`cursor-pointer flex justify-between items-center px-3 py-2 rounded-md text-sm font-medium transition-all ${category === cat.nombre
                   ? 'bg-primary text-primary-foreground'
                   : 'hover:bg-muted'
                 }`}
-              onClick={() => handleCategoryClick(cat.id)}
+              onClick={() => handleCategoryClick(cat.nombre)}
             >
               <span>{cat.nombre}</span>
               {category === cat.id && <ChevronRight className="h-4 w-4" />}

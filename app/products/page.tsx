@@ -15,9 +15,9 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
   const products = await getProducts({ category, visible: true });
   const categories = await getCategories();
 
-  const pageTitle = category ? `Categoría: ${categories.find(c => c.id == category)?.nombre || category}` : "Nuestros Productos";
+  const pageTitle = category ? `Categoría: ${category}` : "Nuestros Productos";
   const pageDescription = category 
-    ? `Explora nuestra selección de productos en la categoría ${categories.find(c => c.id == category)?.nombre || category}.`
+    ? `Explora nuestra selección de productos en la categoría ${category}.`
     : "Explora nuestra selección de motos, accesorios y vehículos eléctricos.";
 
   return (
