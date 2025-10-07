@@ -98,7 +98,8 @@ export function FeaturedProductsClient() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {products.length > 0 ? (
                   products.map((product, index) => (
-                    <div key={product.id} className={`animate-on-scroll animate-delay-${(index + 1) * 100}`}>
+                    //<div key={product.id} className={`animate-on-scroll animate-delay-${(index + 1) * 100}`}>
+                    <div key={product.id}>
                       <ProductCard product={product} />
                     </div>
                   ))
