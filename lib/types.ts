@@ -16,6 +16,11 @@ export interface Subcategory {
   nombre: string;
 }
 
+export interface Category {
+  id: string;
+  nombre: string;
+}
+
 export interface CartItem {
   product: Product
   quantity: number

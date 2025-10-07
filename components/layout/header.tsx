@@ -7,19 +7,16 @@ import { useState } from "react"
 import { MobileNav } from "./movile-nav"
 import Image from "next/image"
 import Link from "next/link"
+import { Category } from "@/lib/types"
 
-interface HeaderProps {
-  className?: string
-}
-
-export function Header({ className }: HeaderProps) {
+export function Header({ categories }: { categories: Category[] }) {
 
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false)
 
   return (
     <>
       <header
-        className={`sticky top-0 z-50 w-full border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60 ${className || ""}`}
+        className={`sticky top-0 z-50 w-full border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60`}
       >
         <div className="flex h-20 items-center justify-between px-4">
           
@@ -35,16 +32,12 @@ export function Header({ className }: HeaderProps) {
           
 
           <nav className="hidden md:flex items-center space-x-4">
-            <a href="#motocicletas" className="text-sm font-medium hover:text-primary transition-colors">
-              Motocicletas
-            </a>
-            <a href="#electricos" className="text-sm font-medium hover:text-primary transition-colors">
-              Eléctricos
-            </a>
-            <a href="#accesorios" className="text-sm font-medium hover:text-primary transition-colors">
-              Accesorios
-            </a>
-            <a href="#cafe" className="text-sm font-medium hover:text-primary transition-colors">
+            {categories.map((cat) => (
+              <a key={cat.id} href={`/products?category=${cat.nombre}`} className="text-sm font-medium hover:text-primary transition-colors">
+                {cat.nombre}
+              </a>
+            ))}
+            <a href="/#cafe" className="text-sm font-medium hover:text-primary transition-colors">
               Cafetería
             </a>
             <a href="/products" className="text-sm font-medium hover:text-primary transition-colors">

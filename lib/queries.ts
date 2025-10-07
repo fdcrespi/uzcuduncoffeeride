@@ -9,7 +9,7 @@ export async function getCategories() {
     return rows;
   } catch (error) {
     console.error('Error fetching categories:', error);
-    throw new Error('Failed to fetch categories.');
+    return [];
   }
 }
 
@@ -91,6 +91,6 @@ export async function getProducts(options: GetProductsOptions = {}): Promise<Pro
 
   } catch (error) {
     console.error('Error fetching products:', error);
-    throw new Error('Failed to fetch products.');
+    return [];
   }
 }
