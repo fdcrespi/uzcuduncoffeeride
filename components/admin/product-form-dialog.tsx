@@ -19,20 +19,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Upload, CheckCircle } from "lucide-react"
 import { toast } from "sonner"
 
-interface Subcategory {
-  id: string;
-  nombre: string;
-}
-
-interface Product {
-  id: string;
-  nombre: string;
-  descripcion: string;
-  image: string;
-  subrubro_id: string;
-  precio: number;
-  stock: number;
-}
+import { Product, Subcategory } from "@/lib/types";
 
 interface ProductFormDialogProps {
   subcategories: Subcategory[];

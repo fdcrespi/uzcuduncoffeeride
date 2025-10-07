@@ -4,7 +4,8 @@ import { useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Edit, Trash2 } from "lucide-react"
+import { Product } from "@/lib/types";
+import { Edit, Trash2, Star, Eye, EyeOff } from "lucide-react"
 import Image from "next/image"
 import {
   AlertDialog,
@@ -17,25 +18,15 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 
-interface Product {
-  id: string;
-  nombre: string;
-  descripcion: string;
-  image: string;
-  subrubro_id: string;
-  subrubro_nombre: string;
-  precio: number;
-  stock: number;
-}
-
 interface ProductsTableProps {
   products: Product[]
   onEdit?: (product: Product) => void
   onDelete?: (productId: string) => void
   onManageImages?: (product: Product) => void // 👈 nueva prop
+  onToggleStatus?: (productId: string, field: 'destacado' | 'visible', value: boolean) => void;
 }
 
-export function ProductsTable({ products, onEdit, onDelete, onManageImages }: ProductsTableProps) {
+export function ProductsTable({ products, onEdit, onDelete, onManageImages, onToggleStatus }: ProductsTableProps) {
   const [productToDelete, setProductToDelete] = useState<Product | null>(null)
 
   return (
@@ -44,9 +35,11 @@ export function ProductsTable({ products, onEdit, onDelete, onManageImages }: Pr
         <TableHeader>
           <TableRow>
             <TableHead>Producto</TableHead>
-            <TableHead>Subcategoría</TableHead>
             <TableHead className="text-right">Precio</TableHead>
             <TableHead className="text-right">Stock</TableHead>
+            <TableHead className="text-center">Subcategoría</TableHead>
+            <TableHead className="text-center">Destacado</TableHead>
+            <TableHead className="text-center">Visible</TableHead>
             <TableHead className="text-right">Acciones</TableHead>
           </TableRow>
         </TableHeader>
@@ -64,16 +57,26 @@ export function ProductsTable({ products, onEdit, onDelete, onManageImages }: Pr
                   </div>
                 </div>
               </TableCell>
-              <TableCell>
-                <Badge variant="outline">{product.subrubro_nombre}</Badge>
-              </TableCell>
               <TableCell className="text-right">
                 ${product.precio?.toLocaleString("es-AR")}
               </TableCell>
               <TableCell className="text-right">
-                <span className={product.stock < 10 ? "font-bold text-red-600" : ""}>
+                <span className={product.stock < 3 ? "font-bold text-red-600" : ""}>
                   {product.stock}
                 </span>
+              </TableCell>
+              <TableCell className="text-center">
+                <Badge variant="outline">{product.subrubro_nombre}</Badge>
+              </TableCell>
+              <TableCell className="text-center">
+                <Button variant="ghost" size="icon" onClick={() => onToggleStatus?.(product.id, 'destacado', !product.destacado)}>
+                  <Star className={`h-5 w-5 ${product.destacado ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`} />
+                </Button>
+              </TableCell>
+              <TableCell className="text-center">
+                <Button variant="ghost" size="icon" onClick={() => onToggleStatus?.(product.id, 'visible', !product.visible)}>
+                  {product.visible ? <Eye className="h-5 w-5" /> : <EyeOff className="h-5 w-5 text-gray-400" />}
+                </Button>
               </TableCell>
               <TableCell className="text-right">
                 <div className="flex items-center justify-end space-x-2">

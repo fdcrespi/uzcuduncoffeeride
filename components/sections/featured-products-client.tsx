@@ -1,6 +1,5 @@
 'use client'
 
-import Link from 'next/link';
 import { ProductCard } from '@/components/product-card';
 import { useScrollAnimation } from '@/components/scroll-animations';
 import type { Product } from '@/lib/types';
@@ -20,14 +19,13 @@ export function FeaturedProductsClient() {
   useEffect(() => {
     const fetchFeaturedProducts = async () => {
       try {
-        const response = await fetch('/api/products');
+        const response = await fetch('/api/products?featured=true');
         if (!response.ok) {
           throw new Error('Error al cargar los productos destacados');
         }
 
-        const allProducts: Product[] = await response.json();
-        const shuffled = [...allProducts].sort(() => 0.5 - Math.random());
-        setProducts(shuffled.slice(0, 3));
+        const featuredProducts: Product[] = await response.json();
+        setProducts(featuredProducts.slice(0, 3));
       } catch (error) {
         console.error(error);
       } finally {
@@ -46,7 +44,7 @@ export function FeaturedProductsClient() {
       console.log('Producto actualizado, recargando lista...');
       // Volver a cargar los productos
       setLoading(true);
-      fetch('/api/products')
+      fetch('/api/products?featured=true')
         .then(response => {
           if (!response.ok) {
             throw new Error('Error al cargar los productos');
@@ -54,7 +52,7 @@ export function FeaturedProductsClient() {
           return response.json();
         })
         .then(data => {
-          setProducts(data);
+          setProducts(data.slice(0, 3));
         })
         .catch(error => {
           console.error(error);

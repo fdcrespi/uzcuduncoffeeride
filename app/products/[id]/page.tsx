@@ -26,7 +26,6 @@ type Product = BaseProduct & { images?: ProductImage[] };
 export default function ProductDetailPage() {
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
-  const [quantity, setQuantity] = useState(1);
 
   const params = useParams();
   const router = useRouter();
@@ -154,21 +153,15 @@ export default function ProductDetailPage() {
               ${product.precio.toLocaleString("es-AR")}
             </p>
 
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold">Stock disponible</h3>
-              <div className="mt-2 flex items-center gap-4">
-                <p className="text-md text-black">
-                  Cantidad: {quantity}
-                  {product.stock > 0 ? (
-                    <span className="ml-2 text-gray-500">
-                      ({product.stock} disponibles)
-                    </span>
-                  ) : (
-                    <span className="ml-2 text-red-600">(Sin stock)</span>
-                  )}
-                </p>
+            {product.stock > 0 && (
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold">Stock disponible: 
+                  <span className="text-gray-500 font-normal">
+                    ({product.stock} disponibles)
+                  </span>
+                </h3>
               </div>
-            </div>
+            )}
 
             <div className="flex w-full max-w-xs flex-col gap-3">
               <Button

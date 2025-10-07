@@ -1,6 +1,8 @@
 import { db } from '@/lib/db';
 import { NextResponse } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+
 interface ProductFromDB {
   id: number;
   nombre: string;
@@ -11,15 +13,19 @@ interface ProductFromDB {
   stock: number;
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const featured = searchParams.get('featured');
     const sucursalId = 1; // Asumimos la sucursal principal
-    
-    const result = await db.query(`
+
+    let query = `
       SELECT 
         p.id, 
         p.nombre, 
         p.descripcion, 
+        p.destacado,
+        p.visible,
         sp.precio, 
         sp.stock,
         sr.id as subrubro_id,
@@ -31,21 +37,31 @@ export async function GET() {
       LEFT JOIN Subrubro sr ON p.subrubro_id = sr.id
       LEFT JOIN Rubro r ON sr.rubro_id = r.id
       LEFT JOIN Producto_Portada pp ON pp.producto_id = p.id
-      WHERE sp.sucursal_id = $1 OR sp.sucursal_id IS NULL
-      ORDER BY p.id DESC
-    `, [sucursalId]);
+      WHERE (sp.sucursal_id = $1 OR sp.sucursal_id IS NULL)
+    `;
+
+    const queryParams: any[] = [sucursalId];
+
+    if (featured === 'true') {
+      query += ` AND p.destacado = true`;
+    }
+
+    query += ` ORDER BY p.id DESC`;
+
+    const result = await db.query(query, queryParams);
 
     const products = result.rows.map(p => ({
       id: String(p.id),
       nombre: p.nombre,
       descripcion: p.descripcion,
       precio: p.precio !== null ? Number(p.precio) : 0,
-      // mapeamos portada al viejo nombre 'image' para no romper el admin/table
       image: p.cover_url || '/placeholder.svg',
       stock: p.stock !== null ? Number(p.stock) : 0,
       subrubro_id: String(p.subrubro_id),
       subrubro_nombre: p.subrubro_nombre,
       category: p.category,
+      destacado: p.destacado,
+      visible: p.visible,
     }));
 
     return NextResponse.json(products);

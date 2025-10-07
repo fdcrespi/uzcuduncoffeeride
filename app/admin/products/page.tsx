@@ -19,23 +19,8 @@ import { ProductImagesDialog } from "@/components/admin/product-images-dialog"
 import io from 'socket.io-client';
 const socket = io(process.env.NEXT_PUBLIC_URL!);
 
-// Interfaces to type the data
-interface Subcategory {
-  id: string;
-  nombre: string;
-}
-
-interface Product {
-  id: string;
-  nombre: string;
-  descripcion: string;
-  // portada (proviene de Producto_Portada.cover_url)
-  image: string;
-  subrubro_id: string;
-  subrubro_nombre: string;
-  precio: number;
-  stock: number;
-}
+import { Product, Subcategory } from "@/lib/types";
+import { toast } from "sonner";
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([])
@@ -136,6 +121,37 @@ export default function ProductsPage() {
     }
   };
 
+  const handleToggleStatus = async (productId: string, field: 'destacado' | 'visible', value: boolean) => {
+    const oldProducts = [...products];
+    // Optimistic update
+    setProducts(prevProducts =>
+      prevProducts.map(p =>
+        p.id === productId ? { ...p, [field]: value } : p
+      )
+    );
+
+    try {
+      const response = await fetch(`/api/products/${productId}`,
+        {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ [field]: value }),
+        });
+
+      if (!response.ok) {
+        throw new Error('Error al actualizar el producto');
+      }
+      toast.success(`El producto ha sido actualizado.`);
+      socket.emit('updateProducto', 'Producto actualizado');
+
+    } catch (error) {
+      // Revert optimistic update on error
+      setProducts(oldProducts);
+      toast.error('No se pudo actualizar el producto.');
+      console.error(error);
+    }
+  };
+
   // abrir diálogo de imágenes para un producto
   const openImagesFor = (product: Product) => {
     setImagesDialog({ open: true, productId: product.id, productName: product.nombre });
@@ -176,6 +192,7 @@ export default function ProductsPage() {
             onEdit={setEditingProduct}
             onDelete={handleDeleteProduct}
             onManageImages={openImagesFor}
+            onToggleStatus={handleToggleStatus}
           />
         </CardContent>
       </Card>

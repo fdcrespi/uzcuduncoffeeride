@@ -117,6 +117,46 @@ export async function PUT(request: Request, { params }: { params: { id: string }
   }
 }
 
+export async function PATCH(request: Request, { params }: { params: { id: string } }) {
+  try {
+    const productId = parseInt(params.id, 10);
+    if (isNaN(productId)) {
+      return new NextResponse(JSON.stringify({ message: 'ID de producto inválido' }), { status: 400 });
+    }
+
+    const body = await request.json();
+    const { destacado, visible } = body;
+
+    let updateField = '';
+    let updateValue;
+
+    if (typeof destacado === 'boolean') {
+      updateField = 'destacado';
+      updateValue = destacado;
+    } else if (typeof visible === 'boolean') {
+      updateField = 'visible';
+      updateValue = visible;
+    } else {
+      return new NextResponse(JSON.stringify({ message: 'Cuerpo de la solicitud inválido' }), { status: 400 });
+    }
+
+    const result = await db.query(
+      `UPDATE Producto SET ${updateField} = $1 WHERE id = $2 RETURNING id, ${updateField}`,
+      [updateValue, productId]
+    );
+
+    if (result.rowCount === 0) {
+      return new NextResponse(JSON.stringify({ message: 'Producto no encontrado' }), { status: 404 });
+    }
+
+    return new NextResponse(JSON.stringify(result.rows[0]), { status: 200 });
+
+  } catch (error) {
+    console.error(`Error al actualizar parcialmente el producto ${params.id}:`, error);
+    return new NextResponse(JSON.stringify({ message: 'Error Interno del Servidor' }), { status: 500 });
+  }
+}
+
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   const productId = parseInt(params.id, 10);
   if (isNaN(productId)) {
