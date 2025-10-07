@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
   const paymentId = request.nextUrl.searchParams.get("id");
 
   //console.log(paymentId);
-  //console.log("=== NOTIFICACION DE PAGO RECIBIDA DE MP ===");
+  console.log("=== NOTIFICACION DE PAGO RECIBIDA DE MP ===");
 
   new Promise<void>(async (resolve, reject) => {
     try {
@@ -59,8 +59,8 @@ export async function POST(request: NextRequest) {
         //Insertar el pedido en la base de datos
         //console.log("Insertando pedido en la base de datos...", pedido);
         const resultPedido = await db.query(
-          `INSERT INTO Pedido (pago, modo_entrega_id, mp_id, payer_name, payer_address, payer_phone, total, delivery) 
-          VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+          `INSERT INTO Pedido (pago, modo_entrega_id, mp_id, payer_name, payer_address, payer_phone, total, delivery, status) 
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'pending')
           RETURNING id`,
           [
             true,
