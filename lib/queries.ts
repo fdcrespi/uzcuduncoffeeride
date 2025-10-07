@@ -23,6 +23,8 @@ export async function getProducts(category?: string) {
         p.id, 
         p.nombre, 
         p.descripcion, 
+        p.destacado,
+        p.visible,
         sp.precio, 
         sp.stock,
         sr.id as subrubro_id,
@@ -39,7 +41,7 @@ export async function getProducts(category?: string) {
 
     if (category) {
       params.push(category);
-      query += ` AND r.nombre = $${params.length}`;
+      query += ` AND r.nombre = ${params.length}`;
     }
 
     query += ` ORDER BY p.id DESC`;
@@ -56,6 +58,8 @@ export async function getProducts(category?: string) {
       subrubro_id: String(p.subrubro_id),
       subrubro_nombre: p.subrubro_nombre,
       category: p.category,
+      destacado: p.destacado,
+      visible: p.visible,
     }));
 
     return products;
