@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { items, shippingData } = await req.json();
+    const { items, shippingData, shipping } = await req.json();
 
     //console.log("Received items:", items);
     //console.log("Received shippingData:", shippingData);
@@ -50,12 +50,22 @@ export async function POST(req: NextRequest) {
     }
 
     const preferenceItems = items.map((item: any) => ({
-      id: item.product.id,      
+      id: item.product.id,
       title: item.product.nombre,
       quantity: item.quantity,
       unit_price: item.product.precio,
       currency_id: "ARS",
     }));
+
+    if (shipping && shipping > 0) {
+      preferenceItems.push({
+        id: "envio",
+        title: "Costo de envío",
+        quantity: 1,
+        unit_price: shipping,
+        currency_id: "ARS",
+      });
+    }
 
     const preferenceBody = {
       items: preferenceItems,
@@ -92,11 +102,11 @@ export async function POST(req: NextRequest) {
         name: `${shippingData.firstName} ${shippingData.lastName}`,
         address: shippingData.address,
         phone: shippingData.phone,
-        delivery_price: shippingData.deliveryPrice || 0
+        delivery_price: shipping || 0
       },
       // Otros campos opcionales como "external_reference", "expires", etc., se pueden agregar aquí según sea necesario
     };
-   
+
     //console.log("Creating preference with body:", JSON.stringify(preferenceBody, null, 2));
     const preference = new Preference(client);
     const result = await preference.create({ body: preferenceBody });

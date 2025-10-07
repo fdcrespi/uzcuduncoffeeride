@@ -267,7 +267,7 @@ export default function CheckoutPage() {
       const response = await fetch("/api/mercadopago/preference", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ items, shippingData }),
+        body: JSON.stringify({ items, shippingData, shipping }),
       });
 
       if (!response.ok) throw new Error("Failed to create preference");

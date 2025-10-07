@@ -36,6 +36,7 @@ const stats = [
 export default function AdminDashboard() {
   const [recentOrders, setRecentOrders] = useState<Order[]>([]);
   const [totalSales, setTotalSales] = useState<number>(0);	
+  const [cantSales, setCantSales] = useState<number>(0);
   const [products, setProducts] = useState<Product[]>([]);
   const [pendingOrders, setPendingOrders] = useState<number>(0);
   const [loading, setLoading] = useState(true);
@@ -50,6 +51,7 @@ export default function AdminDashboard() {
         return response.json();
       })
       .then(data => {
+        setCantSales(data.length);
         // calcular las ventas totales
         const total = data.reduce((acc: number, order: Order) => acc + order.total, 0);
         setTotalSales(total);
@@ -99,7 +101,7 @@ export default function AdminDashboard() {
             title={stat.title}
             value={
               stat.title === "Ventas Totales" ? `$${totalSales.toFixed(2)}` :
-              stat.title === "Pedidos" ? recentOrders.length.toString() :
+              stat.title === "Pedidos" ? cantSales.toString() :
               stat.title === "Pedidos pendientes" ? pendingOrders.toString() :
               stat.title === "Productos" ? products.length.toString() : ""
             }
