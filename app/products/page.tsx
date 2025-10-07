@@ -11,7 +11,7 @@ interface ProductsPageProps {
 
 export default async function ProductsPage({ searchParams }: ProductsPageProps) {
   const category = searchParams?.category;
-  const products = await getProducts(category) as Product[];
+  const products = await getProducts({ category, visible: true });
 
   const pageTitle = category ? `Categoría: ${category}` : "Nuestros Productos";
   const pageDescription = category 

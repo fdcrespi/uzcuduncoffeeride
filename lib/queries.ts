@@ -1,5 +1,6 @@
 import { db } from "./db";
 import { unstable_noStore as noStore } from 'next/cache';
+import { Product } from "./types";
 
 export async function getCategories() {
   noStore();
@@ -12,11 +13,21 @@ export async function getCategories() {
   }
 }
 
-export async function getProducts(category?: string) {
+interface GetProductsOptions {
+  category?: string;
+  featured?: boolean;
+  visible?: boolean;
+  page?: number;
+  limit?: number;
+}
+
+export async function getProducts(options: GetProductsOptions = {}): Promise<Product[]> {
   noStore();
   try {
+    const { category, featured, visible, page = 1, limit = 10 } = options;
     const sucursalId = 1; // Asumimos la sucursal principal
     const params: any[] = [sucursalId];
+    const offset = (page - 1) * limit;
 
     let query = `
       SELECT 
@@ -36,15 +47,29 @@ export async function getProducts(category?: string) {
       LEFT JOIN Subrubro sr ON p.subrubro_id = sr.id
       LEFT JOIN Rubro r ON sr.rubro_id = r.id
       LEFT JOIN Producto_Portada pp ON pp.producto_id = p.id
-      WHERE (sp.sucursal_id = $1 OR sp.sucursal_id IS NULL) AND p.visible = true
+      WHERE (sp.sucursal_id = $1 OR sp.sucursal_id IS NULL)
     `;
 
+    if (visible !== undefined) {
+      params.push(visible);
+      query += ` AND p.visible = $${params.length}`;
+    }
+
+    if (featured) {
+      params.push(true);
+      query += ` AND p.destacado = $${params.length}`;
+    }
+    
     if (category) {
       params.push(category);
-      query += ` AND r.nombre = ${params.length}`;
+      query += ` AND r.nombre = $${params.length}`;
     }
 
     query += ` ORDER BY p.id DESC`;
+    params.push(limit);
+    query += ` LIMIT $${params.length}`;
+    params.push(offset);
+    query += ` OFFSET $${params.length}`;
 
     const result = await db.query(query, params);
 

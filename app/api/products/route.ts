@@ -1,68 +1,19 @@
-import { db } from '@/lib/db';
+import { getProducts } from '@/lib/queries';
 import { NextResponse } from 'next/server';
+import { db } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
-
-interface ProductFromDB {
-  id: number;
-  nombre: string;
-  descripcion: string;
-  precio: number;
-  image: string;
-  category: string;
-  stock: number;
-}
 
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const featured = searchParams.get('featured');
-    const sucursalId = 1; // Asumimos la sucursal principal
+    const featured = searchParams.get('featured') === 'true';
+    const category = searchParams.get('category') || undefined;
+    
+    const visibleParam = searchParams.get('visible');
+    const visible = visibleParam === 'true' ? true : visibleParam === 'false' ? false : undefined;
 
-    let query = `
-      SELECT 
-        p.id, 
-        p.nombre, 
-        p.descripcion, 
-        p.destacado,
-        p.visible,
-        sp.precio, 
-        sp.stock,
-        sr.id as subrubro_id,
-        sr.nombre as subrubro_nombre,
-        r.nombre as category,
-        pp.cover_url
-      FROM Producto p
-      LEFT JOIN Sucursal_Productos sp ON p.id = sp.producto_id
-      LEFT JOIN Subrubro sr ON p.subrubro_id = sr.id
-      LEFT JOIN Rubro r ON sr.rubro_id = r.id
-      LEFT JOIN Producto_Portada pp ON pp.producto_id = p.id
-      WHERE (sp.sucursal_id = $1 OR sp.sucursal_id IS NULL)
-    `;
-
-    const queryParams: any[] = [sucursalId];
-
-    if (featured === 'true') {
-      query += ` AND p.destacado = true`;
-    }
-
-    query += ` ORDER BY p.id DESC`;
-
-    const result = await db.query(query, queryParams);
-
-    const products = result.rows.map(p => ({
-      id: String(p.id),
-      nombre: p.nombre,
-      descripcion: p.descripcion,
-      precio: p.precio !== null ? Number(p.precio) : 0,
-      image: p.cover_url || '/placeholder.svg',
-      stock: p.stock !== null ? Number(p.stock) : 0,
-      subrubro_id: String(p.subrubro_id),
-      subrubro_nombre: p.subrubro_nombre,
-      category: p.category,
-      destacado: p.destacado,
-      visible: p.visible,
-    }));
+    const products = await getProducts({ featured, category, visible });
 
     return NextResponse.json(products);
   } catch (error) {
