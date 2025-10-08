@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -14,39 +14,35 @@ import { AlertCircle } from "lucide-react";
 
 export default function Login() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const errorParam = searchParams.get("error");
+    if (errorParam) {
+      if (errorParam.includes("Too many failed login attempts")) {
+        setError("Demasiados intentos fallidos. Por favor, inténtalo de nuevo más tarde.");
+      } else {
+        setError("Credenciales incorrectas. Por favor, inténtalo de nuevo.");
+      }
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
 
-    try {
-      const result = await signIn("credentials", {
-        redirect: false,
-        email,
-        password,
-      });
+    await signIn("credentials", {
+      email,
+      password,
+      callbackUrl: "/admin",
+    });
 
-      if (result?.error) {
-        if (result.error.includes("Too many failed login attempts")) {
-          setError("Demasiados intentos fallidos. Por favor, inténtalo de nuevo más tarde.");
-        } else {
-          setError("Credenciales incorrectas. Por favor, inténtalo de nuevo.");
-        }
-        setIsLoading(false);
-        return;
-      }
-
-      router.push("/");
-      router.refresh();
-    } catch (error) {
-      setError("Ocurrió un error al iniciar sesión. Por favor, inténtalo de nuevo.");
-      setIsLoading(false);
-    }
+    setIsLoading(false);
   };
 
   return (
