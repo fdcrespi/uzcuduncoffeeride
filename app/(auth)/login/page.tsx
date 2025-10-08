@@ -32,7 +32,11 @@ export default function Login() {
       });
 
       if (result?.error) {
-        setError("Credenciales incorrectas. Por favor, inténtalo de nuevo.");
+        if (result.error.includes("Too many failed login attempts")) {
+          setError("Demasiados intentos fallidos. Por favor, inténtalo de nuevo más tarde.");
+        } else {
+          setError("Credenciales incorrectas. Por favor, inténtalo de nuevo.");
+        }
         setIsLoading(false);
         return;
       }
