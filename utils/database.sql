@@ -358,6 +358,6 @@ insert into Rol (descripcion) VALUES ('administrador'), ('superusuario'), ('usua
 insert into Comercio (razon_social, cuit, nombre_fantasia) VALUES ('UZCUDUN COFFEE RIDE S.A.S.', '23453981649', 'UZCUDUN COFFEE RIDE');
 insert into Status_Sucursal (nombre) values ('abierto');
 insert into Sucursal (nombre, domicilio_calle, domicilio_nro, domicilio_piso, domicilio_dpto, telefono, status_sucursal_id, comercio_id) VALUES ('UZCUDUN COFFEE RIDE', 'Martín Miguel de Güemes 3301, B7600 Mar del Plata, Provincia de Buenos Aires', 3301, 0, 0, 0, 1, 1);
-insert into usuario (email, pass, nombre, apellido, rol_id, sucursal_id) values ('juanjosemolfese@gmail.com', 'juanjo', 'juan', 'molfese', 2, 1), ('fdcrespi@gmail.com', 'federico', 'federico', 'crespi', 2, 1);
+insert into usuario (email, pass, nombre, apellido, rol_id, sucursal_id) values ('juanjosemolfese@gmail.com', '$2b$10$ePSMAkri6aBL3MvuKzTD5u6fhlebgRb9ZrMWFHXMUiDN4odElQSgW', 'juan', 'molfese', 2, 1), ('fdcrespi@gmail.com', '$2b$10$o0K7G1PPunZloZqxrwvToeHE9bxerMKUbHsHiBHq3/qs9.PDVuzQG', 'federico', 'crespi', 2, 1);
 
 COMMIT;
