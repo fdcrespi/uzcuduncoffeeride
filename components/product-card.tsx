@@ -89,6 +89,7 @@ export function ProductCard({ product }: ProductCardProps) {
               disabled={product.stock <= 0}
               variant="default"
               size="sm"
+              className="cursor-pointer"
             >
               <Zap className="mr-2 h-4 w-4" />
               {product.stock > 0 ? "Comprar ahora" : "Sin Stock"}
@@ -98,6 +99,7 @@ export function ProductCard({ product }: ProductCardProps) {
               disabled={product.stock <= 0}
               variant="outline"
               size="sm"
+              className="cursor-pointer"
             >
               <ShoppingCart className="mr-2 h-4 w-4" />
               {product.stock > 0 ? "Agregar al carrito" : "Sin Stock"}

@@ -7,6 +7,9 @@ import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { io } from "socket.io-client"
 import { useEffect, useState } from "react"
+import { signOut } from "next-auth/react";
+
+
 
 const socket = io(process.env.NEXT_PUBLIC_URL!)
 
@@ -125,7 +128,7 @@ export function AdminSidebar({ className }: AdminSidebarProps) {
         </div>
       </div>
       <div className="absolute bottom-4 left-4 right-4">
-        <Button variant="ghost" className="w-full justify-start" size="sm">
+        <Button variant="ghost" className="w-full justify-start" size="sm" onClick={() => signOut({ callbackUrl: "/login" })}>
           <LogOut className="w-4 h-4 mr-2" />
           Cerrar Sesión
         </Button>
