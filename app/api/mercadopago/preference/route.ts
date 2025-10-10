@@ -102,7 +102,8 @@ export async function POST(req: NextRequest) {
         name: `${shippingData.firstName} ${shippingData.lastName}`,
         address: shippingData.address,
         phone: shippingData.phone,
-        delivery_price: shipping || 0
+        delivery_price: shipping || 0,
+        zip: shippingData.zipCode
       },
       // Otros campos opcionales como "external_reference", "expires", etc., se pueden agregar aquí según sea necesario
     };

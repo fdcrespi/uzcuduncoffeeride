@@ -50,6 +50,7 @@ CREATE TABLE Pedido (
     payer_name varchar(50)  NULL,
     payer_address varchar(150)  NULL,
     payer_phone varchar(50)  NULL,
+    payer_zip varchar(10)  NULL,
     total float NOT NULL,
     delivery float NOT NULL DEFAULT 0,
     status varchar(50) NOT NULL DEFAULT 'pending'

@@ -6,19 +6,142 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Search, Eye, Package, Truck, CheckCircle, Clock, X } from "lucide-react"
+import { Search, Eye, Package, Truck, CheckCircle, Clock, X, Printer } from "lucide-react"
 import { Order } from "@/lib/types"
 import { toast } from "sonner"
 import { io } from "socket.io-client";
 import Link from "next/link"
+import store from "@/lib/data" // datos del remitente (nombre, direccion, cuit, etc.)
 
-const socket = io(process.env.NEXT_PUBLIC_URL!);
+const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || (typeof window !== "undefined" ? window.location.origin : "");
+const socket = io(SOCKET_URL, { transports: ["websocket"] });
 
 const statusConfig = {
   pending: { label: "Pendiente", variant: "outline" as const, icon: Clock },
   delivered: { label: "Entregado", variant: "secondary" as const, icon: Package },
   shipped: { label: "Enviado", variant: "default" as const, icon: Truck },
   canceled: { label: "Cancelado", variant: "default" as const, icon: CheckCircle },
+}
+
+/** Construye el HTML de la etiqueta para imprimir en un iframe oculto */
+function buildLabelHTML(order: Order) {  
+  const fecha = new Date(order.fecha_emision).toLocaleString();
+
+  // Remitente (desde lib/data.ts)
+  const remitente = {
+    nombre: (store as any)?.nombre ?? "",
+    direccion: (store as any)?.direccion ?? "",
+    ciudad: (store as any)?.ciudad ?? "",
+    provincia: (store as any)?.provincia ?? "",
+    codigo_postal: (store as any)?.codigo_postal ?? "",
+    telefono: (store as any)?.telefono ?? "",
+    cuit: (store as any)?.cuit ?? "",
+  };
+
+  // Destinatario
+  const destNombre = order.payer_name || "";
+  const destDir = order.payer_address || "";
+  const destCP = order.payer_zip || "";
+
+  return `
+  <html>
+    <head>
+      <meta charset="utf-8" />
+      <title>Etiqueta Pedido ${order.id}</title>
+      <style>
+        @page { size: 100mm 150mm; margin: 0; }
+        html, body { margin: 0; padding: 0; }
+        body { background: #fff; }
+        .label {
+          box-sizing: border-box;
+          width: 100mm; height: 150mm;
+          padding: 8mm;
+          font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+          color: #000;
+        }
+        .row { display:flex; justify-content:space-between; align-items:flex-start; gap:8px; }
+        .muted { color:#444; font-size:11px; }
+        .big { font-size:22px; font-weight:800; letter-spacing:1px; }
+        .cp {
+          font-size:28px; font-weight:900; letter-spacing:2px;
+          border:2px solid #000; padding:4px 8px; display:inline-block;
+        }
+        .cut-marks:before, .cut-marks:after {
+          content:""; position:absolute; left:0; right:0; height:0; border-top:1px dashed #aaa;
+        }
+        .cut-marks:before{ top:0; } .cut-marks:after{ bottom:0; }
+        .qr {
+          width: 40mm; height: 40mm;
+          border:1px solid #000;
+          display:flex; align-items:center; justify-content:center;
+          font-size:10px; font-weight:700;
+          margin-left:auto;
+        }
+        .sep { margin:8px 0; border-top:2px solid #000 }
+        .footer { margin-top: 6mm; display:flex; justify-content:space-between; font-size:11px; }
+      </style>
+    </head>
+    <body>
+      <div class="label cut-marks">
+        <div class="row">
+          <div>
+            <div style="font-weight:700; font-size:14px;">${remitente.nombre}</div>
+            <div class="muted">${remitente.direccion}</div>
+            <div class="muted">${remitente.ciudad}, ${remitente.provincia} (${remitente.codigo_postal})</div>
+            ${remitente.telefono ? `<div class="muted">Tel: ${remitente.telefono}</div>` : ""}
+            ${remitente.cuit ? `<div class="muted">CUIT: ${remitente.cuit}</div>` : ""}
+          </div>
+          <div class="qr">QR/BARCODE<br/>(pendiente)</div>
+        </div>
+
+        <div class="sep"></div>
+
+        <div>
+          <div class="muted">Destinatario</div>
+          <div class="big">${destNombre}</div>
+          <div style="margin-top:2px;">${destDir}</div>
+          ${destCP ? `<div style="margin-top:6px;"><span class="cp">${destCP}</span></div>` : ""}
+        </div>
+
+        <div class="footer">
+          <div>Pedido: #${order.id}</div>
+          <div>${fecha}</div>
+        </div>
+      </div>
+      <script>
+        window.onload = () => { window.focus(); window.print(); };
+      </script>
+    </body>
+  </html>`;
+}
+
+/** Inyecta un iframe oculto y manda a imprimir SOLO la etiqueta */
+async function printOrderLabel(order: Order) {
+  const html = buildLabelHTML(order);
+
+  // Crear iframe oculto
+  const iframe = document.createElement("iframe");
+  iframe.style.position = "fixed";
+  iframe.style.right = "0";
+  iframe.style.bottom = "0";
+  iframe.style.width = "0";
+  iframe.style.height = "0";
+  iframe.style.border = "0";
+  document.body.appendChild(iframe);
+
+  // Escribir el HTML y dejar que el onload interno del documento dispare print()
+  const doc = iframe.contentDocument || iframe.contentWindow?.document;
+  if (!doc) return;
+  doc.open();
+  doc.write(html);
+  doc.close();
+
+  // Remover el iframe un rato después de imprimir (sin forzar doble impresión)
+  setTimeout(() => {
+    try {
+      document.body.removeChild(iframe);
+    } catch {}
+  }, 1500);
 }
 
 export default function OrdersPage() {
@@ -29,60 +152,40 @@ export default function OrdersPage() {
   const [filteredOrders, setFilteredOrders] = useState<Order[]>([])
 
   useEffect(() => {
-    // Simulate fetching data from an API
     const fetchOrders = async () => {
       const data = await fetch("/api/orders").then((res) => res.json())
       setLoading(false);
       setOrders(data);
       setFilteredOrders(data);
     }
-
     fetchOrders()
   }, []);
 
-   useEffect(() => {
-      socket.on('connect', () => {
-        console.log('Conectado al servidor de WebSocket');
-      });
-      socket.on('addPedido', () => {
-
-        // Volver a cargar los productos
-        setLoading(true);
-        fetch('/api/orders')
-          .then(response => {
-            if (!response.ok) {
-              throw new Error('Error al cargar los pedidos');
-            }
-            return response.json();
-          })
-          .then(data => {
-            setOrders(data);
-          })
-          .catch(error => {
-            console.error(error);
-          })
-          .finally(() => {
-            setLoading(false);
-          });
-      });
-      
-      return () => {
-        socket.off('addPedido');
-      };
-    }, []);
+  useEffect(() => {
+    socket.on('connect', () => {
+      console.log('Conectado al servidor de WebSocket');
+    });
+    socket.on('addPedido', () => {
+      setLoading(true);
+      fetch('/api/orders')
+        .then(response => {
+          if (!response.ok) throw new Error('Error al cargar los pedidos');
+          return response.json();
+        })
+        .then(data => { setOrders(data); })
+        .catch(console.error)
+        .finally(() => setLoading(false));
+    });
+    return () => { socket.off('addPedido'); };
+  }, []);
 
   useEffect(() => {
     let filtered = [...orders]
-
-    // filtro por estado
     if (statusFilter === "shipped" || statusFilter === "delivered") {
-      filtered = filtered.filter((order) => order.status === "shipped" || order.status === "delivered") 
+      filtered = filtered.filter((order) => order.status === "shipped" || order.status === "delivered")
     } else if (statusFilter !== "all") {
       filtered = filtered.filter((order) => order.status === statusFilter)
     }
-
-
-    // filtro por búsqueda
     if (searchTerm.trim() !== "") {
       filtered = filtered.filter(
         (order) =>
@@ -90,7 +193,6 @@ export default function OrdersPage() {
           order.payer_name.toLowerCase().includes(searchTerm.toLowerCase())
       )
     }
-
     setFilteredOrders(filtered)
   }, [statusFilter, searchTerm, orders])
 
@@ -102,7 +204,6 @@ export default function OrdersPage() {
     orderId: string,
     newStatus: Order["status"]
   ) => {
-
     const res = await fetch(`/api/orders/${orderId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -115,13 +216,12 @@ export default function OrdersPage() {
             ? { ...order, status: newStatus }
             : order
         )
-      );   
+      );
       socket.emit('updatePedido', 'Pedido actualizado');
     } else {
       toast.error("Ha ocurrido un error al actualizar el pedido");
     }
   }
-
 
   return (
     <div className="space-y-6">
@@ -192,18 +292,7 @@ export default function OrdersPage() {
                 />
               </div>
             </div>
-            {/* <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Estado" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos los Estados</SelectItem>
-                <SelectItem value="pending">Pendiente</SelectItem>
-                <SelectItem value="delivered">Entregado</SelectItem>
-                <SelectItem value="shipped">Enviado</SelectItem>
-                <SelectItem value="canceled">Cancelado</SelectItem>
-              </SelectContent>
-            </Select> */}
+            {/* Select de estados si lo querés reactivar más adelante */}
           </div>
         </CardContent>
       </Card>
@@ -243,9 +332,6 @@ export default function OrdersPage() {
                         <div className="text-sm text-muted-foreground">{order.payer_address}</div>
                       </div>
                     </TableCell>
-                    {/*  <TableCell>
-                      <div className="text-sm">{order.products.join(", ")}</div>
-                    </TableCell> */}
                     <TableCell>
                       <div className="font-medium">${order.total.toLocaleString()}</div>
                     </TableCell>
@@ -289,11 +375,22 @@ export default function OrdersPage() {
                     </TableCell>
                     <TableCell>{new Date(order.fecha_emision).toLocaleString()}</TableCell>
                     <TableCell className="text-right">
-                      <Link href={`/admin/orders/${order.id}`}>
-                        <Button variant="ghost" size="icon" className="w-8 h-8 cursor-pointer">
-                          <Eye className="w-4 h-4" />
+                      <div className="flex items-center justify-end gap-1">
+                        <Link href={`/admin/orders/${order.id}`}>
+                          <Button variant="ghost" size="icon" className="w-8 h-8 cursor-pointer" title="Ver detalle">
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                        </Link>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="w-8 h-8 cursor-pointer"
+                          title="Imprimir etiqueta"
+                          onClick={() => printOrderLabel(order)}
+                        >
+                          <Printer className="w-4 h-4" />
                         </Button>
-                      </Link>
+                      </div>
                     </TableCell>
                   </TableRow>
                 )
@@ -305,3 +402,5 @@ export default function OrdersPage() {
     </div>
   )
 }
+
+

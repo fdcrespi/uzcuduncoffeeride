@@ -4,6 +4,7 @@ const data = {
   "telefono": "5492235788186",
   "email": "uzcuduncoffeeride@gmail.com",
   "direccion": "Martin Miguel de Güemes 3301",
+  "cuit": "30-71548609-3",
   "ciudad": "Mar del Plata",
   "pais": "Argentina",
   "provincia": "Buenos Aires",

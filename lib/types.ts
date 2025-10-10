@@ -52,6 +52,7 @@ export interface Order {
   total: number;
   delivery: boolean;
   status: 'pending' | 'shipped' | 'delivered' | 'canceled';
+  payer_zip?: string | null;
 }
 
 export interface OrderProduct {
@@ -82,20 +83,6 @@ export interface CartContextType {
   confirmRemoveItem: () => void
   cancelRemoveItem: () => void
 }
-
-
-export interface Order {
-  id: string;
-  fecha_emision: string;
-  cliente_id: number;
-  pago: boolean;
-  payer_name: string;
-  payer_address: string;
-  total: number;
-  delivery: boolean;
-  status: 'pending' | 'shipped' | 'delivered' | 'canceled';
-}
-
 export interface OrderProduct {
   pedido_id: number;
   product_id: number;

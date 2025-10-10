@@ -10,8 +10,13 @@ import { useEffect, useState } from "react"
 import { signOut } from "next-auth/react";
 
 
+// Usa localhost en dev, o NEXT_PUBLIC_SOCKET_URL si lo definiste
+const SOCKET_URL =
+  process.env.NEXT_PUBLIC_SOCKET_URL ||
+  (typeof window !== "undefined" ? window.location.origin : "");
 
-const socket = io(process.env.NEXT_PUBLIC_URL!)
+const socket = io(SOCKET_URL, { transports: ["websocket"] });
+
 
 const sidebarItems = [
   {

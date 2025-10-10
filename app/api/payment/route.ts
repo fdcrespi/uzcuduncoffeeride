@@ -7,8 +7,14 @@ const mercadopago = new MercadoPagoConfig({
   accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN!,
 });
 
-import io from 'socket.io-client';
-const socket = io(process.env.NEXT_PUBLIC_URL!);
+import io from "socket.io-client";
+const SOCKET_URL =
+  process.env.SOCKET_SERVER_URL ||           // opcional (server-only)
+  process.env.NEXT_PUBLIC_SOCKET_URL ||      // si lo definiste
+  "http://localhost:3000";                   // dev por defecto
+
+const socket = io(SOCKET_URL, { transports: ["websocket"] });
+
 
 export async function POST(request: NextRequest) {
   if (request.nextUrl.searchParams.get("topic") !== "payment")
@@ -47,7 +53,8 @@ export async function POST(request: NextRequest) {
         name: payment.metadata?.name,
         address: payment.metadata?.address,
         phone: payment.metadata?.phone,
-        delivery_price: payment.metadata?.delivery_price
+        delivery_price: payment.metadata?.delivery_price,
+        payerZip: payment.metadata?.zip,
         //y demas info que sea necesaria
       };
       /* console.log("===== PAYMENT=======");
@@ -59,8 +66,8 @@ export async function POST(request: NextRequest) {
         //Insertar el pedido en la base de datos
         //console.log("Insertando pedido en la base de datos...", pedido);
         const resultPedido = await db.query(
-          `INSERT INTO Pedido (pago, modo_entrega_id, mp_id, payer_name, payer_address, payer_phone, total, delivery) 
-          VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+          `INSERT INTO Pedido (pago, modo_entrega_id, mp_id, payer_name, payer_address, payer_phone, total, delivery, payer_zip) 
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
           RETURNING id`,
           [
             true,
@@ -70,7 +77,8 @@ export async function POST(request: NextRequest) {
             pedido.address,
             pedido.phone,
             pedido.amount,
-            pedido.delivery_price
+            pedido.delivery_price,
+            pedido.payerZip,
           ]
         );
         //const resultPedido = ;
