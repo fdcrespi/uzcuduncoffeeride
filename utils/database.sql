@@ -145,6 +145,63 @@ CREATE TABLE IF NOT EXISTS Producto_Imagen (
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+--10/10/2025 agregar logistica basica
+-- Tabla de tarifas por código postal
+-- 1) Tabla (idempotente)
+CREATE TABLE IF NOT EXISTS Logistica_Tarifa_CP (
+  id SERIAL PRIMARY KEY,
+  cp VARCHAR(10) NOT NULL,                  -- ej: '7600' o '*' (fallback)
+  costo NUMERIC(12,2) NOT NULL CHECK (costo >= 0),
+  plazo_dias INT NULL CHECK (plazo_dias >= 0),
+  activo BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMP NOT NULL DEFAULT now(),
+  updated_at TIMESTAMP NOT NULL DEFAULT now(),
+  CONSTRAINT uq_logistica_tarifa_cp UNIQUE (cp)
+);
+
+-- 2) Función updated_at (idempotente)
+CREATE OR REPLACE FUNCTION set_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = now();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- 3) Drop del trigger SOLO si existe (sin NOTICE)
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM pg_trigger t
+    JOIN pg_class c ON c.oid = t.tgrelid
+    WHERE t.tgname = 'trg_logistica_tarifa_cp_updated'
+      AND c.relname = 'logistica_tarifa_cp'
+  ) THEN
+    EXECUTE 'DROP TRIGGER trg_logistica_tarifa_cp_updated ON Logistica_Tarifa_CP';
+  END IF;
+END
+$$;
+
+-- 4) Crear trigger (idempotente: primero intentar dropear arriba)
+CREATE TRIGGER trg_logistica_tarifa_cp_updated
+BEFORE UPDATE ON Logistica_Tarifa_CP
+FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+
+-- 5) Fallback global (idempotente)
+INSERT INTO Logistica_Tarifa_CP (cp, costo, plazo_dias, activo) VALUES
+  ('7600', 2500, 3, TRUE),   -- Mar del Plata (ejemplo)
+  ('1000', 3000, 4, TRUE),   -- CABA (ejemplo)
+  ('*',    4000, 5, TRUE)    -- fallback nacional
+ON CONFLICT (cp) DO UPDATE
+  SET costo = EXCLUDED.costo,
+      plazo_dias = EXCLUDED.plazo_dias,
+      activo = EXCLUDED.activo;
+
+
+--FIN logistica basica
+
+
 -- Índices/constraints
 CREATE UNIQUE INDEX IF NOT EXISTS ux_prod_img_principal
 ON Producto_Imagen (producto_id)
