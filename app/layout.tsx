@@ -8,6 +8,7 @@ import { CartProvider } from "@/contexts/cart-context"
 import { Toaster } from "@/components/ui/toaster"
 import { RemoveItemDialog } from "@/components/cart/remove-item-dialog"
 import "./globals.css"
+import Providers from "./providers"
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -30,7 +31,9 @@ export default function RootLayout({
     <html lang="es">
       <body className={`font-sans ${montserrat.variable} ${GeistMono.variable}`}>        
         <CartProvider>
-          <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
+          <Providers>
+            <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
+          </Providers>
           <Toaster />
           <RemoveItemDialog />
         </CartProvider>

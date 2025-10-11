@@ -53,6 +53,7 @@ export default function OrderDetailCard({ orderId }: { orderId: number }) {
               </SelectContent>
             </Select>
           </div>
+          <p className="text-sm text-gray-700"><span className="font-bold">Envio:</span> {order?.delivery.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' })}</p>
           <p className="text-sm text-gray-700"><span className="font-bold">Total:</span> {order?.total.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' })}</p>
         </div>
       </div>

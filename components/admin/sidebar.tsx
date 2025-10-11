@@ -62,10 +62,11 @@ const sidebarItems = [
 ]
 
 interface AdminSidebarProps {
-  className?: string
+  className?: string,
+  onClose?: () => void
 }
 
-export function AdminSidebar({ className }: AdminSidebarProps) {
+export function AdminSidebar({ className, onClose }: AdminSidebarProps) {
   const pathname = usePathname();
   const [cantidadPedidos, setCantidadPedidos] = useState(0);
 
@@ -113,7 +114,7 @@ export function AdminSidebar({ className }: AdminSidebarProps) {
             <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
               <Bike className="w-5 h-5 text-primary-foreground" />
             </div>
-            <h2 className="text-lg font-semibold">Admin Panel</h2>
+            <h2 className="text-lg font-semibold">Admininistrar</h2>
           </div>
           <div className="space-y-1">
             {sidebarItems.map((item) => (
@@ -124,6 +125,7 @@ export function AdminSidebar({ className }: AdminSidebarProps) {
                   "flex items-center space-x-3 rounded-lg px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors",
                   pathname === item.href ? "bg-accent text-accent-foreground" : "text-muted-foreground",
                 )}
+                onClick={onClose}
               >
                 <item.icon className="w-4 h-4" />
                 <span>{item.title}</span>

@@ -50,7 +50,7 @@ export interface Order {
   payer_name: string;
   payer_address: string;
   total: number;
-  delivery: boolean;
+  delivery: number;
   status: 'pending' | 'shipped' | 'delivered' | 'canceled';
   payer_zip?: string | null;
 }

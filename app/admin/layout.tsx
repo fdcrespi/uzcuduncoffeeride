@@ -12,12 +12,16 @@ export default function AdminLayout({
   children: React.ReactNode
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  
+  function onClose() {
+    setSidebarOpen(false)
+  }
 
   return (
     <div className="min-h-screen bg-background">
       <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
         <SheetContent side="left" className="p-0 w-64">
-          <AdminSidebar />
+          <AdminSidebar onClose={onClose} />
         </SheetContent>
       </Sheet>
 

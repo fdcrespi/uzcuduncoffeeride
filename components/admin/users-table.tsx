@@ -15,6 +15,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { useSession } from "next-auth/react"
 
 interface User {
   id: number;
@@ -34,6 +35,14 @@ interface UsersTableProps {
 
 export function UsersTable({ users, onEdit, onDelete }: UsersTableProps) {
   const [userToDelete, setUserToDelete] = useState<User | null>(null)
+
+  const { data: session, status } = useSession();
+
+  if (status === 'loading') {
+    return (
+      <p>Cargando ...</p>
+    )
+  }
 
   return (
     <>
@@ -62,22 +71,25 @@ export function UsersTable({ users, onEdit, onDelete }: UsersTableProps) {
               <TableCell>{user.apellido}</TableCell>
               <TableCell className="text-right">
                 <Badge variant="outline">{user.rol_name}</Badge>
-                
+
               </TableCell>
               <TableCell className="text-right">
-                <div className="flex items-center justify-end space-x-2">
-                  <Button variant="ghost" size="icon" onClick={() => onEdit?.(user)}>
-                    <Edit className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="text-red-600 hover:text-red-700"
-                    onClick={() => setUserToDelete(user)}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </div>
+                {/* if user me or super admin */}
+                {
+                  user.rol_id !== 2 || user.email === session?.user?.email &&
+                  <div className="flex items-center justify-end space-x-2">
+                    <Button variant="ghost" size="icon" onClick={() => onEdit?.(user)}>
+                      <Edit className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-red-600 hover:text-red-700"
+                      onClick={() => setUserToDelete(user)}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>}
               </TableCell>
             </TableRow>
           ))}
@@ -91,7 +103,7 @@ export function UsersTable({ users, onEdit, onDelete }: UsersTableProps) {
             <AlertDialogTitle>Confirmar eliminación</AlertDialogTitle>
             <AlertDialogDescription>
               ¿Estás seguro de que deseas eliminar el usuario{" "}
-              <span className="font-semibold">{userToDelete?.email}</span>?  
+              <span className="font-semibold">{userToDelete?.email}</span>?
               Esta acción no se puede deshacer y se eliminará de forma permanente el usuario.
             </AlertDialogDescription>
           </AlertDialogHeader>
