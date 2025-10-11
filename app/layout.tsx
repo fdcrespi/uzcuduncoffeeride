@@ -9,6 +9,7 @@ import { Toaster } from "@/components/ui/toaster"
 import { RemoveItemDialog } from "@/components/cart/remove-item-dialog"
 import "./globals.css"
 import Providers from "./providers"
+import Script from "next/script"
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -29,6 +30,13 @@ export default function RootLayout({
 }>) {  
   return (
     <html lang="es">
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+         <Script
+          src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places`}
+          strategy="beforeInteractive"
+        />
+      </head>
       <body className={`font-sans ${montserrat.variable} ${GeistMono.variable}`}>        
         <CartProvider>
           <Providers>

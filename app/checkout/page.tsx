@@ -26,6 +26,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState, ChangeEvent } from "react";
 import { toast } from "@/hooks/use-toast";
 import type { CartItem } from "@/lib/types";
+import { AddressInput } from "@/components/checkout/addressAutocomplete";
 
 /* =========================
    Tipos y utilidades extra
@@ -120,10 +121,12 @@ const ShippingForm: React.FC<ShippingFormProps> = ({ shippingData, setShippingDa
             <Label htmlFor="phone">Teléfono</Label>
             <Input id="phone" name="phone" value={shippingData.phone} onChange={handleChange} required />
           </div>
-          <div>
+          {/* <div>
             <Label htmlFor="address">Dirección</Label>
             <Input id="address" name="address" value={shippingData.address} onChange={handleChange} required />
-          </div>
+          </div> */}
+          <AddressInput shippingData={shippingData} setShippingData={setShippingData} />
+        
           <div className="flex gap-4">
             <div className="flex-1 basis-[60%]">
               <Label htmlFor="city">Ciudad</Label>
