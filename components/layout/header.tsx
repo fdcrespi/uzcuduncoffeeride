@@ -27,7 +27,7 @@ export function Header({ categories }: { categories: Category[] }) {
               <span className="text-xl font-bold text-foreground">MotoGear & Café</span>
             </div> */}
           <Link href="/">
-            <Image src="/logo-black.png" alt="Logo uzcudun coffee and ride" width={100} height={80} className="ml-4"/>
+            <Image src="/logosuzcudun-31.webp" alt="Logo uzcudun coffee and ride" width={100} height={80} className="ml-4"/>
           </Link>
           
 
