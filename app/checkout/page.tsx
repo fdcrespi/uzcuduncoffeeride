@@ -19,7 +19,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { QuantityControl } from "@/components/ui/quantity-control";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCart } from "@/contexts/cart-context";
-import { ArrowLeft, Shield, Truck } from "lucide-react";
+import { ArrowLeft, MapPin, Shield, Store, Truck } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -27,6 +27,7 @@ import { useEffect, useMemo, useRef, useState, ChangeEvent } from "react";
 import { toast } from "@/hooks/use-toast";
 import type { CartItem } from "@/lib/types";
 import { AddressInput } from "@/components/checkout/addressAutocomplete";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 /* =========================
    Tipos y utilidades extra
@@ -53,6 +54,7 @@ interface ShippingData {
   city: string;
   zipCode: string;
   notes: string;
+  deliveryMethod: "shipping" | "pickup";
 }
 
 interface ShippingFormProps {
@@ -93,6 +95,10 @@ const ShippingForm: React.FC<ShippingFormProps> = ({ shippingData, setShippingDa
     onStepForward();
   };
 
+  const handleDeliveryMethodChange = (value: string) => {
+    setShippingData({ ...shippingData, deliveryMethod: value as "shipping" | "pickup" });
+  };
+
   return (
     <form onSubmit={handleSubmit} id="shipping-form">
       <Card>
@@ -103,6 +109,38 @@ const ShippingForm: React.FC<ShippingFormProps> = ({ shippingData, setShippingDa
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          <Tabs 
+            defaultValue={shippingData.deliveryMethod} 
+            onValueChange={handleDeliveryMethodChange}
+            className="w-full"
+          >
+            <TabsList className="grid w-full grid-cols-2 mb-4">
+              <TabsTrigger value="shipping" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <Truck className="w-4 h-4" /> Envío a domicilio
+              </TabsTrigger>
+              <TabsTrigger value="pickup" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <Store className="w-4 h-4" /> Retiro en tienda
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="shipping" className="mt-4">
+              {/* Contenido para envío a domicilio */}
+            </TabsContent>
+            
+            <TabsContent value="pickup" className="mt-4">
+              <div className="p-4 border rounded-md bg-muted/30 mb-4">
+                <div className="flex items-start gap-3">
+                  <MapPin className="w-5 h-5 text-primary mt-1" />
+                  <div>
+                    <h3 className="font-medium">Uzcudun Coffee & Ride</h3>
+                    <p className="text-sm text-muted-foreground">Av. Corrientes 1234, CABA</p>
+                    <p className="text-sm text-muted-foreground">Horario: Lunes a Viernes 9:00 - 18:00</p>
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
+
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label htmlFor="firstName">Nombre</Label>
@@ -121,25 +159,26 @@ const ShippingForm: React.FC<ShippingFormProps> = ({ shippingData, setShippingDa
             <Label htmlFor="phone">Teléfono</Label>
             <Input id="phone" name="phone" value={shippingData.phone} onChange={handleChange} required />
           </div>
-          {/* <div>
-            <Label htmlFor="address">Dirección</Label>
-            <Input id="address" name="address" value={shippingData.address} onChange={handleChange} required />
-          </div> */}
-          <AddressInput shippingData={shippingData} setShippingData={setShippingData} />
-        
-          <div className="flex gap-4">
-            <div className="flex-1 basis-[60%]">
-              <Label htmlFor="city">Ciudad</Label>
-              <Input id="city" name="city" value={shippingData.city} onChange={handleChange} required />
-            </div>
-            <div className="flex-1 basis-[30%]">
-              <Label htmlFor="zipCode">Cod.Postal</Label>
-              <Input id="zipCode" name="zipCode" value={shippingData.zipCode} onChange={handleChange} required />
-            </div>
-          </div>
+          
+          {shippingData.deliveryMethod === "shipping" && (
+            <>
+              <AddressInput shippingData={shippingData} setShippingData={setShippingData} />
+              <div className="flex gap-4">
+                <div className="flex-1 basis-[60%]">
+                  <Label htmlFor="city">Ciudad</Label>
+                  <Input id="city" name="city" value={shippingData.city} onChange={handleChange} required={shippingData.deliveryMethod === "shipping"} />
+                </div>
+                <div className="flex-1 basis-[30%]">
+                  <Label htmlFor="zipCode">Cod.Postal</Label>
+                  <Input id="zipCode" name="zipCode" value={shippingData.zipCode} onChange={handleChange} required={shippingData.deliveryMethod === "shipping"} />
+                </div>
+              </div>
+            </>
+          )}
+          
           <div>
             <Label htmlFor="notes">Notas del pedido (opcional)</Label>
-            <Textarea id="notes" name="notes" value={shippingData.notes} onChange={handleChange} placeholder="Instrucciones especiales de entrega..." />
+            <Textarea id="notes" name="notes" value={shippingData.notes} onChange={handleChange} placeholder={shippingData.deliveryMethod === "shipping" ? "Instrucciones especiales de entrega..." : "Instrucciones especiales para el retiro..."} />
           </div>
         </CardContent>
       </Card>
@@ -260,7 +299,7 @@ export default function CheckoutPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [step, setStep] = useState(1);
   const [shippingData, setShippingData] = useState<ShippingData>({
-    firstName: "", lastName: "", email: "", phone: "", address: "", city: "", zipCode: "", notes: "",
+    firstName: "", lastName: "", email: "", phone: "", address: "", city: "", zipCode: "", notes: "", deliveryMethod: "shipping",
   });
   const [preferenceId, setPreferenceId] = useState<string | null>(null);
   const isMobile = useIsMobile();
@@ -290,6 +329,13 @@ export default function CheckoutPage() {
 
   // 👇 NUEVO: función para cotizar (tolerante a nombres de campos)
   async function fetchQuote(cp: string) {
+    // Si es retiro en tienda, no calculamos envío
+    if (shippingData.deliveryMethod === "pickup") {
+      setShippingQuote({ amount: 0, source: "fallback" });
+      setShippingError(null);
+      return;
+    }
+
     const cpTrim = (cp || "").trim();
     if (cpTrim.length < 4) {
       setShippingQuote(null);
@@ -372,12 +418,22 @@ export default function CheckoutPage() {
 
   const handleCreatePreference = async () => {
     const { notes, ...requiredData } = shippingData;
-    const isFormValid = Object.values(requiredData).every((value) => value.trim() !== "");
+    
+    // Validar campos según el método de entrega
+    let isFormValid = true;
+    if (shippingData.deliveryMethod === "shipping") {
+      // Para envío a domicilio, validar todos los campos
+      isFormValid = Object.values(requiredData).every((value) => value.trim() !== "");
+    } else {
+      // Para retiro en tienda, validar solo los campos necesarios (excluir address, city, zipCode)
+      const { address, city, zipCode, ...requiredPickupData } = requiredData;
+      isFormValid = Object.values(requiredPickupData).every((value) => value.trim() !== "");
+    }
 
     if (!isFormValid) {
       toast({
         title: "Formulario incompleto",
-        description: "Por favor, completa todos los campos de envío requeridos.",
+        description: "Por favor, completa todos los campos requeridos.",
         variant: "destructive",
       });
       return;
@@ -387,9 +443,13 @@ export default function CheckoutPage() {
     try {
       await fetchQuote(shippingData.zipCode);
     } catch {}
-    const shippingToSend = quoteCacheRef.current.get((shippingData.zipCode || "").trim())?.amount ?? 0;
+    
+    // Si es retiro en tienda, el envío es 0
+    const shippingToSend = shippingData.deliveryMethod === "pickup" 
+      ? 0 
+      : quoteCacheRef.current.get((shippingData.zipCode || "").trim())?.amount ?? 0;
 
-    if (shippingError) {
+    if (shippingData.deliveryMethod === "shipping" && shippingError) {
       toast({
         title: "No pudimos calcular el envío",
         description: "Revisá el código postal e intentá nuevamente.",
