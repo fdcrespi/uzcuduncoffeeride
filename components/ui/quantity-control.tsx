@@ -7,9 +7,10 @@ import { Input } from "@/components/ui/input";
 interface QuantityControlProps {
   quantity: number;
   onUpdate: (newQuantity: number) => void;
+  stock: number,
 }
 
-export const QuantityControl: React.FC<QuantityControlProps> = ({ quantity, onUpdate }) => {
+export const QuantityControl: React.FC<QuantityControlProps> = ({ quantity, onUpdate, stock }) => {
   return (
     <div className="flex items-center gap-1 mt-2">
       <Button
@@ -35,7 +36,10 @@ export const QuantityControl: React.FC<QuantityControlProps> = ({ quantity, onUp
         variant="outline"
         size="icon"
         className="h-6 w-6"
-        onClick={() => onUpdate(quantity + 1)}
+        disabled={quantity==stock}
+        onClick={() => {
+          quantity <= stock && onUpdate(quantity + 1)
+        }}
       >
         +
       </Button>

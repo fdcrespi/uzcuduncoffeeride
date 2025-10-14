@@ -175,7 +175,9 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
                 <QuantityControl
                   quantity={item.quantity}
                   onUpdate={(newQuantity) => updateQuantity(item.product.id, newQuantity)}
+                  stock={item.product.stock}
                 />
+                <p className="text-sm text-gray-400">Cantidad disponible: {item.product.stock}</p>
               </div>
               <div className="text-right">
                 <p className="font-medium">${(item.product.precio * item.quantity).toLocaleString()}</p>

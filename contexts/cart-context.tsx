@@ -19,7 +19,7 @@ function cartReducer(state: CartItem[], action: CartAction): CartItem[] {
       const existingItem = state.find((item) => item.product.id === action.product.id)
       if (existingItem) {
         return state.map((item) =>
-          item.product.id === action.product.id ? { ...item, quantity: item.quantity + 1 } : item,
+          item.product.id === action.product.id && item.product.stock > item.quantity ? { ...item, quantity: item.quantity + 1 } : item,
         )
       }
       return [...state, { product: action.product, quantity: 1 }]

@@ -68,6 +68,7 @@ export function CartSidebar() {
                         <QuantityControl
                           quantity={item.quantity}
                           onUpdate={(newQuantity) => updateQuantity(item.product.id, newQuantity)}
+                          stock={item.product.stock}
                         />
                       </div>
                       <div className="text-right">
