@@ -310,6 +310,7 @@ export default function OrdersPage() {
                 <TableHead>Pedido</TableHead>
                 <TableHead>Cliente</TableHead>
                 <TableHead>Total</TableHead>
+                <TableHead>Modo Entrega</TableHead>
                 <TableHead>Estado</TableHead>
                 <TableHead>Fecha</TableHead>
                 <TableHead className="text-right">Acciones</TableHead>
@@ -334,6 +335,19 @@ export default function OrdersPage() {
                     </TableCell>
                     <TableCell>
                       <div className="font-medium">${order.total.toLocaleString()}</div>
+                    </TableCell>
+                    <TableCell>
+                      {order.modo_entrega_id === 1 ? (
+                        <div className="flex items-center space-x-2">
+                          <Truck className="w-4 h-4 text-muted-foreground" />
+                          <span>Envío a Domicilio</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center space-x-2">
+                          <Package className="w-4 h-4 text-muted-foreground" />
+                          <span>Retiro en Tienda</span>
+                        </div>
+                      )}
                     </TableCell>
                     <TableCell>
                       <Select value={order.status} onValueChange={(value) => updateOrderStatus(order.id, value as Order["status"])}>
@@ -381,15 +395,17 @@ export default function OrdersPage() {
                             <Eye className="w-4 h-4" />
                           </Button>
                         </Link>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="w-8 h-8 cursor-pointer"
-                          title="Imprimir etiqueta"
-                          onClick={() => printOrderLabel(order)}
-                        >
-                          <Printer className="w-4 h-4" />
-                        </Button>
+                        {order.modo_entrega_id === 1 && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="w-8 h-8 cursor-pointer"
+                            title="Imprimir etiqueta"
+                            onClick={() => printOrderLabel(order)}
+                          >
+                            <Printer className="w-4 h-4" />
+                          </Button>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>
