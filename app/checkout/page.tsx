@@ -28,6 +28,7 @@ import { toast } from "@/hooks/use-toast";
 import type { CartItem } from "@/lib/types";
 import { AddressInput } from "@/components/checkout/addressAutocomplete";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import data from "@/lib/data";
 
 /* =========================
    Tipos y utilidades extra
@@ -132,9 +133,9 @@ const ShippingForm: React.FC<ShippingFormProps> = ({ shippingData, setShippingDa
                 <div className="flex items-start gap-3">
                   <MapPin className="w-5 h-5 text-primary mt-1" />
                   <div>
-                    <h3 className="font-medium">Uzcudun Coffee & Ride</h3>
-                    <p className="text-sm text-muted-foreground">Av. Corrientes 1234, CABA</p>
-                    <p className="text-sm text-muted-foreground">Horario: Lunes a Viernes 9:00 - 18:00</p>
+                    <h3 className="font-medium">{data.nombre}</h3>
+                    <p className="text-sm text-muted-foreground">{data.direccion}, {data.ciudad}</p>
+                    <p className="text-sm text-muted-foreground">Horario: {data.horarios}</p>
                   </div>
                 </div>
               </div>
@@ -216,7 +217,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
                   onUpdate={(newQuantity) => updateQuantity(item.product.id, newQuantity)}
                   stock={item.product.stock}
                 />
-                <p className="text-sm text-gray-400">Cantidad disponible: {item.product.stock}</p>
+                <p className="text-sm text-gray-400">Podes comprar hasta: {item.product.stock} unidades</p>
               </div>
               <div className="text-right">
                 <p className="font-medium">${(item.product.precio * item.quantity).toLocaleString()}</p>
@@ -459,6 +460,7 @@ export default function CheckoutPage() {
     }
 
     setIsProcessing(true);
+
     try {
       const response = await fetch("/api/mercadopago/preference", {
         method: "POST",

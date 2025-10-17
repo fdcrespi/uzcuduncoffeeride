@@ -13,7 +13,7 @@ interface RecentOrdersCardProps {
 
 export function RecentOrdersCard({ orders, className }: RecentOrdersCardProps) {
 
-  console.log(orders)
+  //console.log(orders)
   const getStatusText = (status: string) => {
     switch (status) {
      //'pending' | 'shipped' | 'delivered' | 'canceled'

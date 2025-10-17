@@ -98,7 +98,7 @@ export async function POST(req: NextRequest) {
           cantidad: item.quantity,
           precio: item.product.precio,
         })),
-        option: shippingData.option || "delivery", // "delivery" o "pickup"
+        option: shippingData.deliveryMethod == 'shipping' ? 1 : 2,
         name: `${shippingData.firstName} ${shippingData.lastName}`,
         address: shippingData.address,
         phone: shippingData.phone,
