@@ -3,6 +3,7 @@ import { db } from '@/lib/db';
 import { NextResponse } from 'next/server';
 import path from 'path';
 import { unlink } from 'fs/promises';
+import { supabaseAdmin } from '@/lib/supabase-server';
 
 // Helpers
 function isLocalUploadUrl(url: string | null | undefined) {
@@ -12,6 +13,13 @@ function toAbsolutePathFromPublic(url: string) {
   // url: "/uploads/xxx.jpg" -> "<projectRoot>/public/uploads/xxx.jpg"
   const rel = url.replace(/^\//, ''); // remove leading slash
   return path.join(process.cwd(), 'public', rel);
+}
+function parseSupabasePathFromPublicUrl(url: string | null | undefined) {
+  // Expected: https://<proj>.supabase.co/storage/v1/object/public/<bucket>/<path>
+  if (typeof url !== 'string') return null;
+  const match = url.match(/\/storage\/v1\/object\/public\/([^/]+)\/(.+)$/);
+  if (!match) return null;
+  return { bucket: match[1], path: match[2] } as { bucket: string; path: string };
 }
 
 /**
@@ -126,7 +134,7 @@ export async function DELETE(
 
     await client.query('COMMIT');
 
-    // 3) Intentar borrar archivo físico si es local
+    // 3) Intentar borrar archivo físico si es local; si es Supabase, borrar del bucket
     if (isLocalUploadUrl(url)) {
       const filePath = toAbsolutePathFromPublic(url);
       try {
@@ -135,6 +143,20 @@ export async function DELETE(
         // Si no existe o falla, log y seguimos (no rompemos la API por el archivo)
         if (e?.code !== 'ENOENT') {
           console.warn('No se pudo eliminar el archivo:', filePath, e);
+        }
+      }
+    } else {
+      const parsed = parseSupabasePathFromPublicUrl(url);
+      if (parsed) {
+        try {
+          const { error: removeErr } = await supabaseAdmin.storage
+            .from(parsed.bucket)
+            .remove([parsed.path]);
+          if (removeErr) {
+            console.warn('No se pudo eliminar el archivo en Supabase:', parsed, removeErr);
+          }
+        } catch (e) {
+          console.warn('Error inesperado eliminando en Supabase:', parsed, e);
         }
       }
     }

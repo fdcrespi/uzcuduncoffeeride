@@ -1,11 +1,10 @@
 // app/api/products/[id]/images/upload/route.ts
-import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
-import { mkdir, writeFile } from "fs/promises";
-import path from "path";
-import { existsSync } from "fs";
+import { NextResponse } from "next/server"
+import { db } from "@/lib/db"
+import path from "path"
+import { supabaseAdmin } from "@/lib/supabase-server"
 
-export const runtime = "nodejs"; // necesitamos fs
+export const runtime = "nodejs" // necesitamos fs
 
 const MAX_FILES = 12;          // tope por request
 const MAX_SIZE_BYTES = 5 * 1024 * 1024; // 5MB por archivo
@@ -27,11 +26,6 @@ export async function POST(req: Request, { params }: { params: { id: string } })
       return new NextResponse(JSON.stringify({ message: `Máximo ${MAX_FILES} archivos por subida` }), { status: 400 });
     }
 
-    const uploadDir = path.join(process.cwd(), "public", "uploads");
-    if (!existsSync(uploadDir)) {
-      await mkdir(uploadDir, { recursive: true });
-    }
-
     const client = await db.connect();
     try {
       await client.query("BEGIN");
@@ -50,12 +44,21 @@ export async function POST(req: Request, { params }: { params: { id: string } })
         const ext = path.extname(file.name || "").toLowerCase() || guessExt(file.type);
         const base = (file.name || "image").replace(/\s+/g, "-").replace(/[^a-zA-Z0-9-_]/g, "").slice(0, 40);
         const filename = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${base}${ext}`;
-        const filepath = path.join(uploadDir, filename);
+        const storagePath = `products/${productId}/${filename}`;
 
-        // Guardar en disco
-        const arrayBuffer = await file.arrayBuffer();
-        const buffer = Buffer.from(arrayBuffer);
-        await writeFile(filepath, buffer);
+        // Subir a Supabase Storage (bucket 'images')
+        const uploadRes = await supabaseAdmin.storage
+          .from("images")
+          .upload(storagePath, file, { contentType: file.type });
+
+        if (uploadRes.error) {
+          throw new Error(`Error subiendo a Storage: ${uploadRes.error.message}`);
+        }
+
+        const { data: publicData } = supabaseAdmin.storage
+          .from("images")
+          .getPublicUrl(storagePath);
+        const publicUrl = publicData.publicUrl;
 
         // Insertar en DB con orden al final
         const insert = await client.query(
@@ -66,7 +69,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
           ))
           RETURNING id, url, orden, is_principal
         `,
-          [productId, `/uploads/${filename}`]
+          [productId, publicUrl]
         );
 
         saved.push(insert.rows[0]);
