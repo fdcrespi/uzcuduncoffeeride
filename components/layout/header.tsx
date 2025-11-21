@@ -71,7 +71,7 @@ export function Header({ categories }: { categories: Category[] }) {
   
         </div>
       </header>
-      <MobileNav isOpen={isMobileNavOpen} onClose={() => setIsMobileNavOpen(false)} />
+      <MobileNav categories={categories} isOpen={isMobileNavOpen} onClose={() => setIsMobileNavOpen(false)} />
     </>
   )
 }

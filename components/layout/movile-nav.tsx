@@ -1,21 +1,29 @@
 "use client"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
+import { Category } from "@/lib/types"
 
 import Image from "next/image"
 
 interface MobileNavProps {
   isOpen: boolean
   onClose: () => void
+  categories: Category[]
 }
 
-export function MobileNav({ isOpen, onClose }: MobileNavProps) {
+export function MobileNav({ isOpen, onClose, categories }: MobileNavProps) {
   const navItems = [
-    { href: "#motocicletas", label: "Motocicletas" },
-    { href: "#electricos", label: "Eléctricos" },
-    { href: "#accesorios", label: "Accesorios" },
-    { href: "#cafe", label: "Cafetería" },
-    { href: "#productos", label: "Productos" },
-    { href: "/admin", label: "Admin Panel" },
+    // categorías primero, ordenadas por nombre
+    { href: "/", label: "Inicio" },
+    ...[...categories]
+      .sort((a, b) => a.nombre.localeCompare(b.nombre))
+      .map((cat) => ({
+        href: `/products?category=${encodeURIComponent(cat.nombre)}`,
+        label: cat.nombre,
+      })),
+    // luego enlaces fijos
+    { href: "/#cafe", label: "Cafetería" },
+    { href: "/products", label: "Tienda" },
+    // { href: "/admin", label: "Admin Panel" },
   ]
 
   const handleNavClick = (href: string) => {
