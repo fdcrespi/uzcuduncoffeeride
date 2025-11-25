@@ -123,6 +123,14 @@ export default function ProductDetailPage() {
     return true;
   };
 
+  const handleWhatsAppInquiry = () => {
+    if (!product) return;
+    const phone = "5491112345678"; // 🔸 Reemplazar con el número de teléfono real
+    const message = `Hola, estoy interesado/a en el producto "${product.nombre}" (ID: ${product.id}). ¿Podrían darme más información?`;
+    const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, "_blank");
+  };
+
   const handleAddToCart = () => {
     if (!product) return;
     if (!ensureSizeSelected()) return;
@@ -196,7 +204,13 @@ export default function ProductDetailPage() {
               ${product.precio.toLocaleString("es-AR")}
             </p>
 
-            {product.stock > 0 && (
+            {product.exhibicion && (
+              <p className="mb-6 text-left text-sm text-yellow-600 bg-yellow-50 border border-yellow-200 rounded-md p-3">
+                Este producto es de exhibición. Para comprarlo, por favor consultanos directamente a través de WhatsApp.
+              </p>
+            )}
+
+            {product.stock > 0 && !product.exhibicion && (
               <div className="mb-6">
                 <h3 className="text-lg font-semibold">Stock disponible: 
                   <span className="text-gray-500 font-normal">
@@ -230,22 +244,34 @@ export default function ProductDetailPage() {
             )}
 
             <div className="flex w-full max-w-xs flex-col gap-3">
-              <Button
-                size="lg"
-                className="bg-primary hover:bg-primary/90"
-                onClick={handleBuyNow}
-                disabled={product.stock <= 0 || (needSizeSelection && (!selectedSize || (typeof selectedSize.stock === 'number' && selectedSize.stock <= 0)))}
-              >
-                Comprar ahora
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                onClick={handleAddToCart}
-                disabled={product.stock <= 0 || (needSizeSelection && (!selectedSize || (typeof selectedSize.stock === 'number' && selectedSize.stock <= 0)))}
-              >
-                Agregar al carrito
-              </Button>
+              {product.exhibicion ? (
+                <Button
+                  size="lg"
+                  className="bg-green-500 hover:bg-green-600 text-white"
+                  onClick={handleWhatsAppInquiry}
+                >
+                  Consultar por WhatsApp
+                </Button>
+              ) : (
+                <>
+                  <Button
+                    size="lg"
+                    className="bg-primary hover:bg-primary/90"
+                    onClick={handleBuyNow}
+                    disabled={product.stock <= 0 || (needSizeSelection && (!selectedSize || (typeof selectedSize.stock === 'number' && selectedSize.stock <= 0)))}
+                  >
+                    Comprar ahora
+                  </Button>
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    onClick={handleAddToCart}
+                    disabled={product.stock <= 0 || (needSizeSelection && (!selectedSize || (typeof selectedSize.stock === 'number' && selectedSize.stock <= 0)))}
+                  >
+                    Agregar al carrito
+                  </Button>
+                </>
+              )}
             </div>
             {product.stock <= 0 && (
               <p className="mt-4 font-semibold text-red-600">

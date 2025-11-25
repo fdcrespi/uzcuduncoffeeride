@@ -9,6 +9,7 @@ export interface Product {
   subrubro_nombre: string;
   destacado: boolean;
   visible: boolean;
+  exhibicion: boolean;
 }
 
 export interface Subcategory {

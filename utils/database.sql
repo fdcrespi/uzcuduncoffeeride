@@ -74,7 +74,8 @@ CREATE TABLE Producto (
     subrubro_id int NOT NULL,
     --image varchar(255)  NULL,  (migramos a Producto_Imagen)
     destacado boolean  NOT NULL DEFAULT false,
-    visible boolean  NOT NULL DEFAULT true
+    visible boolean  NOT NULL DEFAULT true,
+    exhibicion boolean  NOT NULL DEFAULT true
 );
 
 -- Table: Rol
@@ -215,6 +216,19 @@ EXECUTE FUNCTION set_updated_at();
 -- =====================
 -- Migraciones adicionales
 -- =====================
+-- Agregar columna exhibicion a Producto si no existe
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM information_schema.columns
+    WHERE table_name = 'producto' AND column_name = 'exhibicion'
+  ) THEN
+    ALTER TABLE Producto ADD COLUMN exhibicion BOOLEAN NOT NULL DEFAULT true;
+  END IF;
+END;
+$$;
+
 -- Agregar columna talle_id a Pedido_Productos si no existe
 DO $$
 BEGIN

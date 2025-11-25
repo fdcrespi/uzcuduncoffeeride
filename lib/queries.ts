@@ -36,6 +36,7 @@ export async function getProducts(options: GetProductsOptions = {}): Promise<Pro
         p.descripcion, 
         p.destacado,
         p.visible,
+        p.exhibicion,
         sp.precio, 
         sp.stock,
         sr.id as subrubro_id,
@@ -85,6 +86,7 @@ export async function getProducts(options: GetProductsOptions = {}): Promise<Pro
       category: p.category,
       destacado: p.destacado,
       visible: p.visible,
+      exhibicion: p.exhibicion,
     }));
 
     return products;

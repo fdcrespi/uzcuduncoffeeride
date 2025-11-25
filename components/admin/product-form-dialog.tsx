@@ -15,6 +15,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Switch } from "@/components/ui/switch"
 import { toast } from "sonner"
 
 import { Product, Subcategory } from "@/lib/types";
@@ -41,6 +42,7 @@ const initialFormData = {
 export function ProductFormDialog({ subcategories, onSubmit, initialData, onOpenChange }: ProductFormDialogProps) {
   const [isOpen, setIsOpen] = useState(true);
   const [formData, setFormData] = useState(initialFormData);
+  const [isVendible, setIsVendible] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [fileName, setFileName] = useState<string | null>(null);
 
@@ -81,6 +83,7 @@ export function ProductFormDialog({ subcategories, onSubmit, initialData, onOpen
       if (initialData.image) {
         setFileName(initialData.image.split('/').pop() || null);
       }
+      setIsVendible(!initialData.exhibicion);
       // cargar talles del producto en edición
       const loadProductSizes = async () => {
         try {
@@ -105,6 +108,7 @@ export function ProductFormDialog({ subcategories, onSubmit, initialData, onOpen
       setSelectedSizeIds([])
       setSizeStocks({})
       setProductSizesLoading(false)
+      setIsVendible(false);
     }
   }, [initialData]);
 
@@ -161,6 +165,7 @@ export function ProductFormDialog({ subcategories, onSubmit, initialData, onOpen
       stock: hasSizes ? totalSizeStock : Number(formData.stock) || 0,
       destacado: false,
       visible: true,
+      exhibicion: !isVendible,
     }, items);
     handleOpenChange(false);
   };
@@ -282,6 +287,11 @@ export function ProductFormDialog({ subcategories, onSubmit, initialData, onOpen
           <div className="grid gap-2">
             <Label htmlFor="descripcion">Descripción</Label>
             <Textarea id="descripcion" placeholder="Descripción del producto..." value={formData.descripcion} onChange={handleChange} />
+          </div>
+
+          <div className="flex items-center space-x-2 pt-2">
+            <Switch id="vendible-switch" checked={isVendible} onCheckedChange={setIsVendible} />
+            <Label htmlFor="vendible-switch" className="cursor-pointer">Para la venta</Label>
           </div>
 
           {/* Talles */}

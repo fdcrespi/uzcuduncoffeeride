@@ -24,7 +24,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const { nombre, descripcion, subrubro_id, precio, stock } = await request.json();
+    const { nombre, descripcion, subrubro_id, precio, stock, exhibicion } = await request.json();
     const sucursalId = 1; // Asumimos la sucursal principal
 
     // Validación básica
@@ -39,10 +39,10 @@ export async function POST(request: Request) {
 
       // 1. Insertar en la tabla Producto
       const productRes = await client.query(
-        `INSERT INTO Producto (nombre, descripcion, subrubro_id)
-        VALUES ($1, $2, $3)
+        `INSERT INTO Producto (nombre, descripcion, subrubro_id, exhibicion)
+        VALUES ($1, $2, $3, $4)
         RETURNING id;`,
-        [nombre, descripcion, parseInt(subrubro_id, 10)]
+        [nombre, descripcion, parseInt(subrubro_id, 10), exhibicion ?? true]
       );
       const newProductId = productRes.rows[0].id;
 
@@ -64,6 +64,7 @@ export async function POST(request: Request) {
         subrubro_id,        
         precio,
         stock,
+        exhibicion,
       };
       
       return new NextResponse(JSON.stringify(newProduct), { status: 201 });

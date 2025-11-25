@@ -20,6 +20,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
         p.nombre, 
         p.descripcion, 
         p.subrubro_id,
+        p.exhibicion,
         sp.precio, 
         sp.stock,
         pp.cover_url,
@@ -54,6 +55,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
       precio: row.precio !== null ? Number(row.precio) : 0,
       stock: row.stock !== null ? Number(row.stock) : 0,
       subrubro_id: String(row.subrubro_id),
+      exhibicion: row.exhibicion,
       image: row.cover_url || '/placeholder.svg', // compat con admin/table
       images: row.images, // array de { id, url, is_principal, orden }
     };
@@ -72,7 +74,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       return new NextResponse(JSON.stringify({ message: 'ID de producto inválido' }), { status: 400 });
     }
 
-    const { nombre, descripcion, subrubro_id, precio, stock } = await request.json();
+    const { nombre, descripcion, subrubro_id, precio, stock, exhibicion } = await request.json();
     const sucursalId = 1; // Asumimos la sucursal principal
 
     if (!nombre || !subrubro_id) {
@@ -86,9 +88,9 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 
       await client.query(
         `UPDATE Producto
-         SET nombre = $1, descripcion = $2, subrubro_id = $3
+         SET nombre = $1, descripcion = $2, subrubro_id = $3, exhibicion = $5
          WHERE id = $4;`,
-        [nombre, descripcion, parseInt(subrubro_id, 10), productId]
+        [nombre, descripcion, parseInt(subrubro_id, 10), productId, exhibicion]
       );
 
       await client.query(
@@ -101,7 +103,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 
       await client.query('COMMIT');
 
-      const updatedProduct = { id: productId, nombre, descripcion, subrubro_id, precio, stock };
+      const updatedProduct = { id: productId, nombre, descripcion, subrubro_id, precio, stock, exhibicion };
       return new NextResponse(JSON.stringify(updatedProduct), { status: 200 });
 
     } catch (error) {
@@ -125,7 +127,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     }
 
     const body = await request.json();
-    const { destacado, visible } = body;
+    const { destacado, visible, exhibicion } = body;
 
     let updateField = '';
     let updateValue;
@@ -136,6 +138,9 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     } else if (typeof visible === 'boolean') {
       updateField = 'visible';
       updateValue = visible;
+    } else if (typeof exhibicion === 'boolean') {
+      updateField = 'exhibicion';
+      updateValue = exhibicion;
     } else {
       return new NextResponse(JSON.stringify({ message: 'Cuerpo de la solicitud inválido' }), { status: 400 });
     }
