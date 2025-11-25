@@ -97,6 +97,8 @@ export async function POST(req: NextRequest) {
           nombre: item.product.nombre,
           cantidad: item.quantity,
           precio: item.product.precio,
+          talle_id: item.talle_id ?? item.size?.talle_id ?? null,
+          talle_nombre: item.talle_nombre ?? item.size?.talle_nombre ?? null,
         })),
         option: shippingData.deliveryMethod == 'shipping' ? 1 : 2,
         name: `${shippingData.firstName} ${shippingData.lastName}`,

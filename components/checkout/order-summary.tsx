@@ -30,7 +30,7 @@ interface OrderSummaryProps {
   preferenceId: string | null;
   isMobile: boolean;
   onBack: () => void;
-  updateQuantity: (productId: string, quantity: number) => void;
+  updateQuantity: (productId: string, quantity: number, talle_id?: number) => void;
 }
 
 export const OrderSummary: React.FC<OrderSummaryProps> = ({ items, totalPrice, shipping, finalTotal, isProcessing, handleCreatePreference, preferenceId, isMobile, onBack, updateQuantity }) => (
@@ -53,9 +53,13 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({ items, totalPrice, s
               </div>
               <div className="flex-1">
                 <h4 className="font-medium leading-tight">{item.product.nombre}</h4>
+                {item.talle_nombre && (
+                  <p className="text-xs text-muted-foreground">Talle: {item.talle_nombre}</p>
+                )}
                 <QuantityControl
                   quantity={item.quantity}
-                  onUpdate={(newQuantity) => updateQuantity(item.product.id, newQuantity)}
+                  onUpdate={(newQuantity) => updateQuantity(item.product.id, newQuantity, item.talle_id)}
+                  stock={item.product.stock}
                 />
               </div>
               <div className="text-right">

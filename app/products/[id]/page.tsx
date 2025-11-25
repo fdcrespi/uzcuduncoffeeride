@@ -9,8 +9,11 @@ import { useCart } from "@/contexts/cart-context";
 import { toast } from "@/hooks/use-toast";
 
 // Tipos
-import { Product as BaseProduct } from "@/lib/types";
+import { Product as BaseProduct, Size } from "@/lib/types";
 import { Header } from "@/components/layout/header";
+
+// 🔸 NUEVO: selector de talles
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 // 🔸 NUEVO: galería
 import ProductGallery from "@/components/ProductGallery";
@@ -26,6 +29,10 @@ type Product = BaseProduct & { images?: ProductImage[] };
 export default function ProductDetailPage() {
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // 🔸 NUEVO: estado de talles
+  const [sizes, setSizes] = useState<Size[]>([]);
+  const [selectedSizeId, setSelectedSizeId] = useState<number | null>(null);
 
   const params = useParams();
   const router = useRouter();
@@ -52,6 +59,25 @@ export default function ProductDetailPage() {
     };
 
     fetchProduct();
+  }, [id]);
+
+  // 🔸 NUEVO: cargar talles asociados al producto
+  useEffect(() => {
+    if (!id) return;
+    const fetchSizes = async () => {
+      try {
+        const res = await fetch(`/api/products/${id}/sizes`);
+        if (!res.ok) throw new Error("No se pudieron cargar los talles");
+        const data = await res.json();
+        setSizes(data || []);
+        // Reset selección si el producto cambió
+        setSelectedSizeId(null);
+      } catch (e) {
+        console.error(e);
+        setSizes([]);
+      }
+    };
+    fetchSizes();
   }, [id]);
 
   // Suscripción a socket para refrescar si actualizan el producto
@@ -82,21 +108,38 @@ export default function ProductDetailPage() {
     };
   }, [id]);
 
-  const handleAddToCart = () => {
-    if (product) {
-      addItem(product);
+  const needSizeSelection = sizes.length > 0;
+  const selectedSize = sizes.find((s) => s.id === selectedSizeId) || null;
+
+  const ensureSizeSelected = () => {
+    if (needSizeSelection && !selectedSize) {
       toast({
-        title: "¡Agregado!",
-        description: `Se ha añadido ${product.nombre} al carrito.`,
+        title: "Seleccioná un talle",
+        description: "Este producto requiere que elijas un talle.",
+        variant: "destructive",
       });
+      return false;
     }
+    return true;
+  };
+
+  const handleAddToCart = () => {
+    if (!product) return;
+    if (!ensureSizeSelected()) return;
+
+    addItem(product, selectedSize ? { talle_id: selectedSize.id, talle_nombre: selectedSize.nombre } : undefined);
+    toast({
+      title: "¡Agregado!",
+      description: `Se ha añadido ${product.nombre}${selectedSize ? ` (talle ${selectedSize.nombre})` : ""} al carrito.`,
+    });
   };
 
   const handleBuyNow = () => {
-    if (product) {
-      addItem(product);
-      router.push("/checkout");
-    }
+    if (!product) return;
+    if (!ensureSizeSelected()) return;
+
+    addItem(product, selectedSize ? { talle_id: selectedSize.id, talle_nombre: selectedSize.nombre } : undefined);
+    router.push("/checkout");
   };
 
   if (loading) return <ProductSkeleton />;
@@ -163,12 +206,35 @@ export default function ProductDetailPage() {
               </div>
             )}
 
+            {/* 🔸 NUEVO: Selector de talles si el producto los tiene */}
+            {needSizeSelection && (
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold mb-2">Seleccioná tu talle</h3>
+                <ToggleGroup type="single" value={selectedSizeId?.toString() ?? ""} onValueChange={(val) => {
+                  const nextId = val ? Number(val) : null;
+                  setSelectedSizeId(nextId);
+                }}>
+                  {sizes.map((s) => (
+                    <ToggleGroupItem key={s.id} value={String(s.id)} aria-label={`Talle ${s.nombre}`} disabled={(s.stock ?? 0) <= 0}>
+                      {s.nombre}{typeof s.stock === 'number' ? ` (${s.stock})` : ''}
+                    </ToggleGroupItem>
+                  ))}
+                </ToggleGroup>
+                {!selectedSize && (
+                  <p className="mt-2 text-sm text-muted-foreground">Debés elegir un talle para continuar.</p>
+                )}
+                {selectedSize && typeof selectedSize.stock === 'number' && selectedSize.stock <= 0 && (
+                  <p className="mt-2 text-sm text-red-600">Sin stock para el talle seleccionado.</p>
+                )}
+              </div>
+            )}
+
             <div className="flex w-full max-w-xs flex-col gap-3">
               <Button
                 size="lg"
                 className="bg-primary hover:bg-primary/90"
                 onClick={handleBuyNow}
-                disabled={product.stock <= 0}
+                disabled={product.stock <= 0 || (needSizeSelection && (!selectedSize || (typeof selectedSize.stock === 'number' && selectedSize.stock <= 0)))}
               >
                 Comprar ahora
               </Button>
@@ -176,7 +242,7 @@ export default function ProductDetailPage() {
                 size="lg"
                 variant="outline"
                 onClick={handleAddToCart}
-                disabled={product.stock <= 0}
+                disabled={product.stock <= 0 || (needSizeSelection && (!selectedSize || (typeof selectedSize.stock === 'number' && selectedSize.stock <= 0)))}
               >
                 Agregar al carrito
               </Button>

@@ -1,6 +1,6 @@
 "use client"
 
-import type { Product } from "@/lib/types";
+import type { Product, Size } from "@/lib/types";
 import {
   Card,
   CardContent,
@@ -16,6 +16,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import data from "@/lib/data";
+import { useEffect, useState } from "react";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 interface ProductCardProps {
   product: Product;
@@ -25,20 +28,69 @@ export function ProductCard({ product }: ProductCardProps) {
   const { addItem } = useCart();
   const router = useRouter();
 
-  const handleAddToCart = () => {
-    addItem(product);
-    toast({
-      title: "¡Agregado!",
-      description: `${product.nombre} se ha añadido al carrito.`,
-    });
-  };
+  // Selector de talle en tarjeta
+  const [sizeDialogOpen, setSizeDialogOpen] = useState(false);
+  const [availableSizes, setAvailableSizes] = useState<Size[]>([]);
+  const [selectedSizeId, setSelectedSizeId] = useState<number | null>(null);
+  const [pendingAction, setPendingAction] = useState<"add" | "buy" | null>(null);
+  const [loadingSizes, setLoadingSizes] = useState(false);
 
-  const handleBuyNow = () => {
-    if (product) {
+  const proceedNoSize = (action: "add" | "buy") => {
+    if (action === "add") {
+      addItem(product);
+      toast({ title: "¡Agregado!", description: `${product.nombre} se ha añadido al carrito.` });
+    } else {
       addItem(product);
       router.push("/checkout");
     }
   };
+
+  const startAction = async (action: "add" | "buy") => {
+    try {
+      setLoadingSizes(true);
+      const res = await fetch(`/api/products/${product.id}/sizes`);
+      const sizes: Size[] = res.ok ? await res.json() : [];
+      setAvailableSizes(sizes || []);
+      setSelectedSizeId(null);
+      if (!sizes || sizes.length === 0) {
+        // No requiere talle
+        proceedNoSize(action);
+        return;
+      }
+      setPendingAction(action);
+      setSizeDialogOpen(true);
+    } catch (e) {
+      console.error(e);
+      proceedNoSize(action);
+    } finally {
+      setLoadingSizes(false);
+    }
+  };
+
+  const handleConfirm = () => {
+    if (!pendingAction) return;
+    const selected = availableSizes.find((s) => s.id === selectedSizeId);
+    if (!selected) {
+      toast({ title: "Seleccioná un talle", description: "Debés elegir un talle para continuar.", variant: "destructive" });
+      return;
+    }
+    if (typeof selected.stock === "number" && selected.stock <= 0) {
+      toast({ title: "Sin stock", description: "El talle seleccionado no tiene stock.", variant: "destructive" });
+      return;
+    }
+    if (pendingAction === "add") {
+      addItem(product, { talle_id: selected.id, talle_nombre: selected.nombre });
+      toast({ title: "¡Agregado!", description: `${product.nombre} (talle ${selected.nombre}) se ha añadido al carrito.` });
+    } else {
+      addItem(product, { talle_id: selected.id, talle_nombre: selected.nombre });
+      router.push("/checkout");
+    }
+    setSizeDialogOpen(false);
+    setPendingAction(null);
+  };
+
+  const handleBuyNow = () => startAction("buy");
+  const handleAddToCart = () => startAction("add");
 
   return (
     <Card className="group flex flex-col justify-between overflow-hidden rounded-lg border shadow-sm transition-all duration-300 hover:shadow-xl">
@@ -62,12 +114,11 @@ export function ProductCard({ product }: ProductCardProps) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {product.precio > 0
-            && (
-              <p className="text-2xl font-bold text-primary">
-                ${product.precio.toLocaleString("es-AR")}
-              </p>
-            )}
+          {product.precio > 0 && (
+            <p className="text-2xl font-bold text-primary">
+              ${product.precio.toLocaleString("es-AR")}
+            </p>
+          )}
         </CardContent>
       </div>
 
@@ -107,6 +158,37 @@ export function ProductCard({ product }: ProductCardProps) {
           </div>
         )}
       </CardFooter>
+
+      {/* Dialogo de selección de talle */}
+      <Dialog open={sizeDialogOpen} onOpenChange={setSizeDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Seleccioná tu talle</DialogTitle>
+          </DialogHeader>
+          {loadingSizes ? (
+            <p className="text-sm text-muted-foreground">Cargando talles...</p>
+          ) : availableSizes.length > 0 ? (
+            <div className="space-y-3">
+              <ToggleGroup type="single" value={selectedSizeId?.toString() ?? ""} onValueChange={(v) => setSelectedSizeId(v ? Number(v) : null)}>
+                {availableSizes.map((s) => (
+                  <ToggleGroupItem key={s.id} value={String(s.id)} aria-label={`Talle ${s.nombre}`} disabled={(s.stock ?? 0) <= 0} className="text-sm cursor-pointer px-2 py-1 rounded-md">
+                    {s.nombre}{typeof s.stock === 'number' ? ` (${s.stock})` : ''}
+                  </ToggleGroupItem>
+                ))}
+              </ToggleGroup>
+              {selectedSizeId == null && (
+                <p className="text-sm text-muted-foreground">Debés elegir un talle para continuar.</p>
+              )}
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">Este producto no requiere selección de talle.</p>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSizeDialogOpen(false)}>Cancelar</Button>
+            <Button onClick={handleConfirm} disabled={selectedSizeId == null}>Confirmar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }

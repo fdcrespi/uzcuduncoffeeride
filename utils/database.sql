@@ -62,15 +62,16 @@ CREATE TABLE Pedido_Productos (
     producto_id int  NOT NULL,
     cantidad int  NOT NULL,
     precio float  NOT NULL,
+    talle_id int  NULL,
     PRIMARY KEY (pedido_id, producto_id)
 );
 
 -- Table: Producto
 CREATE TABLE Producto (
     id SERIAL PRIMARY KEY,
-    nombre varchar(50)  NOT NULL,
-    descripcion varchar(150)  NULL,
-    subrubro_id int  NOT NULL,
+    nombre varchar(50) NOT NULL,
+    descripcion text NULL,
+    subrubro_id int NOT NULL,
     --image varchar(255)  NULL,  (migramos a Producto_Imagen)
     destacado boolean  NOT NULL DEFAULT false,
     visible boolean  NOT NULL DEFAULT true
@@ -146,6 +147,29 @@ CREATE TABLE IF NOT EXISTS Producto_Imagen (
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+-- =====================
+-- Talles
+-- =====================
+CREATE TABLE IF NOT EXISTS Talle (
+  id SERIAL PRIMARY KEY,
+  nombre VARCHAR(20) NOT NULL,
+  tipo VARCHAR(20) NULL,
+  CONSTRAINT uq_talle UNIQUE (nombre, tipo)
+);
+
+CREATE TABLE IF NOT EXISTS Producto_Talle (
+  producto_id INT NOT NULL REFERENCES Producto(id) ON DELETE CASCADE,
+  talle_id INT NOT NULL REFERENCES Talle(id),
+  stock INT NOT NULL DEFAULT 0,
+  PRIMARY KEY (producto_id, talle_id)
+);
+
+-- Seed de talles comunes
+INSERT INTO Talle (nombre, tipo) VALUES
+  ('S','casco'), ('M','casco'), ('L','casco'), ('XL','casco'),
+  ('39','calzado'), ('40','calzado'), ('41','calzado'), ('42','calzado'), ('43','calzado'), ('44','calzado'), ('45','calzado'), ('46','calzado')
+ON CONFLICT (nombre, tipo) DO NOTHING;
+
 --10/10/2025 agregar logistica basica
 -- Tabla de tarifas por código postal
 -- 1) Tabla (idempotente)
@@ -175,44 +199,34 @@ BEGIN
   IF EXISTS (
     SELECT 1
     FROM pg_trigger t
-    JOIN pg_class c ON c.oid = t.tgrelid
-    WHERE t.tgname = 'trg_logistica_tarifa_cp_updated'
-      AND c.relname = 'logistica_tarifa_cp'
+    WHERE t.tgname = 'set_updated_at_trigger'
   ) THEN
-    EXECUTE 'DROP TRIGGER trg_logistica_tarifa_cp_updated ON Logistica_Tarifa_CP';
+    DROP TRIGGER set_updated_at_trigger ON Logistica_Tarifa_CP;
   END IF;
-END
+END;
 $$;
 
--- 4) Crear trigger (idempotente: primero intentar dropear arriba)
-CREATE TRIGGER trg_logistica_tarifa_cp_updated
+-- 4) Crear trigger idempotente
+CREATE TRIGGER set_updated_at_trigger
 BEFORE UPDATE ON Logistica_Tarifa_CP
-FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+FOR EACH ROW
+EXECUTE FUNCTION set_updated_at();
 
--- 5) Fallback global (idempotente)
-INSERT INTO Logistica_Tarifa_CP (cp, costo, plazo_dias, activo) VALUES
-  ('7600', 2500, 3, TRUE),   -- Mar del Plata (ejemplo)
-  ('1000', 3000, 4, TRUE),   -- CABA (ejemplo)
-  ('*',    4000, 5, TRUE)    -- fallback nacional
-ON CONFLICT (cp) DO UPDATE
-  SET costo = EXCLUDED.costo,
-      plazo_dias = EXCLUDED.plazo_dias,
-      activo = EXCLUDED.activo;
-
-
---FIN logistica basica
-
-
--- Índices/constraints
-CREATE UNIQUE INDEX IF NOT EXISTS ux_prod_img_principal
-ON Producto_Imagen (producto_id)
-WHERE is_principal = TRUE;
-
-CREATE UNIQUE INDEX IF NOT EXISTS ux_prod_img_orden
-ON Producto_Imagen (producto_id, orden);
-
-CREATE INDEX IF NOT EXISTS ix_prod_img_producto
-ON Producto_Imagen (producto_id);
+-- =====================
+-- Migraciones adicionales
+-- =====================
+-- Agregar columna talle_id a Pedido_Productos si no existe
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM information_schema.columns
+    WHERE table_name = 'pedido_productos' AND column_name = 'talle_id'
+  ) THEN
+    ALTER TABLE Pedido_Productos ADD COLUMN talle_id INT NULL;
+  END IF;
+END;
+$$;
 
 
 -- foreign keys

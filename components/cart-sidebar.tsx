@@ -65,9 +65,13 @@ export function CartSidebar() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <h4 className="font-medium leading-tight truncate">{item.product.nombre}</h4>
+                        {/* Mostrar talle si corresponde */}
+                        {item.talle_nombre && (
+                          <p className="text-xs text-muted-foreground">Talle: {item.talle_nombre}</p>
+                        )}
                         <QuantityControl
                           quantity={item.quantity}
-                          onUpdate={(newQuantity) => updateQuantity(item.product.id, newQuantity)}
+                          onUpdate={(newQuantity) => updateQuantity(item.product.id, newQuantity, item.talle_id)}
                           stock={item.product.stock}
                         />
                       </div>

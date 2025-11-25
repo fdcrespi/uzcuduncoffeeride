@@ -7,30 +7,35 @@ import type { Product, CartItem, CartContextType } from "@/lib/types"
 const CartContext = createContext<CartContextType | undefined>(undefined)
 
 type CartAction =
-  | { type: "ADD_ITEM"; product: Product }
-  | { type: "REMOVE_ITEM"; productId: string }
-  | { type: "UPDATE_QUANTITY"; productId: string; quantity: number }
+  | { type: "ADD_ITEM"; product: Product; talle_id?: number; talle_nombre?: string }
+  | { type: "REMOVE_ITEM"; productId: string; talle_id?: number }
+  | { type: "UPDATE_QUANTITY"; productId: string; quantity: number; talle_id?: number }
   | { type: "CLEAR_CART" }
   | { type: "LOAD_CART"; items: CartItem[] }
 
 function cartReducer(state: CartItem[], action: CartAction): CartItem[] {
   switch (action.type) {
     case "ADD_ITEM": {
-      const existingItem = state.find((item) => item.product.id === action.product.id)
+      const existingItem = state.find((item) =>
+        item.product.id === action.product.id && item.talle_id === action.talle_id
+      )
       if (existingItem) {
         return state.map((item) =>
-          item.product.id === action.product.id && item.product.stock > item.quantity ? { ...item, quantity: item.quantity + 1 } : item,
+          item.product.id === action.product.id && item.talle_id === action.talle_id
+            ? { ...item, quantity: item.quantity + 1 }
+            : item,
         )
       }
-      return [...state, { product: action.product, quantity: 1 }]
+      return [...state, { product: action.product, quantity: 1, talle_id: action.talle_id, talle_nombre: action.talle_nombre }]
     }
     case "REMOVE_ITEM":
-      return state.filter((item) => item.product.id !== action.productId)
+      return state.filter((item) => !(item.product.id === action.productId && (action.talle_id == null || item.talle_id === action.talle_id)))
     case "UPDATE_QUANTITY":
-      // if (action.quantity <= 0) {
-      //   return state.filter((item) => item.product.id !== action.productId)
-      // }
-      return state.map((item) => (item.product.id === action.productId ? { ...item, quantity: action.quantity } : item))
+      return state.map((item) => (
+        item.product.id === action.productId && item.talle_id === action.talle_id
+          ? { ...item, quantity: action.quantity }
+          : item
+      ))
     case "CLEAR_CART":
       return []
     case "LOAD_CART":
@@ -64,37 +69,36 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem("moto-cart", JSON.stringify(items));
   }, [items]);
 
-  const addItem = (product: Product) => {
-    dispatch({ type: "ADD_ITEM", product });
+  const addItem = (product: Product, options?: { talle_id?: number; talle_nombre?: string }) => {
+    dispatch({ type: "ADD_ITEM", product, talle_id: options?.talle_id, talle_nombre: options?.talle_nombre });
     setLastItemAddedTimestamp(Date.now());
   };
 
-  const removeItem = (productId: string) => {
-    dispatch({ type: "REMOVE_ITEM", productId });
+  const removeItem = (productId: string, talle_id?: number) => {
+    dispatch({ type: "REMOVE_ITEM", productId, talle_id });
   };
 
-  const updateQuantity = (productId: string, quantity: number) => {
+  const updateQuantity = (productId: string, quantity: number, talle_id?: number) => {
     if (quantity <= 0) {
-      const item = items.find(item => item.product.id === productId);
+      const item = items.find(item => item.product.id === productId && item.talle_id === talle_id);
       if (item) {
         setItemToRemove(item);
       }
     } else {
-      // Stock check logic will go here later
-      dispatch({ type: "UPDATE_QUANTITY", productId, quantity });
+      dispatch({ type: "UPDATE_QUANTITY", productId, quantity, talle_id });
     }
   };
 
   const confirmRemoveItem = () => {
     if (itemToRemove) {
-      dispatch({ type: "REMOVE_ITEM", productId: itemToRemove.product.id });
+      dispatch({ type: "REMOVE_ITEM", productId: itemToRemove.product.id, talle_id: itemToRemove.talle_id });
       setItemToRemove(null);
     }
   };
 
   const cancelRemoveItem = () => {
     if (itemToRemove) {
-      dispatch({ type: "UPDATE_QUANTITY", productId: itemToRemove.product.id, quantity: 1 });
+      dispatch({ type: "UPDATE_QUANTITY", productId: itemToRemove.product.id, quantity: 1, talle_id: itemToRemove.talle_id });
       setItemToRemove(null);
     }
   };

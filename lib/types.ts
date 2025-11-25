@@ -21,26 +21,34 @@ export interface Category {
   nombre: string;
 }
 
+export interface Size {
+  id: number;
+  nombre: string;
+  tipo: string | null;
+  stock?: number; // stock por talle para el producto
+}
+
 export interface CartItem {
-  product: Product
-  quantity: number
+  product: Product;
+  quantity: number;
+  talle_id?: number;
+  talle_nombre?: string;
 }
 
 export interface CartContextType {
-  items: CartItem[]
-  addItem: (product: Product) => void
-  removeItem: (productId: string) => void
-  updateQuantity: (productId: string, quantity: number) => void
-  clearCart: () => void
-  getTotalItems: () => number
-  getTotalPrice: () => number
-  lastItemAddedTimestamp: number | null
-  setLastItemAddedTimestamp: (timestamp: number | null) => void
-  itemToRemove: CartItem | null
-  confirmRemoveItem: () => void
-  cancelRemoveItem: () => void
+  items: CartItem[];
+  addItem: (product: Product, options?: { talle_id?: number; talle_nombre?: string }) => void;
+  removeItem: (productId: string, talle_id?: number) => void;
+  updateQuantity: (productId: string, quantity: number, talle_id?: number) => void;
+  clearCart: () => void;
+  getTotalItems: () => number;
+  getTotalPrice: () => number;
+  lastItemAddedTimestamp: number | null;
+  setLastItemAddedTimestamp: (timestamp: number | null) => void;
+  itemToRemove: CartItem | null;
+  confirmRemoveItem: () => void;
+  cancelRemoveItem: () => void;
 }
-
 
 export interface Order {
   id: string;
@@ -62,32 +70,6 @@ export interface OrderProduct {
   cantidad: number;
   precio: number;
   nombre: string;
-}
-
-
-export interface CartItem {
-  product: Product
-  quantity: number
-}
-
-export interface CartContextType {
-  items: CartItem[]
-  addItem: (product: Product) => void
-  removeItem: (productId: string) => void
-  updateQuantity: (productId: string, quantity: number) => void
-  clearCart: () => void
-  getTotalItems: () => number
-  getTotalPrice: () => number
-  lastItemAddedTimestamp: number | null
-  setLastItemAddedTimestamp: (timestamp: number | null) => void
-  itemToRemove: CartItem | null
-  confirmRemoveItem: () => void
-  cancelRemoveItem: () => void
-}
-export interface OrderProduct {
-  pedido_id: number;
-  product_id: number;
-  cantidad: number;
-  precio: number;
-  nombre: string;
+  talle_id?: number | null;
+  talle_nombre?: string | null;
 }

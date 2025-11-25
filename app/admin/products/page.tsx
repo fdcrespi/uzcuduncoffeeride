@@ -1,233 +1,111 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { ProductFormDialog } from "@/components/admin/product-form-dialog"
-import { ProductsTable } from "@/components/admin/products-table"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
-
-import { ProductImagesDialog } from "@/components/admin/product-images-dialog"
-
-import io from 'socket.io-client';
-const socket = io(process.env.NEXT_PUBLIC_URL!);
-
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { ProductFormDialog } from "@/components/admin/product-form-dialog";
+import { ProductsTable } from "@/components/admin/products-table";
 import { Product, Subcategory } from "@/lib/types";
 import { toast } from "sonner";
 
-export default function ProductsPage() {
-  const [products, setProducts] = useState<Product[]>([])
-  const [subcategories, setSubcategories] = useState<Subcategory[]>([])
+export default function AdminProductsPage() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  const [errorDialog, setErrorDialog] = useState<{ isOpen: boolean; message: string }>({ isOpen: false, message: '' });
-
-  // estado para el diálogo de imágenes
-  const [imagesDialog, setImagesDialog] = useState<{
-    open: boolean;
-    productId: string | number | null;
-    productName?: string;
-  }>({ open: false, productId: null });
-
-  const fetchProducts = async () => {
-    try {
-      const res = await fetch('/api/products');
-      if (!res.ok) throw new Error("Failed to fetch products");
-      const data = await res.json();
-      setProducts(data);
-    } catch (error) {
-      console.error(error);
-      setErrorDialog({ isOpen: true, message: 'No se pudieron cargar los productos.' });
-    }
-  };
-
-  const fetchSubcategories = async () => {
-    try {
-      const res = await fetch('/api/subcategories');
-      if (!res.ok) throw new Error("Failed to fetch subcategories");
-      const data = await res.json();
-      setSubcategories(data);
-    } catch (error) {
-      console.error(error);
-      setErrorDialog({ isOpen: true, message: 'No se pudieron cargar las subcategorías.' });
-    }
-  };
 
   useEffect(() => {
-    fetchProducts();
-    fetchSubcategories();
-  }, []);
+    const fetchData = async () => {
+      try {
+        const [productsRes, subcategoriesRes] = await Promise.all([
+          fetch("/api/products"),
+          fetch("/api/subcategories"),
+        ]);
 
-  useEffect(() => {
-    socket.on('updateProducto', () => {
-      // Volver a cargar los productos
-      fetchProducts();
-    });
-    return () => {
-      socket.off('updateProducto');
-    };
-  }, []);
+        if (!productsRes.ok || !subcategoriesRes.ok) {
+          throw new Error("Error cargando datos iniciales");
+        }
 
-  const handleAddProduct = async (data: Omit<Product, 'id' | 'subrubro_nombre'>) => {
-    const response = await fetch('/api/products', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    });
+        const [productsData, subcategoriesData] = await Promise.all([
+          productsRes.json(),
+          subcategoriesRes.json(),
+        ]);
 
-    if (response.ok) {
-      await fetchProducts();
-      socket.emit('updateProducto', 'Producto actualizado');
-    } else {
-      const errorData = await response.json();
-      setErrorDialog({ isOpen: true, message: errorData.message || 'Error al crear el producto.' });
-    }
-  };
-
-  const handleUpdateProduct = async (id: string, data: Omit<Product, 'id' | 'subrubro_nombre'>) => {
-    const response = await fetch(`/api/products/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    });
-
-    if (response.ok) {
-      await fetchProducts();
-      setEditingProduct(null);
-      socket.emit('updateProducto', 'Producto actualizado');
-    } else {
-      const errorData = await response.json();
-      setErrorDialog({ isOpen: true, message: errorData.message || 'Error al actualizar el producto.' });
-    }
-  };
-
-  const handleDeleteProduct = async (id: string) => {
-    const response = await fetch(`/api/products/${id}`, {
-      method: 'DELETE',
-    });
-
-    if (response.ok) {
-      setProducts(products.filter(p => p.id !== id));
-      socket.emit('updateProducto', 'Producto actualizado');
-    } else {
-      const errorData = await response.json();
-      setErrorDialog({ isOpen: true, message: errorData.message || 'Ocurrió un error al eliminar el producto.' });
-    }
-  };
-
-  const handleToggleStatus = async (productId: string, field: 'destacado' | 'visible', value: boolean) => {
-    const oldProducts = [...products];
-    // Optimistic update
-    setProducts(prevProducts =>
-      prevProducts.map(p =>
-        p.id === productId ? { ...p, [field]: value } : p
-      )
-    );
-
-    try {
-      const response = await fetch(`/api/products/${productId}`,
-        {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ [field]: value }),
-        });
-
-      if (!response.ok) {
-        throw new Error('Error al actualizar el producto');
+        setProducts(productsData);
+        setSubcategories(subcategoriesData);
+      } catch (error: any) {
+        toast.error(error.message || "Ocurrió un error al cargar los datos.");
       }
-      toast.success(`El producto ha sido actualizado.`);
-      socket.emit('updateProducto', 'Producto actualizado');
+    };
 
-    } catch (error) {
-      // Revert optimistic update on error
-      setProducts(oldProducts);
-      toast.error('No se pudo actualizar el producto.');
-      console.error(error);
+    fetchData();
+  }, []);
+
+  const handleOpenDialog = () => setIsDialogOpen(true);
+
+  const handleCloseDialog = (open: boolean) => {
+    setIsDialogOpen(open);
+    if (!open) setEditingProduct(null);
+  };
+
+  const handleSubmit = async (data: Omit<Product, "id" | "subrubro_nombre">, items: { talle_id: number; stock: number }[]) => {
+    try {
+      const method = editingProduct ? "PUT" : "POST";
+      const url = editingProduct ? `/api/products/${editingProduct.id}` : "/api/products";
+
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      if (!res.ok) throw new Error("Error al guardar producto");
+      const saved: Product = await res.json();
+
+      // Guardar talles + stock para el producto
+      const sizeRes = await fetch(`/api/products/${saved.id}/sizes`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ items }),
+      })
+      if (!sizeRes.ok) throw new Error("Error al guardar talles del producto")
+
+      toast.success(editingProduct ? "Producto actualizado" : "Producto creado");
+
+      // refrescar lista de productos
+      const listRes = await fetch("/api/products");
+      if (listRes.ok) {
+        setProducts(await listRes.json());
+      }
+
+      setIsDialogOpen(false);
+      setEditingProduct(null);
+    } catch (error: any) {
+      toast.error(error.message || "Ocurrió un error al guardar el producto.");
     }
   };
 
-  // abrir diálogo de imágenes para un producto
-  const openImagesFor = (product: Product) => {
-    setImagesDialog({ open: true, productId: product.id, productName: product.nombre });
+  const handleEdit = (product: Product) => {
+    setEditingProduct(product);
+    setIsDialogOpen(true);
   };
 
   return (
-    <div className="space-y-6">
-      {/* Page header */}
-      <div className="flex flex-col items-start gap-4 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight md:text-3xl">Productos</h2>
-          <p className="text-muted-foreground">
-            Gestiona tu inventario de motocicletas, accesorios y productos de cafetería
-          </p>
-        </div>
-        <div className="w-full flex justify-end md:w-auto">
-          <ProductFormDialog
-            key={editingProduct ? 'edit' : 'add'} // Reset form when switching between add/edit
-            subcategories={subcategories}
-            onSubmit={editingProduct ? (data) => handleUpdateProduct(editingProduct.id, data) : handleAddProduct}
-            initialData={editingProduct}
-            onOpenChange={(isOpen) => {
-              if (!isOpen) setEditingProduct(null);
-            }}
-          />
-        </div>
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold">Productos</h1>
+        <Button onClick={handleOpenDialog}>Agregar Producto</Button>
       </div>
 
-      {/* Products table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Lista de Productos ({products.length})</CardTitle>
-          <CardDescription>Gestiona todos tus productos desde esta vista</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ProductsTable
-            products={products}
-            onEdit={setEditingProduct}
-            onDelete={handleDeleteProduct}
-            onManageImages={openImagesFor}
-            onToggleStatus={handleToggleStatus}
-          />
-        </CardContent>
-      </Card>
+      <ProductsTable products={products} onEdit={handleEdit} />
 
-      {/* Dialogo de imágenes */}
-      {imagesDialog.productId != null && (
-        <ProductImagesDialog
-          productId={imagesDialog.productId}
-          productName={imagesDialog.productName}
-          open={imagesDialog.open}
-          onOpenChange={async (open) => {
-            setImagesDialog(prev => ({ ...prev, open }));
-            // al cerrar, refrescar lista por si cambió la portada
-            if (!open) {
-              await fetchProducts();
-              socket.emit('updateProducto', 'Producto actualizado');
-            }
-          }}
+      {isDialogOpen && (
+        <ProductFormDialog
+          subcategories={subcategories}
+          onSubmit={handleSubmit}
+          initialData={editingProduct}
+          onOpenChange={handleCloseDialog}
         />
       )}
-
-      {/* Error Dialog */}
-      <AlertDialog open={errorDialog.isOpen} onOpenChange={(open) => setErrorDialog({ ...errorDialog, isOpen: open })}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Error</AlertDialogTitle>
-            <AlertDialogDescription>
-              {errorDialog.message}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogAction onClick={() => setErrorDialog({ isOpen: false, message: '' })}>OK</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </div>
-  )
+    </div>
+  );
 }

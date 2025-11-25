@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { LayoutDashboard, Package, Shapes, ShoppingCart, BarChart3, Settings, LogOut, Bike, Users } from "lucide-react"
+import { LayoutDashboard, Package, Shapes, ShoppingCart, BarChart3, Settings, LogOut, Bike, Users, Ruler } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
@@ -33,6 +33,11 @@ const sidebarItems = [
     title: "Categorías",
     href: "/admin/categories",
     icon: Shapes,
+  },
+  {
+    title: "Talles",
+    href: "/admin/sizes",
+    icon: Ruler,
   },
   {
     title: "Pedidos",

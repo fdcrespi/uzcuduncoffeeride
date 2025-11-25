@@ -75,7 +75,7 @@ interface OrderSummaryProps {
   preferenceId: string | null;
   isMobile: boolean;
   onBack: () => void;
-  updateQuantity: (productId: string, quantity: number) => void;
+  updateQuantity: (productId: string, quantity: number, talleId?: number) => void;
 
   // 👇 NUEVO: estado de la cotización para mostrar feedback al usuario
   shippingLoading: boolean;
@@ -110,8 +110,8 @@ const ShippingForm: React.FC<ShippingFormProps> = ({ shippingData, setShippingDa
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Tabs 
-            defaultValue={shippingData.deliveryMethod} 
+          <Tabs
+            defaultValue={shippingData.deliveryMethod}
             onValueChange={handleDeliveryMethodChange}
             className="w-full"
           >
@@ -123,11 +123,11 @@ const ShippingForm: React.FC<ShippingFormProps> = ({ shippingData, setShippingDa
                 <Store className="w-4 h-4" /> Retiro en tienda
               </TabsTrigger>
             </TabsList>
-            
+
             <TabsContent value="shipping" className="mt-4">
               {/* Contenido para envío a domicilio */}
             </TabsContent>
-            
+
             <TabsContent value="pickup" className="mt-4">
               <div className="p-4 border rounded-md bg-muted/30 mb-4">
                 <div className="flex items-start gap-3">
@@ -160,7 +160,7 @@ const ShippingForm: React.FC<ShippingFormProps> = ({ shippingData, setShippingDa
             <Label htmlFor="phone">Teléfono</Label>
             <Input id="phone" name="phone" value={shippingData.phone} onChange={handleChange} required />
           </div>
-          
+
           {shippingData.deliveryMethod === "shipping" && (
             <>
               <AddressInput shippingData={shippingData} setShippingData={setShippingData} />
@@ -176,7 +176,7 @@ const ShippingForm: React.FC<ShippingFormProps> = ({ shippingData, setShippingDa
               </div>
             </>
           )}
-          
+
           <div>
             <Label htmlFor="notes">Notas del pedido (opcional)</Label>
             <Textarea id="notes" name="notes" value={shippingData.notes} onChange={handleChange} placeholder={shippingData.deliveryMethod === "shipping" ? "Instrucciones especiales de entrega..." : "Instrucciones especiales para el retiro..."} />
@@ -212,9 +212,12 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
               </div>
               <div className="flex-1">
                 <h4 className="font-medium leading-tight">{item.product.nombre}</h4>
+                {item.talle_nombre && (
+                  <p className="text-xs text-muted-foreground">Talle: {item.talle_nombre}</p>
+                )}
                 <QuantityControl
                   quantity={item.quantity}
-                  onUpdate={(newQuantity) => updateQuantity(item.product.id, newQuantity)}
+                  onUpdate={(newQuantity) => updateQuantity(item.product.id, newQuantity, item.talle_id)}
                   stock={item.product.stock}
                 />
                 <p className="text-sm text-gray-400">Podes comprar hasta: {item.product.stock} unidades</p>
@@ -419,7 +422,7 @@ export default function CheckoutPage() {
 
   const handleCreatePreference = async () => {
     const { notes, ...requiredData } = shippingData;
-    
+
     // Validar campos según el método de entrega
     let isFormValid = true;
     if (shippingData.deliveryMethod === "shipping") {
@@ -443,11 +446,11 @@ export default function CheckoutPage() {
     // 🔒 Recalcular por seguridad justo antes de pagar
     try {
       await fetchQuote(shippingData.zipCode);
-    } catch {}
-    
+    } catch { }
+
     // Si es retiro en tienda, el envío es 0
-    const shippingToSend = shippingData.deliveryMethod === "pickup" 
-      ? 0 
+    const shippingToSend = shippingData.deliveryMethod === "pickup"
+      ? 0
       : quoteCacheRef.current.get((shippingData.zipCode || "").trim())?.amount ?? 0;
 
     if (shippingData.deliveryMethod === "shipping" && shippingError) {
@@ -553,7 +556,7 @@ export default function CheckoutPage() {
               shippingData={shippingData}
               setShippingData={setShippingData}
               isMobile={isMobile}
-              onStepForward={() => {}}
+              onStepForward={() => { }}
             />
             <OrderSummary {...orderSummaryProps} />
           </div>

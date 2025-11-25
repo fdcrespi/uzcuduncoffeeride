@@ -88,8 +88,8 @@ export async function POST(request: NextRequest) {
         const pedidoCart = pedido.cart;
         for (const item of pedidoCart) {
           await db.query(
-            `INSERT INTO Pedido_Productos (pedido_id, producto_id, cantidad, precio) VALUES ($1, $2, $3, $4) RETURNING *`,
-            [resultPedido.rows[0].id, parseInt(item.id), item.cantidad, item.precio]
+            `INSERT INTO Pedido_Productos (pedido_id, producto_id, cantidad, precio, talle_id) VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+            [resultPedido.rows[0].id, parseInt(item.id), item.cantidad, item.precio, item.talle_id ?? null]
           );
         }
         socket.emit('addPedido', 'Sync Process Completed');
