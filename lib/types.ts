@@ -3,6 +3,8 @@ export interface Product {
   nombre: string;
   descripcion: string;
   precio: number;
+  precio_alternativo: number;
+  moneda: 'ARS' | 'USD';
   image: string;
   stock: number;
   subrubro_id: string;

@@ -35,6 +35,8 @@ const initialFormData = {
   descripcion: '',
   subrubro_id: '',
   precio: 0,
+  precio_alternativo: 0,
+  moneda: 'ARS' as 'ARS' | 'USD',
   stock: 0,
   image: '',
 };
@@ -79,6 +81,8 @@ export function ProductFormDialog({ subcategories, onSubmit, initialData, onOpen
         precio: initialData.precio,
         stock: initialData.stock,
         image: initialData.image,
+        precio_alternativo: initialData.precio_alternativo ?? 0,
+        moneda: initialData.moneda ?? 'ARS',
       });
       if (initialData.image) {
         setFileName(initialData.image.split('/').pop() || null);
@@ -132,6 +136,10 @@ export function ProductFormDialog({ subcategories, onSubmit, initialData, onOpen
     setFormData(prev => ({ ...prev, subrubro_id: value }));
   }
 
+  const handleMonedaChange = (value: 'ARS' | 'USD') => {
+    setFormData(prev => ({ ...prev, moneda: value }));
+  }
+
   const toggleSize = (id: number) => {
     setSelectedSizeIds(prev => prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id])
     setSizeStocks(prev => {
@@ -162,6 +170,7 @@ export function ProductFormDialog({ subcategories, onSubmit, initialData, onOpen
     onSubmit({
       ...formData,
       precio: Number(formData.precio) || 0,
+      precio_alternativo: Number(formData.precio_alternativo) || 0,
       stock: hasSizes ? totalSizeStock : Number(formData.stock) || 0,
       destacado: false,
       visible: true,
@@ -283,6 +292,24 @@ export function ProductFormDialog({ subcategories, onSubmit, initialData, onOpen
                 <div className="h-10 px-3 flex items-center rounded border bg-muted/50">{totalSizeStock}</div>
               </div>
             )}
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="grid gap-2">
+              <Label htmlFor="moneda">Moneda</Label>
+              <Select value={formData.moneda} onValueChange={handleMonedaChange}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecciona una moneda" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ARS">ARS (Peso Argentino)</SelectItem>
+                  <SelectItem value="USD">USD (Dólar Americano)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="precio_alternativo">Precio Alternativo</Label>
+              <Input id="precio_alternativo" type="number" placeholder="Ej: 100" value={formData.precio_alternativo} onChange={handleChange} />
+            </div>
           </div>
           <div className="grid gap-2">
             <Label htmlFor="descripcion">Descripción</Label>

@@ -115,9 +115,18 @@ export function ProductCard({ product }: ProductCardProps) {
         </CardHeader>
         <CardContent>
           {product.precio > 0 && (
-            <p className="text-2xl font-bold text-primary">
-              ${product.precio.toLocaleString("es-AR")}
-            </p>
+            <div>
+              <p className="text-2xl font-bold text-primary">
+                {product.moneda === 'ARS' ? '$' : 'USD'}{' '}
+                {product.precio.toLocaleString("es-AR")}
+              </p>
+              {product.precio_alternativo > 0 && (
+                <p className="text-sm font-semibold text-muted-foreground">
+                  {product.moneda === 'ARS' ? '$' : 'USD'}{' '}
+                  {product.precio_alternativo.toLocaleString("es-AR")} por transf.
+                </p>
+              )}
+            </div>
           )}
         </CardContent>
       </div>
@@ -128,8 +137,8 @@ export function ProductCard({ product }: ProductCardProps) {
           <Button 
             className="w-full cursor-pointer bg-green-500 text-white hover:bg-green-600"
             onClick={() => {
-              const phone = "542235788186"; // Conservamos el número que ya estaba aquí
-              const message = `Hola, estoy interesado/a en el producto "${product.nombre}". ¿Podrían darme más información?`;
+              const phone = "2235788186"; // Conservamos el número que ya estaba aquí
+              const message = `Hola, estoy interesado/a en el producto "${product.nombre}" (ID: ${product.id}). ¿Podrían darme más información?`;
               const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
               window.open(whatsappUrl, "_blank");
             }}

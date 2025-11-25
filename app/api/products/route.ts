@@ -24,7 +24,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const { nombre, descripcion, subrubro_id, precio, stock, exhibicion } = await request.json();
+    const { nombre, descripcion, subrubro_id, precio, stock, exhibicion, moneda, precio_alternativo } = await request.json();
     const sucursalId = 1; // Asumimos la sucursal principal
 
     // Validación básica
@@ -49,9 +49,9 @@ export async function POST(request: Request) {
 
       // 2. Insertar en la tabla Sucursal_Productos
       await client.query(
-        `INSERT INTO Sucursal_Productos (producto_id, sucursal_id, precio, stock)
-        VALUES ($1, $2, $3, $4);`,
-        [newProductId, sucursalId, precio ?? 0, stock ?? 0]
+        `INSERT INTO Sucursal_Productos (producto_id, sucursal_id, precio, stock, moneda, precio_alternativo)
+        VALUES ($1, $2, $3, $4, $5, $6);`,
+        [newProductId, sucursalId, precio ?? 0, stock ?? 0, moneda ?? 'ARS', precio_alternativo ?? 0]
       );
 
       await client.query('COMMIT');
@@ -65,6 +65,8 @@ export async function POST(request: Request) {
         precio,
         stock,
         exhibicion,
+        moneda,
+        precio_alternativo,
       };
       
       return new NextResponse(JSON.stringify(newProduct), { status: 201 });

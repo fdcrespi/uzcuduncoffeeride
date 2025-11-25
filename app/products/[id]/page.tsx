@@ -200,9 +200,20 @@ export default function ProductDetailPage() {
               {product.nombre}
             </h1>
 
-            <p className="mb-6 text-left text-4xl font-extrabold text-black">
-              ${product.precio.toLocaleString("es-AR")}
-            </p>
+            <div className="mb-6">
+              <p className="text-left text-4xl font-extrabold text-black">
+                {product.moneda === 'ARS' ? '$' : 'USD'}{' '}
+                {product.precio.toLocaleString("es-AR")}
+              </p>
+              {/* <p>En 6 cuotas sin interés de {product.moneda === 'ARS' ? '$' : 'USD'} {Math.round(product.precio / 6).toLocaleString("es-AR")}</p> */}
+              {product.precio_alternativo > 0 && (
+                <p className="text-left text-xl font-bold text-muted-foreground">
+                  {product.moneda === 'ARS' ? '$' : 'USD'}{' '}
+                  {product.precio_alternativo.toLocaleString("es-AR")} por transferencia
+                </p>
+              )}
+              
+            </div>
 
             {product.exhibicion && (
               <p className="mb-6 text-left text-sm text-yellow-600 bg-yellow-50 border border-yellow-200 rounded-md p-3">

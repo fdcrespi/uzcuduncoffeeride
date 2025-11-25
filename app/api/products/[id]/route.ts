@@ -23,6 +23,8 @@ export async function GET(request: Request, { params }: { params: { id: string }
         p.exhibicion,
         sp.precio, 
         sp.stock,
+        sp.moneda,
+        sp.precio_alternativo,
         pp.cover_url,
         COALESCE(
           (
@@ -53,6 +55,8 @@ export async function GET(request: Request, { params }: { params: { id: string }
       nombre: row.nombre,
       descripcion: row.descripcion,
       precio: row.precio !== null ? Number(row.precio) : 0,
+      precio_alternativo: row.precio_alternativo !== null ? Number(row.precio_alternativo) : 0,
+      moneda: row.moneda || 'ARS',
       stock: row.stock !== null ? Number(row.stock) : 0,
       subrubro_id: String(row.subrubro_id),
       exhibicion: row.exhibicion,
@@ -74,7 +78,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       return new NextResponse(JSON.stringify({ message: 'ID de producto inválido' }), { status: 400 });
     }
 
-    const { nombre, descripcion, subrubro_id, precio, stock, exhibicion } = await request.json();
+    const { nombre, descripcion, subrubro_id, precio, stock, exhibicion, moneda, precio_alternativo } = await request.json();
     const sucursalId = 1; // Asumimos la sucursal principal
 
     if (!nombre || !subrubro_id) {
@@ -94,16 +98,16 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       );
 
       await client.query(
-        `INSERT INTO Sucursal_Productos (producto_id, sucursal_id, precio, stock)
-         VALUES ($1, $2, $3, $4)
+        `INSERT INTO Sucursal_Productos (producto_id, sucursal_id, precio, stock, moneda, precio_alternativo)
+         VALUES ($1, $2, $3, $4, $5, $6)
          ON CONFLICT (producto_id, sucursal_id)
-         DO UPDATE SET precio = EXCLUDED.precio, stock = EXCLUDED.stock;`,
-        [productId, sucursalId, precio ?? 0, stock ?? 0]
+         DO UPDATE SET precio = EXCLUDED.precio, stock = EXCLUDED.stock, moneda = EXCLUDED.moneda, precio_alternativo = EXCLUDED.precio_alternativo;`,
+        [productId, sucursalId, precio ?? 0, stock ?? 0, moneda ?? 'ARS', precio_alternativo ?? 0]
       );
 
       await client.query('COMMIT');
 
-      const updatedProduct = { id: productId, nombre, descripcion, subrubro_id, precio, stock, exhibicion };
+      const updatedProduct = { id: productId, nombre, descripcion, subrubro_id, precio, stock, exhibicion, moneda, precio_alternativo };
       return new NextResponse(JSON.stringify(updatedProduct), { status: 200 });
 
     } catch (error) {

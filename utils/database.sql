@@ -447,3 +447,33 @@ insert into Sucursal (nombre, domicilio_calle, domicilio_nro, domicilio_piso, do
 insert into usuario (email, pass, nombre, apellido, rol_id, sucursal_id) values ('juanjosemolfese@gmail.com', '$2b$10$ePSMAkri6aBL3MvuKzTD5u6fhlebgRb9ZrMWFHXMUiDN4odElQSgW', 'juan', 'molfese', 2, 1), ('fdcrespi@gmail.com', '$2b$10$o0K7G1PPunZloZqxrwvToeHE9bxerMKUbHsHiBHq3/qs9.PDVuzQG', 'federico', 'crespi', 2, 1);
 
 COMMIT;
+
+-- =====================
+-- Migracion Moneda y Precio Alternativo (25/11/2025)
+-- =====================
+DO $$
+BEGIN
+    -- 1. Crear el tipo ENUM para la moneda si no existe
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'moneda_tipo') THEN
+        CREATE TYPE moneda_tipo AS ENUM ('ARS', 'USD');
+    END IF;
+
+    -- 2. Agregar la columna 'moneda' a 'Sucursal_Productos' si no existe
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name='sucursal_productos' AND column_name='moneda'
+    ) THEN
+        ALTER TABLE Sucursal_Productos 
+        ADD COLUMN moneda moneda_tipo NOT NULL DEFAULT 'ARS';
+    END IF;
+
+    -- 3. Agregar la columna 'precio_alternativo' a 'Sucursal_Productos' si no existe
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name='sucursal_productos' AND column_name='precio_alternativo'
+    ) THEN
+        ALTER TABLE Sucursal_Productos 
+        ADD COLUMN precio_alternativo NUMERIC(12, 2) NOT NULL DEFAULT 0;
+    END IF;
+END;
+$$;
