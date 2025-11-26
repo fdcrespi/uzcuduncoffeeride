@@ -28,10 +28,12 @@ export function TopProductsCard({ products, className }: TopProductsCardProps) {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate">{product.nombre}</p>
-                <p className="text-xs text-muted-foreground">{product.category}</p>
+                <p className="text-xs text-muted-foreground">{product.subrubro_nombre}</p>
               </div>
               <div className="text-right">
-                <p className="text-sm font-medium">{Number(product.precio).toLocaleString("es-AR", { style: "currency", currency: "ARS" })}</p>
+                <p className="text-sm font-medium">
+                  {product.moneda === 'ARS' ? '$' : 'USD'} {Number(product.precio).toLocaleString("es-AR")}
+                </p>
                 <p className="text-xs text-muted-foreground">{product.stock} disponibles</p>
               </div>
             </div>

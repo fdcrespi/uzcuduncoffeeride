@@ -63,7 +63,10 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({ items, totalPrice, s
                 />
               </div>
               <div className="text-right">
-                <p className="font-medium">${(item.product.precio * item.quantity).toLocaleString()}</p>
+                <p className="font-medium">
+                  {item.product.moneda === 'ARS' ? '$' : 'USD'}{" "}
+                  {(item.product.precio * item.quantity).toLocaleString("es-AR")}
+                </p>
               </div>
             </div>
           ))}

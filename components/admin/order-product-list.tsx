@@ -31,8 +31,14 @@ export default function OrderProductsList({ orderId }: { orderId: number }) {
               <span className="text-sm text-stone-600">× {product.cantidad}</span>
             </div>
             <div className="text-right">
-              <span className="text-sm text-stone-600">{product.precio.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' })}</span>
-              <span className="ml-3 text-sm font-medium text-stone-800">{(product.cantidad * product.precio).toLocaleString('es-AR', { style: 'currency', currency: 'ARS' })}</span>
+              <span className="text-sm text-stone-600">
+                {(product.moneda === 'USD' ? 'USD ' : '$')}
+                {product.precio.toLocaleString('es-AR')}
+              </span>
+              <span className="ml-3 text-sm font-medium text-stone-800">
+                {(product.moneda === 'USD' ? 'USD ' : '$')}
+                {(product.cantidad * product.precio).toLocaleString('es-AR')}
+              </span>
             </div>
           </div>
         ))}

@@ -72,6 +72,7 @@ export interface OrderProduct {
   product_id: number;
   cantidad: number;
   precio: number;
+  moneda?: 'ARS' | 'USD';
   nombre: string;
   talle_id?: number | null;
   talle_nombre?: string | null;

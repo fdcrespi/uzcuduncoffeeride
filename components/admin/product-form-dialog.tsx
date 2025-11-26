@@ -278,20 +278,13 @@ export function ProductFormDialog({ subcategories, onSubmit, initialData, onOpen
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="precio">Precio</Label>
+              <Label htmlFor="precio_alternativo">Precio Transferencia</Label>
+              <Input id="precio_alternativo" type="number" placeholder="Ej: 100" value={formData.precio_alternativo} onChange={handleChange} />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="precio">Precio Lista</Label>
               <Input id="precio" type="number" placeholder="" value={formData.precio} onChange={handleChange} />
             </div>
-            {!hasSizes ? (
-              <div className="grid gap-2">
-                <Label htmlFor="stock">Stock</Label>
-                <Input id="stock" type="number" placeholder="" value={formData.stock} onChange={handleChange} />
-              </div>
-            ) : (
-              <div className="grid gap-2">
-                <Label>Stock total (por talles)</Label>
-                <div className="h-10 px-3 flex items-center rounded border bg-muted/50">{totalSizeStock}</div>
-              </div>
-            )}
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">
@@ -306,10 +299,17 @@ export function ProductFormDialog({ subcategories, onSubmit, initialData, onOpen
                 </SelectContent>
               </Select>
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="precio_alternativo">Precio Alternativo</Label>
-              <Input id="precio_alternativo" type="number" placeholder="Ej: 100" value={formData.precio_alternativo} onChange={handleChange} />
-            </div>
+            {!hasSizes ? (
+              <div className="grid gap-2">
+                <Label htmlFor="stock">Stock</Label>
+                <Input id="stock" type="number" placeholder="" value={formData.stock} onChange={handleChange} />
+              </div>
+            ) : (
+              <div className="grid gap-2">
+                <Label>Stock total (por talles)</Label>
+                <div className="h-10 px-3 flex items-center rounded border bg-muted/50">{totalSizeStock}</div>
+              </div>
+            )}
           </div>
           <div className="grid gap-2">
             <Label htmlFor="descripcion">Descripción</Label>

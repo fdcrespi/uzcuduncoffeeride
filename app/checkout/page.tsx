@@ -223,7 +223,10 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
                 <p className="text-sm text-gray-400">Podes comprar hasta: {item.product.stock} unidades</p>
               </div>
               <div className="text-right">
-                <p className="font-medium">${(item.product.precio * item.quantity).toLocaleString()}</p>
+                <p className="font-medium">
+                  {item.product.moneda === 'ARS' ? '$' : 'USD'}{" "}
+                  {(item.product.precio * item.quantity).toLocaleString("es-AR")}
+                </p>
               </div>
             </div>
           ))}

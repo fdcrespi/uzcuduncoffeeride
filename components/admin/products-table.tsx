@@ -23,19 +23,20 @@ interface ProductsTableProps {
   onEdit?: (product: Product) => void
   onDelete?: (productId: string) => void
   onManageImages?: (product: Product) => void // 👈 nueva prop
-  onToggleStatus?: (productId: string, field: 'destacado' | 'visible', value: boolean) => void;
+  onToggleStatus?: (productId: string, field: 'destacado' | 'visible', value: boolean) => void
+  className?: string
 }
 
-export function ProductsTable({ products, onEdit, onDelete, onManageImages, onToggleStatus }: ProductsTableProps) {
+export function ProductsTable({ products, onEdit, onDelete, onManageImages, onToggleStatus, className }: ProductsTableProps) {
   const [productToDelete, setProductToDelete] = useState<Product | null>(null)
 
   return (
-    <>
+    <div className={className}>
       <Table>
         <TableHeader>
           <TableRow>
             <TableHead>Producto</TableHead>
-            <TableHead className="text-right">Precio</TableHead>
+            <TableHead className="text-right">Precios</TableHead>
             <TableHead className="text-right">Stock</TableHead>
             <TableHead className="text-center">Subcategoría</TableHead>
             <TableHead className="text-center">Destacado</TableHead>
@@ -58,7 +59,12 @@ export function ProductsTable({ products, onEdit, onDelete, onManageImages, onTo
                 </div>
               </TableCell>
               <TableCell className="text-right">
-                ${product.precio?.toLocaleString("es-AR")}
+                {product.precio_alternativo ? (
+                  <span className="font-bold">
+                    {product.moneda === 'ARS' ? '$' : 'USD'} {product.precio_alternativo?.toLocaleString("es-AR")} {`/ `}
+                  </span>
+                ) : null}
+                {product.moneda === 'ARS' ? '$' : 'USD'} {product.precio?.toLocaleString("es-AR")}
               </TableCell>
               <TableCell className="text-right">
                 <span className={product.stock < 3 ? "font-bold text-red-600" : ""}>
@@ -139,6 +145,6 @@ export function ProductsTable({ products, onEdit, onDelete, onManageImages, onTo
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>
+    </div>
   )
 }

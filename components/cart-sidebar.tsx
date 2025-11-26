@@ -76,7 +76,11 @@ export function CartSidebar() {
                         />
                       </div>
                       <div className="text-right">
-                        <p className="font-medium text-sm">${(item.product.precio * item.quantity).toLocaleString()}</p>
+                        {/* Mostrar moneda junto al precio del ítem */}
+                        <p className="font-medium text-sm">
+                          {item.product.moneda === 'ARS' ? '$' : 'USD'}{" "}
+                          {(item.product.precio * item.quantity).toLocaleString("es-AR")}
+                        </p>
                       </div>
                     </div>
                   ))}

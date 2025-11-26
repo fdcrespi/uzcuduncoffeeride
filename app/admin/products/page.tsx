@@ -1,11 +1,15 @@
 "use client"
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { ProductFormDialog } from "@/components/admin/product-form-dialog";
 import { ProductsTable } from "@/components/admin/products-table";
 import { Product, Subcategory } from "@/lib/types";
 import { toast } from "sonner";
+import LoadingAdminProducts from "./loading";
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -13,11 +17,22 @@ export default function AdminProductsPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
+  // filtros & paginación
+  const [searchTerm, setSearchTerm] = useState("");
+  const [subcategoryFilter, setSubcategoryFilter] = useState<string>("all");
+  const [currentPage, setCurrentPage] = useState<number>(1);
+
+  //loading
+  const [loading, setLoading] = useState(true);
+
+  const pageSize = 10;
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [productsRes, subcategoriesRes] = await Promise.all([
-          fetch("/api/products"),
+          // obtenemos todos los productos para que la paginación dependa del total
+          fetch("/api/products?limit=100000"),
           fetch("/api/subcategories"),
         ]);
 
@@ -32,13 +47,20 @@ export default function AdminProductsPage() {
 
         setProducts(productsData);
         setSubcategories(subcategoriesData);
+        setLoading(false);
       } catch (error: any) {
+        setLoading(false);
         toast.error(error.message || "Ocurrió un error al cargar los datos.");
       }
     };
 
     fetchData();
   }, []);
+
+  // resetear página cuando cambian filtros
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, subcategoryFilter]);
 
   const handleOpenDialog = () => setIsDialogOpen(true);
 
@@ -72,7 +94,7 @@ export default function AdminProductsPage() {
       toast.success(editingProduct ? "Producto actualizado" : "Producto creado");
 
       // refrescar lista de productos
-      const listRes = await fetch("/api/products");
+      const listRes = await fetch("/api/products?limit=100000");
       if (listRes.ok) {
         setProducts(await listRes.json());
       }
@@ -89,14 +111,102 @@ export default function AdminProductsPage() {
     setIsDialogOpen(true);
   };
 
+  // productos filtrados + paginados
+  const filteredProducts = useMemo(() => {
+    const term = searchTerm.trim().toLowerCase();
+    return products.filter((p) => {
+      const matchesSearch = term
+        ? (p.nombre?.toLowerCase().includes(term) || p.descripcion?.toLowerCase().includes(term) || p.id?.toString().toLowerCase().includes(term))
+        : true;
+      const matchesSubcat = subcategoryFilter === "all" ? true : p.subrubro_id?.toString() === subcategoryFilter;
+      return matchesSearch && matchesSubcat;
+    });
+  }, [products, searchTerm, subcategoryFilter]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / pageSize));
+  const currentSliceStart = (currentPage - 1) * pageSize;
+  const paginatedProducts = filteredProducts.slice(currentSliceStart, currentSliceStart + pageSize);
+
+  // Mostrar loading spinner si está cargando
+  if (loading) {
+    return <LoadingAdminProducts />
+  }
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 flex-1 flex flex-col">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Productos</h1>
         <Button onClick={handleOpenDialog}>Agregar Producto</Button>
       </div>
 
-      <ProductsTable products={products} onEdit={handleEdit} />
+      {/* Controles de filtro y búsqueda */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+        <div className="flex-1">
+          <Input
+            placeholder="Buscar por nombre, descripción o ID..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+        <div className="w-full sm:w-[240px]">
+          <Select value={subcategoryFilter} onValueChange={(v) => setSubcategoryFilter(v)}>
+            <SelectTrigger>
+              <SelectValue placeholder="Subcategoría" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todas</SelectItem>
+              {subcategories.map((s) => (
+                <SelectItem key={s.id} value={s.id.toString()}>
+                  {s.nombre}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+             
+      <ProductsTable products={paginatedProducts} onEdit={handleEdit} className="flex-1" />
+
+      {/* Paginación */}
+      <Pagination className="mt-2">
+        <PaginationContent>
+          <PaginationItem>
+            <PaginationPrevious
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                setCurrentPage((p) => Math.max(1, p - 1));
+              }}
+            />
+          </PaginationItem>
+
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+            <PaginationItem key={page}>
+              <PaginationLink
+                href="#"
+                isActive={currentPage === page}
+                onClick={(e) => {
+                  e.preventDefault();
+                  setCurrentPage(page);
+                }}
+              >
+                {page}
+              </PaginationLink>
+            </PaginationItem>
+          ))}
+
+          <PaginationItem>
+            <PaginationNext
+              
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                setCurrentPage((p) => Math.min(totalPages, p + 1));
+              }}
+            />
+          </PaginationItem>
+        </PaginationContent>
+      </Pagination>
 
       {isDialogOpen && (
         <ProductFormDialog

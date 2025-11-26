@@ -10,6 +10,7 @@ export async function GET(req: Request) {
         p.nombre,
         p.descripcion,
         sp.precio,
+        sp.moneda,
         sp.stock,
         sr.nombre AS category,
         SUM(pp.cantidad) AS total_vendidos
@@ -17,7 +18,7 @@ export async function GET(req: Request) {
       JOIN producto p ON p.id = pp.producto_id
       JOIN sucursal_productos sp ON sp.producto_id = p.id
       JOIN subrubro sr ON sr.id = p.subrubro_id
-      GROUP BY p.id, p.nombre, p.descripcion, sp.precio, sp.stock, sr.nombre
+      GROUP BY p.id, p.nombre, p.descripcion, sp.precio, sp.moneda, sp.stock, sr.nombre
       ORDER BY total_vendidos DESC
       LIMIT 4`
     );

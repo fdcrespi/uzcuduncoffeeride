@@ -18,7 +18,7 @@ export default function AdminLayout({
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
         <SheetContent side="left" className="p-0 w-64">
           <AdminSidebar onClose={onClose} />
@@ -32,12 +32,12 @@ export default function AdminLayout({
       </div>
 
       {/* Main content */}
-      <div className="md:pl-64">
+      <div className="md:pl-64 flex flex-col flex-1">
         <AdminTopBar onMenuClick={() => setSidebarOpen(true)} />
 
         {/* Page content */}
-        <main className="py-6">
-          <div className="px-4 sm:px-6 lg:px-8">{children}</div>
+        <main className="py-6 px-4 sm:px-6 lg:px-8 flex-1 flex flex-col">
+          {children}
         </main>
       </div>
     </div>

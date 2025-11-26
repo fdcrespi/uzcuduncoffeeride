@@ -13,7 +13,13 @@ export async function GET(request: Request) {
     const visibleParam = searchParams.get('visible');
     const visible = visibleParam === 'true' ? true : visibleParam === 'false' ? false : undefined;
 
-    const products = await getProducts({ featured, category, visible });
+    // nuevos parámetros de paginación
+    const pageParam = searchParams.get('page');
+    const limitParam = searchParams.get('limit');
+    const page = pageParam ? Math.max(1, parseInt(pageParam, 10)) : undefined;
+    const limit = limitParam ? Math.max(1, parseInt(limitParam, 10)) : undefined;
+
+    const products = await getProducts({ featured, category, visible, page, limit });
 
     return NextResponse.json(products);
   } catch (error) {
