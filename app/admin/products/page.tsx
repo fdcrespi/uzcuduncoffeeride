@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { ProductFormDialog } from "@/components/admin/product-form-dialog";
+import { ProductImagesDialog } from "@/components/admin/product-images-dialog";
 import { ProductsTable } from "@/components/admin/products-table";
 import { Product, Subcategory } from "@/lib/types";
 import { toast } from "sonner";
@@ -16,15 +17,13 @@ export default function AdminProductsPage() {
   const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [imagesDialogOpen, setImagesDialogOpen] = useState(false);
+  const [imagesProduct, setImagesProduct] = useState<Product | null>(null);
 
   // filtros & paginación
   const [searchTerm, setSearchTerm] = useState("");
   const [subcategoryFilter, setSubcategoryFilter] = useState<string>("all");
   const [currentPage, setCurrentPage] = useState<number>(1);
-
-  //loading
-  const [loading, setLoading] = useState(true);
-
   const pageSize = 10;
 
   useEffect(() => {
@@ -47,9 +46,7 @@ export default function AdminProductsPage() {
 
         setProducts(productsData);
         setSubcategories(subcategoriesData);
-        setLoading(false);
       } catch (error: any) {
-        setLoading(false);
         toast.error(error.message || "Ocurrió un error al cargar los datos.");
       }
     };
@@ -111,6 +108,11 @@ export default function AdminProductsPage() {
     setIsDialogOpen(true);
   };
 
+  const handleManageImages = (product: Product) => {
+    setImagesProduct(product);
+    setImagesDialogOpen(true);
+  };
+
   // productos filtrados + paginados
   const filteredProducts = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
@@ -127,13 +129,8 @@ export default function AdminProductsPage() {
   const currentSliceStart = (currentPage - 1) * pageSize;
   const paginatedProducts = filteredProducts.slice(currentSliceStart, currentSliceStart + pageSize);
 
-  // Mostrar loading spinner si está cargando
-  if (loading) {
-    return <LoadingAdminProducts />
-  }
-
   return (
-    <div className="space-y-4 flex-1 flex flex-col">
+    <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Productos</h1>
         <Button onClick={handleOpenDialog}>Agregar Producto</Button>
@@ -164,8 +161,8 @@ export default function AdminProductsPage() {
           </Select>
         </div>
       </div>
-             
-      <ProductsTable products={paginatedProducts} onEdit={handleEdit} className="flex-1" />
+
+      <ProductsTable products={paginatedProducts} onEdit={handleEdit} onManageImages={handleManageImages} />
 
       {/* Paginación */}
       <Pagination className="mt-2">
@@ -197,7 +194,6 @@ export default function AdminProductsPage() {
 
           <PaginationItem>
             <PaginationNext
-              
               href="#"
               onClick={(e) => {
                 e.preventDefault();
@@ -214,6 +210,18 @@ export default function AdminProductsPage() {
           onSubmit={handleSubmit}
           initialData={editingProduct}
           onOpenChange={handleCloseDialog}
+        />
+      )}
+
+      {imagesDialogOpen && imagesProduct && (
+        <ProductImagesDialog
+          productId={imagesProduct.id}
+          productName={imagesProduct.nombre}
+          open={imagesDialogOpen}
+          onOpenChange={(open) => {
+            setImagesDialogOpen(open);
+            if (!open) setImagesProduct(null);
+          }}
         />
       )}
     </div>
