@@ -113,6 +113,46 @@ export default function AdminProductsPage() {
     setImagesDialogOpen(true);
   };
 
+  const handleToggleStatus = async (
+    productId: string,
+    field: "destacado" | "visible",
+    value: boolean
+  ) => {
+    try {
+      const res = await fetch(`/api/products/${productId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ [field]: value }),
+      });
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({}));
+        throw new Error(j.message || "No se pudo actualizar el estado");
+      }
+      setProducts((prev) => prev.map((p) => (p.id === productId ? { ...p, [field]: value } as Product : p)));
+      toast.success(field === "destacado" ? (value ? "Marcado como destacado" : "Quitado de destacados") : (value ? "Marcado como visible" : "Ocultado"));
+    } catch (e) {
+      console.error(e);
+      toast.error((e as Error).message);
+    }
+  };
+
+  const onDelete = async (productId: string) => {
+    try {
+      const res = await fetch(`/api/products/${productId}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({}));
+        throw new Error(j.message || "No se pudo eliminar el producto");
+      }
+      setProducts((prev) => prev.filter((p) => p.id !== productId));
+      toast.success("Producto eliminado");
+    } catch (e) {
+      console.error(e);
+      toast.error((e as Error).message);
+    }
+  };
+
   // productos filtrados + paginados
   const filteredProducts = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
@@ -162,8 +202,7 @@ export default function AdminProductsPage() {
         </div>
       </div>
 
-      <ProductsTable products={paginatedProducts} onEdit={handleEdit} onManageImages={handleManageImages} />
-
+      <ProductsTable products={paginatedProducts} onEdit={handleEdit} onManageImages={handleManageImages} onToggleStatus={handleToggleStatus} onDelete={onDelete} />
       {/* Paginación */}
       <Pagination className="mt-2">
         <PaginationContent>
