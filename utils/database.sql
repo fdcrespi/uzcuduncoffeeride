@@ -288,6 +288,10 @@ ALTER TABLE Pedido_Productos ADD CONSTRAINT fk_PedidoProducto_Pedido FOREIGN KEY
 ALTER TABLE Pedido_Productos ADD CONSTRAINT fk_PedidoProducto_Producto FOREIGN KEY (producto_id)
     REFERENCES Producto (id);
 
+-- Reference: FK_8 (table: Pedido_Productos)
+ALTER TABLE Pedido_Productos ADD CONSTRAINT fk_PedidoProducto_Talle FOREIGN KEY (talle_id)
+    REFERENCES Talle (id);
+
 -- Reference: FK_7 (table: Usuario)
 ALTER TABLE Usuario ADD CONSTRAINT fk_Usuario_Rol FOREIGN KEY (rol_id)
     REFERENCES Rol (id);
