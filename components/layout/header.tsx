@@ -32,11 +32,17 @@ export function Header({ categories }: { categories: Category[] }) {
           
 
           <nav className="hidden md:flex items-center space-x-4">
-            {categories.map((cat) => (
+            {/* {categories.map((cat) => (
               <a key={cat.id} href={`/products?category=${cat.nombre}`} className="text-sm font-medium hover:text-primary transition-colors">
                 {cat.nombre}
               </a>
-            ))}
+            ))} */}
+            <a href="/#hero" className="text-sm font-medium hover:text-primary transition-colors">
+              Inicio
+            </a>
+            <a href="/#categories" className="text-sm font-medium hover:text-primary transition-colors">
+              Categorías
+            </a>
             <a href="/#cafe" className="text-sm font-medium hover:text-primary transition-colors">
               Cafetería
             </a>

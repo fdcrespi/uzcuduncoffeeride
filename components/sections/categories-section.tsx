@@ -7,7 +7,7 @@ export async function CategoriesSection() {
   const categories = await getCategories();
 
   return (
-    <section className="py-16 px-4">
+    <section className="py-16 px-4" id="categories">
       <div className="container mx-auto">
         <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 text-balance animate-on-scroll">
           Nuestras Categorías
