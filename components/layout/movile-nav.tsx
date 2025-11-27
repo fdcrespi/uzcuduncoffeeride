@@ -14,13 +14,14 @@ export function MobileNav({ isOpen, onClose, categories }: MobileNavProps) {
   const navItems = [
     // categorías primero, ordenadas por nombre
     { href: "/", label: "Inicio" },
-    ...[...categories]
-      .sort((a, b) => a.nombre.localeCompare(b.nombre))
-      .map((cat) => ({
-        href: `/products?category=${encodeURIComponent(cat.nombre)}`,
-        label: cat.nombre,
-      })),
+    //...[...categories]
+    //  .sort((a, b) => a.nombre.localeCompare(b.nombre))
+    //  .map((cat) => ({
+    //    href: `/products?category=${encodeURIComponent(cat.nombre)}`,
+    //    label: cat.nombre,
+    //  })),
     // luego enlaces fijos
+    { href: "/#categories", label: "Categorías" },
     { href: "/#cafe", label: "Cafetería" },
     { href: "/products", label: "Tienda" },
     // { href: "/admin", label: "Admin Panel" },
