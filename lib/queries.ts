@@ -14,7 +14,8 @@ export async function getCategories() {
 }
 
 interface GetProductsOptions {
-  category?: string;
+  category?: string; // rubro_id (ID)
+  subcategory?: string; // subrubro_id (ID)
   featured?: boolean;
   visible?: boolean;
   page?: number;
@@ -24,10 +25,10 @@ interface GetProductsOptions {
 export async function getProducts(options: GetProductsOptions = {}): Promise<Product[]> {
   noStore();
   try {
-    const { category, featured, visible, page = 1, limit = 10 } = options;
+    const { category, subcategory, featured, visible, page = 1, limit } = options;
     const sucursalId = 1; // Asumimos la sucursal principal
     const params: any[] = [sucursalId];
-    const offset = (page - 1) * limit;
+    const offset = limit ? (page - 1) * limit : undefined;
 
     let query = `
       SELECT 
@@ -65,14 +66,23 @@ export async function getProducts(options: GetProductsOptions = {}): Promise<Pro
     
     if (category) {
       params.push(category);
-      query += ` AND r.nombre = $${params.length}`;
+      query += ` AND r.id = $${params.length}`;
+    }
+
+    if (subcategory) {
+      params.push(subcategory);
+      query += ` AND sr.id = $${params.length}`;
     }
 
     query += ` ORDER BY p.id DESC`;
-    params.push(limit);
-    query += ` LIMIT $${params.length}`;
-    params.push(offset);
-    query += ` OFFSET $${params.length}`;
+    if (limit) {
+      params.push(limit);
+      query += ` LIMIT $${params.length}`;
+      if (offset !== undefined) {
+        params.push(offset);
+        query += ` OFFSET $${params.length}`;
+      }
+    }
 
     const result = await db.query(query, params);
 

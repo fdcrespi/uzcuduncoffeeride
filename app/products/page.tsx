@@ -7,17 +7,20 @@ import { FilterCategories } from '@/components/filter-categories';
 interface ProductsPageProps {
   searchParams?: {
     category?: string;
+    subcategory?: string;
   };
 }
 
 export default async function ProductsPage({ searchParams }: ProductsPageProps) {
   const category = searchParams?.category;
-  const products = await getProducts({ category, visible: true });
+  const subcategory = searchParams?.subcategory;
+  const products = await getProducts({ category, subcategory, visible: true, page: 1, limit: 24 });
   const categories = await getCategories();
 
-  const pageTitle = category ? `Categoría: ${category}` : "Nuestros Productos";
+  const categoryName = category ? (categories.find(c => c.id == category)?.nombre || category) : undefined;
+  const pageTitle = categoryName ? `Categoría: ${categoryName}` : "Nuestros Productos";
   const pageDescription = category 
-    ? `Explora nuestra selección de productos en la categoría ${category}.`
+    ? `Explora nuestra selección de productos en la categoría ${categoryName}.`
     : "Explora nuestra selección de motos, accesorios y vehículos eléctricos.";
 
   return (
@@ -47,7 +50,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                 <p className="text-xl text-muted-foreground flex items-center justify-center">
                   <TriangleAlert className="inline-block h-6 w-6 text-red-500" />
                   <span className="font-bold ml-2">
-                    {category ? `Aun no tenemos productos de la categoría ${categories.find(c => c.id == category)?.nombre || category} disponibles en la web.` : `Aun no tenemos productos disponibles en la web.`}
+                    {category ? `Aun no tenemos productos de la categoría ${categoryName} disponibles en la web.` : `Aun no tenemos productos disponibles en la web.`}
                   </span>
                 </p>
               </div>

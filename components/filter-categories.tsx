@@ -7,12 +7,17 @@ import { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from './ui/sheet';
 
+type Subcategory = { id: number; nombre: string; rubro_id: number };
+
 export function FilterCategories({ categorias }: { categorias: Category[] }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const category = searchParams.get('category');
+  const subcategory = searchParams.get('subcategory');
   const [isMobile, setIsMobile] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [subcatsByCat, setSubcatsByCat] = useState<Record<string, Subcategory[]>>({});
+  const [expandedCatId, setExpandedCatId] = useState<string | null>(null);
 
   // Detectar si es móvil
   useEffect(() => {
@@ -28,8 +33,28 @@ export function FilterCategories({ categorias }: { categorias: Category[] }) {
     };
   }, []);
 
-  const handleCategoryClick = (categoryName: string) => {
-    router.push(`/products?category=${categoryName}`);
+  useEffect(() => {
+    const loadAllSubcategories = async () => {
+      try {
+        const res = await fetch('/api/subcategories');
+        const all: Subcategory[] = await res.json();
+        const grouped: Record<string, Subcategory[]> = {};
+        for (const s of all) {
+          const key = String(s.rubro_id);
+          grouped[key] = grouped[key] || [];
+          grouped[key].push(s);
+        }
+        setSubcatsByCat(grouped);
+      } catch (e) {
+        setSubcatsByCat({});
+      }
+    };
+    loadAllSubcategories();
+  }, []);
+
+  const handleCategoryClick = (categoryId: string) => {
+    router.push(`/products?category=${categoryId}`);
+    setExpandedCatId(prev => (prev === categoryId ? null : categoryId));
     if (isMobile) {
       setIsOpen(false);
     }
@@ -40,6 +65,11 @@ export function FilterCategories({ categorias }: { categorias: Category[] }) {
     if (isMobile) {
       setIsOpen(false);
     }
+  };
+
+  const handleSubcategoryClick = (catId: string | number, subId: string | number) => {
+    router.push(`/products?category=${String(catId)}&subcategory=${String(subId)}`);
+    if (isMobile) setIsOpen(false);
   };
 
   const SidebarContent = () => (
@@ -64,17 +94,34 @@ export function FilterCategories({ categorias }: { categorias: Category[] }) {
         <h4 className="font-medium mb-3">Categorías</h4>
         <div className="flex flex-col space-y-2">
           {categorias.map((cat) => (
-            <button
-              key={cat.id}
-              className={`cursor-pointer flex justify-between items-center px-3 py-2 rounded-md text-sm font-medium transition-all ${category === cat.nombre
-                  ? 'bg-primary text-primary-foreground'
-                  : 'hover:bg-muted'
-                }`}
-              onClick={() => handleCategoryClick(cat.nombre)}
-            >
-              <span>{cat.nombre}</span>
-              {category === cat.id && <ChevronRight className="h-4 w-4" />}
-            </button>
+            <div key={String(cat.id)}>
+              <button
+                className={`cursor-pointer w-full flex justify-between items-center px-3 py-2 rounded-md text-sm font-medium transition-all ${category == String(cat.id)
+                    ? 'bg-primary text-primary-foreground'
+                    : 'hover:bg-muted'
+                  }`}
+                onClick={() => handleCategoryClick(String(cat.id))}
+              >
+                <span>{cat.nombre}</span>
+                {(category == String(cat.id)) && <ChevronRight className="h-4 w-4" />}
+              </button>
+              {expandedCatId === String(cat.id) && (
+                <div className="mt-1 ml-3 flex flex-col space-y-1">
+                  {(subcatsByCat[String(cat.id)] || []).map((sub) => (
+                    <button
+                      key={sub.id}
+                      className={`cursor-pointer text-left px-3 py-1 rounded-md text-xs transition-all ${subcategory == String(sub.id)
+                        ? 'bg-muted'
+                        : 'hover:bg-muted'
+                      }`}
+                      onClick={() => handleSubcategoryClick(cat.id, sub.id)}
+                    >
+                      {sub.nombre}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           ))}
         </div>
       </div>

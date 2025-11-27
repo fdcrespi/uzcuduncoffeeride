@@ -9,6 +9,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const featured = searchParams.get('featured') === 'true';
     const category = searchParams.get('category') || undefined;
+    const subcategory = searchParams.get('subcategory') || undefined;
     
     const visibleParam = searchParams.get('visible');
     const visible = visibleParam === 'true' ? true : visibleParam === 'false' ? false : undefined;
@@ -19,7 +20,7 @@ export async function GET(request: Request) {
     const page = pageParam ? Math.max(1, parseInt(pageParam, 10)) : undefined;
     const limit = limitParam ? Math.max(1, parseInt(limitParam, 10)) : undefined;
 
-    const products = await getProducts({ featured, category, visible, page, limit });
+    const products = await getProducts({ featured, category, subcategory, visible, page, limit });
 
     return NextResponse.json(products);
   } catch (error) {
