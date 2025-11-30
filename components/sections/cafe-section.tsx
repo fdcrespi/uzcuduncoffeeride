@@ -1,6 +1,33 @@
+"use client"
 import { Button } from "@/components/ui/button"
-import { Coffee, Bike, Star } from "lucide-react"
+import { Coffee, Bike, Star, Link } from "lucide-react"
 import Image from "next/image"
+import { useEffect, useState } from "react";
+
+
+function Carousel({ images, interval = 3000 }: { images: string[]; interval?: number }) {
+  const [index, setIndex] = useState(0)
+  useEffect(() => {
+    if (!images || images.length <= 1) return
+    const id = setInterval(() => setIndex((i) => (i + 1) % images.length), interval)
+    return () => clearInterval(id)
+  }, [images, interval])
+
+  return (
+    <div className="relative w-full overflow-hidden rounded-lg shadow-xl" style={{ paddingTop: "66.6667%" }}>
+      <div
+        className="absolute inset-0 flex transition-transform duration-700"
+        style={{ transform: `translateX(-${index * 100}%)` }}
+      >
+        {images.map((src) => (
+          <div key={src} className="flex-none w-full relative">
+            <Image src={src} alt="Cafetería" fill className="object-cover" sizes="100vw" />
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
 
 export function CafeSection() {
   return (
@@ -33,15 +60,28 @@ export function CafeSection() {
             {/* <Button size="lg" className="mt-8 btn-motorcycle">
               Ver Menú Completo
             </Button> */}
+            {/* <Link href="https://drive.google.com/file/d/18ZMawMNCO43yxgUa_Y5w7mAIo8f416mN/view?fbclid=PAdGRleAOZJZhleHRuA2FlbQIxMQBzcnRjBmFwcF9pZA8xMjQwMjQ1NzQyODc0MTQAAaelgCNn-fXJkdjw4wRy226-3XaXVkESMHotAv7Wc8Jcl-yEZvu65lCA6ZOAjg_aem_SNi9EChOsKwIR-FShCuSSQ" target="_blank">
+              <Button size="lg" className="mt-8 btn-motorcycle">
+                Ver Menú Completo
+              </Button>
+            </Link> */}
           </div>
           <div className="relative animate-on-scroll animate-fade-in-right">
             <div className="hover-lift">
-              <Image
+              {/* <Image
                 src="/motorcycle-cafe-interior-with-bikes-and-coffee.jpg"
                 alt="Interior de la cafetería"
                 width={600}
                 height={500}
                 className="rounded-lg shadow-xl"
+              /> */}
+              <Carousel
+                images={[
+                  "/images/cafeteria1.webp",
+                  "/images/cafeteria2.webp",
+                  "/images/cafeteria3.webp",
+                ]}
+                interval={3500}
               />
             </div>
           </div>

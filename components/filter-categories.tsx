@@ -14,6 +14,7 @@ export function FilterCategories({ categorias }: { categorias: Category[] }) {
   const searchParams = useSearchParams();
   const category = searchParams.get('category');
   const subcategory = searchParams.get('subcategory');
+  const filtersCount = (category ? 1 : 0) + (subcategory ? 1 : 0);
   const [isMobile, setIsMobile] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [subcatsByCat, setSubcatsByCat] = useState<Record<string, Subcategory[]>>({});
@@ -103,24 +104,22 @@ export function FilterCategories({ categorias }: { categorias: Category[] }) {
                 onClick={() => handleCategoryClick(String(cat.id))}
               >
                 <span>{cat.nombre}</span>
-                {(category == String(cat.id)) && <ChevronRight className="h-4 w-4" />}
+                <ChevronRight className={`h-4 w-4 transition-transform ${expandedCatId === String(cat.id) ? 'rotate-90' : 'rotate-0'}`} />
               </button>
-              {expandedCatId === String(cat.id) && (
-                <div className="mt-1 ml-3 flex flex-col space-y-1">
-                  {(subcatsByCat[String(cat.id)] || []).map((sub) => (
-                    <button
-                      key={sub.id}
-                      className={`cursor-pointer text-left px-3 py-1 rounded-md text-xs transition-all ${subcategory == String(sub.id)
-                        ? 'bg-muted'
-                        : 'hover:bg-muted'
-                      }`}
-                      onClick={() => handleSubcategoryClick(cat.id, sub.id)}
-                    >
-                      {sub.nombre}
-                    </button>
-                  ))}
-                </div>
-              )}
+              <div className={`mt-1 ml-3 flex flex-col space-y-1 overflow-hidden transition-all duration-300 ${expandedCatId === String(cat.id) ? 'max-h-64 opacity-100' : 'max-h-0 opacity-0'}`}>
+                {(subcatsByCat[String(cat.id)] || []).map((sub) => (
+                  <button
+                    key={sub.id}
+                    className={`cursor-pointer text-left px-3 py-1 rounded-md text-xs transition-all ${subcategory == String(sub.id)
+                      ? 'bg-muted'
+                      : 'hover:bg-muted'
+                    }`}
+                    onClick={() => handleSubcategoryClick(cat.id, sub.id)}
+                  >
+                    {sub.nombre}
+                  </button>
+                ))}
+              </div>
             </div>
           ))}
         </div>
@@ -139,7 +138,9 @@ export function FilterCategories({ categorias }: { categorias: Category[] }) {
               <Button variant="outline" size="sm" className="flex items-center gap-2 cursor-pointer">
                 <Filter className="h-4 w-4" />
                 Filtros
-                {category && <span className="bg-primary text-primary-foreground text-xs px-1.5 py-0.5 rounded-full">1</span>}
+                {filtersCount > 0 && (
+                  <span className="bg-primary text-primary-foreground text-xs px-1.5 py-0.5 rounded-full">{filtersCount}</span>
+                )}
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="w-[280px] sm:w-[350px]">
