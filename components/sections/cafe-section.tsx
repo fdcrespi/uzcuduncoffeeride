@@ -1,6 +1,7 @@
 "use client"
 import { Button } from "@/components/ui/button"
-import { Coffee, Bike, Star, Link } from "lucide-react"
+import { Coffee, Bike, Star } from "lucide-react"
+import Link from "next/link"
 import Image from "next/image"
 import { useEffect, useState } from "react";
 
@@ -60,11 +61,16 @@ export function CafeSection() {
             {/* <Button size="lg" className="mt-8 btn-motorcycle">
               Ver Menú Completo
             </Button> */}
-            {/* <Link href="https://drive.google.com/file/d/18ZMawMNCO43yxgUa_Y5w7mAIo8f416mN/view?fbclid=PAdGRleAOZJZhleHRuA2FlbQIxMQBzcnRjBmFwcF9pZA8xMjQwMjQ1NzQyODc0MTQAAaelgCNn-fXJkdjw4wRy226-3XaXVkESMHotAv7Wc8Jcl-yEZvu65lCA6ZOAjg_aem_SNi9EChOsKwIR-FShCuSSQ" target="_blank">
-              <Button size="lg" className="mt-8 btn-motorcycle">
-                Ver Menú Completo
-              </Button>
-            </Link> */}
+
+
+            <Link
+              className="mt-8 bg-primary text-white inline-flex hover:bg-primary/90 hover:scale-105 hover:transition-all hover:duration-300 transition-colors items-center justify-center gap-2 px-4 py-2 rounded-lg text-lg"
+              href="https://drive.google.com/file/d/1_YcslAzxJwMjBXBLQKVgVIYQXjFEaA1j/view?usp=sharing" target="_blank">
+              Nuestro Menú
+              <Coffee className="ml-2 w-5 h-5" />
+            </Link>
+
+
           </div>
           <div className="relative animate-on-scroll animate-fade-in-right">
             <div className="hover-lift">
