@@ -27,23 +27,23 @@ export function Footer({ className }: FooterProps) {
             <h3 className="font-semibold mb-4">Productos</h3>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li>
-                <a href="#" className="hover:text-primary transition-colors">
+                <a href="/products?category=5" className="hover:text-primary transition-colors">
                   Motocicletas
                 </a>
               </li>
               <li>
-                <a href="#" className="hover:text-primary transition-colors">
+                <a href="/products?category=1" className="hover:text-primary transition-colors">
                   Vehículos Eléctricos
                 </a>
               </li>
               <li>
-                <a href="#" className="hover:text-primary transition-colors">
+                <a href="/products?category=2" className="hover:text-primary transition-colors">
                   Accesorios
                 </a>
               </li>
               <li>
-                <a href="#" className="hover:text-primary transition-colors">
-                  Repuestos
+                <a href="/products?category=3" className="hover:text-primary transition-colors">
+                  Indumentaria
                 </a>
               </li>
             </ul>

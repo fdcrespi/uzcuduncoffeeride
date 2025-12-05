@@ -15,7 +15,7 @@ export async function CategoriesSection() {
         {categories && categories.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {categories.map((category: { id: number; nombre: string }, index: number) => (
-              <Link key={category.id} href={`/products?category=${encodeURIComponent(category.nombre)}`} passHref>
+              <Link key={category.id} href={`/products?category=${category.id}`} passHref>
                 <Card className="group hover:shadow-lg transition-all duration-300 cursor-pointer hover-lift h-full animate-on-scroll"
                       style={{ animationDelay: `${100 * (index + 1)}ms` }}>
                   <CardHeader className="text-center">
