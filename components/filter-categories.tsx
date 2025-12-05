@@ -106,7 +106,7 @@ export function FilterCategories({ categorias }: { categorias: Category[] }) {
                 <span>{cat.nombre}</span>
                 <ChevronRight className={`h-4 w-4 transition-transform ${expandedCatId === String(cat.id) ? 'rotate-90' : 'rotate-0'}`} />
               </button>
-              <div className={`mt-1 ml-3 flex flex-col space-y-1 overflow-hidden transition-all duration-300 ${expandedCatId === String(cat.id) ? 'max-h-64 opacity-100' : 'max-h-0 opacity-0'}`}>
+              <div className={`mt-1 ml-3 flex flex-col space-y-1 transition-all duration-300 ${expandedCatId === String(cat.id) ? 'max-h-[60vh] opacity-100 overflow-y-auto pr-1' : 'max-h-0 opacity-0 overflow-hidden'}`}>
                 {(subcatsByCat[String(cat.id)] || []).map((sub) => (
                   <button
                     key={sub.id}
@@ -143,7 +143,7 @@ export function FilterCategories({ categorias }: { categorias: Category[] }) {
                 )}
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-[280px] sm:w-[350px]">
+            <SheetContent side="left" className="w-[280px] sm:w-[350px] overflow-y-auto">
               <SheetHeader>
                 <SheetTitle className="text-lg font-bold">Filtros</SheetTitle>
                 <SheetDescription className="text-xs text-muted-foreground">Refina tu búsqueda por categorías</SheetDescription>
