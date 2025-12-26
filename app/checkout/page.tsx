@@ -467,7 +467,39 @@ export default function CheckoutPage() {
 
     setIsProcessing(true);
 
+    //console.log(items);
+    //console.log(finalTotal);
+    //console.log(shippingToSend);
+    //console.log(shippingData);
+    // 👇 NUEVO: llamada a API para crear preferencia de pago
     try {
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        body: JSON.stringify({ amount: finalTotal, products: items, shippingData: shippingData, shippingPrice: shippingToSend }),
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url; // Redirección externa a Payway [13]
+      } else {
+        toast({
+          title: "Error al crear el pago",
+          description: "Hubo un problema al conectar con Payway. Intenta de nuevo.",
+          variant: "destructive",
+        });
+        throw new Error("URL de pago no válida");
+      }
+    } catch (error) {
+      console.error(error);
+      toast({
+        title: "Error al crear el pago",
+        description: "Hubo un problema al conectar con Payway. Intenta de nuevo.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsProcessing(false);
+    }
+
+    /* try {
       const response = await fetch("/api/mercadopago/preference", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -487,7 +519,7 @@ export default function CheckoutPage() {
       });
     } finally {
       setIsProcessing(false);
-    }
+    } */
   };
 
   if (items.length === 0 && !isProcessing) {
