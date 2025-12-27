@@ -12,7 +12,7 @@ export async function POST(request: Request) {
       products: body.products,
       shippingData: body.shippingData,
       shippingPrice: body.shippingPrice,
-      success_url: `${process.env.NEXT_PUBLIC_URL}/checkout/success?order=${orderId}`,
+      success_url: `${process.env.NEXT_PUBLIC_URL}/checkout/success`,
       cancel_url: `${process.env.NEXT_PUBLIC_URL}/products`
     });
     

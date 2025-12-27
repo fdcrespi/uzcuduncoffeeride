@@ -82,9 +82,9 @@ export const createCheckoutLink = async (args: CheckoutArgs) => {
           console.error("Payway checkout error:", err);
           return reject(err);
         }
-        console.log("-----------------------------------------")
+        /* console.log("-----------------------------------------")
         console.log("Link Hash", result)
-        console.log("-------------------***-------------------");
+        console.log("-------------------***-------------------"); */
         if (result.payment_link) {
           resolve(result.payment_link);
         } else {
