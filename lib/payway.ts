@@ -2,9 +2,9 @@ import { redirect } from "next/dist/server/api-utils";
 
 const sdkModulo = require('sdk-node-payway');
 
-const publicKey = process.env.PAYWAY_PRUEBA_PUBLIC_KEY;
-const privateKey = process.env.PAYWAY_PRUEBA_PRIVATE_KEY;
-const ambient = process.env.PAYWAY_PRUEBA_AMBIENT; // "developer" o "production"
+const publicKey = process.env.PAYWAY_PUBLIC_KEY;
+const privateKey = process.env.PAYWAY_PRIVATE_KEY;
+const ambient = process.env.PAYWAY_AMBIENT; // "developer" o "production"
 const company = "Uzcudun Coffee Ride";
 const user = "RAMIRO UZCUDUN";
 
