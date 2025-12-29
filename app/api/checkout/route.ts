@@ -12,12 +12,13 @@ export async function POST(request: Request) {
       products: body.products,
       shippingData: body.shippingData,
       shippingPrice: body.shippingPrice,
-      success_url: `${process.env.NEXT_PUBLIC_URL}/checkout/success`,
+      success_url: `${process.env.NEXT_PUBLIC_URL}/checkout/success?orderId=${orderId}`,
       cancel_url: `${process.env.NEXT_PUBLIC_URL}/products`
     });
     
     // El resultado puede tener id o hash dependiendo de la versión del SDK/API
     const paymentHash = result;
+    
 
     return NextResponse.json({ url: `${paymentHash}` });
   } catch (error) {

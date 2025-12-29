@@ -425,7 +425,7 @@ export default function CheckoutPage() {
 
   const handleCreatePreference = async () => {
     const { notes, ...requiredData } = shippingData;
-
+    let orderId = "";
     // Validar campos según el método de entrega
     let isFormValid = true;
     if (shippingData.deliveryMethod === "shipping") {
@@ -466,16 +466,52 @@ export default function CheckoutPage() {
     }
 
     setIsProcessing(true);
-
-    //console.log(items);
-    //console.log(finalTotal);
-    //console.log(shippingToSend);
-    //console.log(shippingData);
+    
+    // NUEVO: Guardar pedido en base de datos
+    try {
+      const res = await fetch('/api/orders', {
+        method: 'POST',
+        body: JSON.stringify({ 
+          pago: false,
+          modo_entrega_id: shippingData.deliveryMethod === "shipping" ? 1 : 2,
+          total: totalPrice,
+          delivery: shipping,
+          payer_name: shippingData.firstName + " " + shippingData.lastName,
+          payer_address: shippingData.address,
+          payer_phone: shippingData.phone,
+          payer_zip: shippingData.zipCode,
+          products: items,
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        orderId = data.orderId;
+      } else {
+        throw new Error(`HTTP ${res.status}`);
+      }
+    } catch (error) {
+      console.error(error);
+      toast({
+        title: "Error al guardar el pedido",
+        description: "Hubo un problema al guardar el pedido. Intenta de nuevo.",
+        variant: "destructive",
+      });
+      return;
+    }
+  
+    if (!orderId) {
+      toast({
+        title: "Error al guardar el pedido",
+        description: "Hubo un problema al guardar el pedido. Intenta de nuevo.",
+        variant: "destructive",
+      });
+      return;
+    }
     // 👇 NUEVO: llamada a API para crear preferencia de pago
     try {
       const res = await fetch('/api/checkout', {
         method: 'POST',
-        body: JSON.stringify({ amount: finalTotal, products: items, shippingData: shippingData, shippingPrice: shippingToSend }),
+        body: JSON.stringify({ amount: finalTotal, products: items, shippingData: shippingData, shippingPrice: shippingToSend, orderId: orderId }),
       });
       const data = await res.json();
       if (data.url) {

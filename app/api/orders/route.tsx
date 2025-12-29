@@ -9,3 +9,41 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Error fetching orders" }, { status: 500 });
   }
 }
+
+export async function POST(req: Request) {
+  try {
+    const { 
+      pago,
+      modo_entrega_id,
+      total,
+      delivery,
+      payer_name,
+      payer_address,
+      payer_phone,
+      payer_zip,
+      products,
+    } = await req.json();
+    // console.log(pago, modo_entrega_id, total, delivery, payer_name, payer_address, payer_phone, payer_zip);
+    const { rows } = await db.query('INSERT INTO pedido (pago, modo_entrega_id, total, delivery, payer_name, payer_address, payer_phone, payer_zip) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id', [pago, modo_entrega_id, total, delivery, payer_name, payer_address, payer_phone, payer_zip]);
+    // Insertar productos en la tabla pedido_producto
+    for (const product of products) {
+      await db.query('INSERT INTO pedido_productos (pedido_id, producto_id, cantidad, precio, talle_id) VALUES ($1, $2, $3, $4, $5)', [rows[0].id, product.product.id, product.quantity, product.product.precio, product.talle_id || null]);
+    }
+    //console.log(rows[0].id);
+    return NextResponse.json({ message: "Order created successfully", orderId: rows[0].id });
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json({ error: "Error creating order" }, { status: 500 });
+  }
+}
+
+export async function PUT(req: Request) {
+  try {
+    const { orderId } = await req.json();
+    await db.query('UPDATE pedido SET pago = $1 WHERE id = $2', [true, orderId]);
+    return NextResponse.json({ message: "Order updated successfully" });
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json({ error: "Error updating order" }, { status: 500 });
+  }
+}
