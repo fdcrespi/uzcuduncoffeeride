@@ -3,7 +3,7 @@ import { createCheckoutLink } from '@/lib/payway';
 
 export async function POST(request: Request) {
   const body = await request.json();
-  const { amount, orderId } = body;
+  const { amount } = body;
 
   try {
     const result: any = await createCheckoutLink({
@@ -12,7 +12,7 @@ export async function POST(request: Request) {
       products: body.products,
       shippingData: body.shippingData,
       shippingPrice: body.shippingPrice,
-      success_url: `${process.env.NEXT_PUBLIC_URL}/checkout/success?orderId=${orderId}`,
+      success_url: `${process.env.NEXT_PUBLIC_URL}/api/checkout/status`,
       cancel_url: `${process.env.NEXT_PUBLIC_URL}/products`
     });
     

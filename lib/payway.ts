@@ -63,8 +63,8 @@ export const createCheckoutLink = async (args: CheckoutArgs) => {
     products: products,
     total_price: args.total_price,
     site: process.env.PAYWAY_SITE_ID,
-    success_url: args.success_url,
-    // redirect_url: args.success_url, Los campos success_url y redirect_url son mutuamente excluyentes
+    // success_url: args.success_url,
+    redirect_url: args.success_url, // Los campos success_url y redirect_url son mutuamente excluyentes
     cancel_url: args.cancel_url,
     notifications_url: `${process.env.NEXT_PUBLIC_URL}/api/payway/notifications`,
     template_id: 2, // Numérico (1 = sin Cybersource, 2 = con Cybersource)
@@ -93,6 +93,26 @@ export const createCheckoutLink = async (args: CheckoutArgs) => {
       })
     } catch (error) {
       console.error("Payway checkout exception:", error);
+      reject(error);
+    }
+  });
+};
+
+/** Consulta el estado de un pago mediante su hash [9] */
+export const getPaymentStatus = async (paymentHash: string) => {
+
+  return new Promise((resolve, reject) => {
+    try {
+      paywayClient.paymentInfo(paymentHash, function (result: any, err: any) {
+        if (err) {
+          console.error("Payway paymentInfo error:", err);
+          return reject(err);
+        }
+        console.log("Payway paymentInfo result:", result);
+        resolve(result);
+      })
+    } catch (error) {
+      console.error("Payway paymentInfo exception:", error);
       reject(error);
     }
   });

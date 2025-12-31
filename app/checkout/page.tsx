@@ -468,45 +468,45 @@ export default function CheckoutPage() {
     setIsProcessing(true);
     
     // NUEVO: Guardar pedido en base de datos
-    try {
-      const res = await fetch('/api/orders', {
-        method: 'POST',
-        body: JSON.stringify({ 
-          pago: false,
-          modo_entrega_id: shippingData.deliveryMethod === "shipping" ? 1 : 2,
-          total: totalPrice,
-          delivery: shipping,
-          payer_name: shippingData.firstName + " " + shippingData.lastName,
-          payer_address: shippingData.address,
-          payer_phone: shippingData.phone,
-          payer_zip: shippingData.zipCode,
-          products: items,
-        }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        orderId = data.orderId;
-      } else {
-        throw new Error(`HTTP ${res.status}`);
-      }
-    } catch (error) {
-      console.error(error);
-      toast({
-        title: "Error al guardar el pedido",
-        description: "Hubo un problema al guardar el pedido. Intenta de nuevo.",
-        variant: "destructive",
-      });
-      return;
-    }
-  
-    if (!orderId) {
-      toast({
-        title: "Error al guardar el pedido",
-        description: "Hubo un problema al guardar el pedido. Intenta de nuevo.",
-        variant: "destructive",
-      });
-      return;
-    }
+    // try {
+    //   const res = await fetch('/api/orders', {
+    //     method: 'POST',
+    //     body: JSON.stringify({ 
+    //       pago: false,
+    //       modo_entrega_id: shippingData.deliveryMethod === "shipping" ? 1 : 2,
+    //       total: totalPrice,
+    //       delivery: shipping,
+    //       payer_name: shippingData.firstName + " " + shippingData.lastName,
+    //       payer_address: shippingData.address,
+    //       payer_phone: shippingData.phone,
+    //       payer_zip: shippingData.zipCode,
+    //       products: items,
+    //     }),
+    //   });
+    //   if (res.ok) {
+    //     const data = await res.json();
+    //     orderId = data.orderId;
+    //   } else {
+    //     throw new Error(`HTTP ${res.status}`);
+    //   }
+    // } catch (error) {
+    //   console.error(error);
+    //   toast({
+    //     title: "Error al guardar el pedido",
+    //     description: "Hubo un problema al guardar el pedido. Intenta de nuevo.",
+    //     variant: "destructive",
+    //   });
+    //   return;
+    // }
+
+    // if (!orderId) {
+    //   toast({
+    //     title: "Error al guardar el pedido",
+    //     description: "Hubo un problema al guardar el pedido. Intenta de nuevo.",
+    //     variant: "destructive",
+    //   });
+    //   return;
+    // }
     // 👇 NUEVO: llamada a API para crear preferencia de pago
     try {
       const res = await fetch('/api/checkout', {
