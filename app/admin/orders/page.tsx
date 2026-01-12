@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Search, Eye, Package, Truck, CheckCircle, Clock, X, Printer, DollarSign } from "lucide-react"
+import { Search, Eye, Package, Truck, CheckCircle, Clock, X, Printer, DollarSign, Link2 } from "lucide-react"
 import { Order } from "@/lib/types"
 import { toast } from "sonner"
 import { io } from "socket.io-client";
@@ -309,9 +309,17 @@ export default function OrdersPage() {
 
       {/* Orders table */}
       <Card>
-        <CardHeader>
-          <CardTitle>Lista de Pedidos ({filteredOrders.length})</CardTitle>
-          <CardDescription>Gestiona el estado y detalles de todos los pedidos</CardDescription>
+        <CardHeader className="flex items-center space-x-4 justify-between">
+          <div className="space-y-2">
+            <CardTitle>Lista de Pedidos ({filteredOrders.length})</CardTitle>
+            <CardDescription>Gestiona el estado y detalles de todos los pedidos</CardDescription>
+          </div>
+          <Link href={process.env.NEXT_PUBLIC_PAYWAY_PORTAL} target="_blank" rel="noopener noreferrer">
+            <Button className="ml-auto cursor-pointer">
+              <Link2 className="w-4 h-4 mr-2" />
+              Corroborar pagos
+            </Button>
+          </Link>
         </CardHeader>
         <CardContent>
           <Table>

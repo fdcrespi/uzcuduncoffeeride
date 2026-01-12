@@ -21,7 +21,6 @@ export default function OrderDetailCard({ orderId }: { orderId: number }) {
     fetchOrder()
   }, [orderId])
 
-
   return (
     <div className="p-4 bg-white">
       <div className="space-y-1">
