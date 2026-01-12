@@ -425,7 +425,7 @@ export default function CheckoutPage() {
 
   const handleCreatePreference = async () => {
     const { notes, ...requiredData } = shippingData;
-    let orderId = "";
+  
     // Validar campos según el método de entrega
     let isFormValid = true;
     if (shippingData.deliveryMethod === "shipping") {
@@ -467,54 +467,17 @@ export default function CheckoutPage() {
 
     setIsProcessing(true);
     
-    // NUEVO: Guardar pedido en base de datos
-    // try {
-    //   const res = await fetch('/api/orders', {
-    //     method: 'POST',
-    //     body: JSON.stringify({ 
-    //       pago: false,
-    //       modo_entrega_id: shippingData.deliveryMethod === "shipping" ? 1 : 2,
-    //       total: totalPrice,
-    //       delivery: shipping,
-    //       payer_name: shippingData.firstName + " " + shippingData.lastName,
-    //       payer_address: shippingData.address,
-    //       payer_phone: shippingData.phone,
-    //       payer_zip: shippingData.zipCode,
-    //       products: items,
-    //     }),
-    //   });
-    //   if (res.ok) {
-    //     const data = await res.json();
-    //     orderId = data.orderId;
-    //   } else {
-    //     throw new Error(`HTTP ${res.status}`);
-    //   }
-    // } catch (error) {
-    //   console.error(error);
-    //   toast({
-    //     title: "Error al guardar el pedido",
-    //     description: "Hubo un problema al guardar el pedido. Intenta de nuevo.",
-    //     variant: "destructive",
-    //   });
-    //   return;
-    // }
-
-    // if (!orderId) {
-    //   toast({
-    //     title: "Error al guardar el pedido",
-    //     description: "Hubo un problema al guardar el pedido. Intenta de nuevo.",
-    //     variant: "destructive",
-    //   });
-    //   return;
-    // }
-    // 👇 NUEVO: llamada a API para crear preferencia de pago
+  
+    //👇NUEVO: llamada a API para crear preferencia de pago
     try {
       const res = await fetch('/api/checkout', {
         method: 'POST',
-        body: JSON.stringify({ amount: finalTotal, products: items, shippingData: shippingData, shippingPrice: shippingToSend, orderId: orderId }),
+        body: JSON.stringify({ amount: finalTotal, products: items, shippingData: shippingData, shippingPrice: shippingToSend }),
       });
       const data = await res.json();
       if (data.url) {
+        // Guardar pedido en base de datos antes de redirigir
+        await SaveOrder(shippingData, finalTotal, items, shippingToSend, data.paymentHash);
         window.location.href = data.url; // Redirección externa a Payway [13]
       } else {
         toast({
@@ -556,6 +519,46 @@ export default function CheckoutPage() {
     } finally {
       setIsProcessing(false);
     } */
+  };
+
+  const SaveOrder = async (shippingData: ShippingData, totalPrice: number, items: CartItem[], shipping: number, paymentHash: string) => {
+     // NUEVO: Guardar pedido en base de datos
+    try {
+      const res = await fetch('/api/orders', {
+        method: 'POST',
+        body: JSON.stringify({ 
+          pago: false,
+          modo_entrega_id: shippingData.deliveryMethod === "shipping" ? 1 : 2,
+          total: totalPrice,
+          delivery: shipping,
+          payer_name: shippingData.firstName + " " + shippingData.lastName,
+          payer_address: shippingData.address,
+          payer_phone: shippingData.phone,
+          payer_zip: shippingData.zipCode,
+          products: items,
+          paymentHash: paymentHash,
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        return data.orderId;
+      } else {
+        toast({
+          title: "Error al guardar el pedido",
+          description: "Hubo un problema al guardar el pedido. Intenta de nuevo.",
+          variant: "destructive",
+        });
+        return "";
+      }
+    } catch (error) {
+      console.error(error);
+      toast({
+        title: "Error al guardar el pedido",
+        description: "Hubo un problema al guardar el pedido. Intenta de nuevo.",
+        variant: "destructive",
+      });
+      return "";
+    }
   };
 
   if (items.length === 0 && !isProcessing) {

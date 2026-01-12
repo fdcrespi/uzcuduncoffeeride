@@ -25,7 +25,6 @@ export interface CheckoutArgs {
  * Genera el hash necesario para el link de pago (Rubro RETAIL) [8]
  */
 export const createCheckoutLink = async (args: CheckoutArgs) => {
-
   const products = Array.isArray(args.products)
     ? args.products.map((item: any) => {
       if (item && item.product) {
@@ -82,9 +81,6 @@ export const createCheckoutLink = async (args: CheckoutArgs) => {
           console.error("Payway checkout error:", err);
           return reject(err);
         }
-        /* console.log("-----------------------------------------")
-        console.log("Link Hash", result)
-        console.log("-------------------***-------------------"); */
         if (result.payment_link) {
           resolve(result.payment_link);
         } else {

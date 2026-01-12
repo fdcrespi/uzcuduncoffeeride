@@ -22,9 +22,10 @@ export async function POST(req: Request) {
       payer_phone,
       payer_zip,
       products,
+      paymentHash,
     } = await req.json();
     // console.log(pago, modo_entrega_id, total, delivery, payer_name, payer_address, payer_phone, payer_zip);
-    const { rows } = await db.query('INSERT INTO pedido (pago, modo_entrega_id, total, delivery, payer_name, payer_address, payer_phone, payer_zip) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id', [pago, modo_entrega_id, total, delivery, payer_name, payer_address, payer_phone, payer_zip]);
+    const { rows } = await db.query('INSERT INTO pedido (pago, modo_entrega_id, total, delivery, payer_name, payer_address, payer_phone, payer_zip, payment_hash) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id', [pago, modo_entrega_id, total, delivery, payer_name, payer_address, payer_phone, payer_zip, paymentHash]);
     // Insertar productos en la tabla pedido_producto
     for (const product of products) {
       await db.query('INSERT INTO pedido_productos (pedido_id, producto_id, cantidad, precio, talle_id) VALUES ($1, $2, $3, $4, $5)', [rows[0].id, product.product.id, product.quantity, product.product.precio, product.talle_id || null]);

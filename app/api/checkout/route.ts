@@ -20,7 +20,7 @@ export async function POST(request: Request) {
     const paymentHash = result;
     
 
-    return NextResponse.json({ url: `${paymentHash}` });
+    return NextResponse.json({ url: `${paymentHash}`, paymentHash: paymentHash }, { status: 200});
   } catch (error) {
     return NextResponse.json({ error: "Error al generar link de pago" }, { status: 500 });
   }

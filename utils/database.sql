@@ -53,6 +53,7 @@ CREATE TABLE Pedido (
     payer_zip varchar(10)  NULL,
     total float NOT NULL,
     delivery float NOT NULL DEFAULT 0,
+    payment_hash varchar(150) NULL,
     status varchar(50) NOT NULL DEFAULT 'pending'
 );
 
