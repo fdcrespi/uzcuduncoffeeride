@@ -50,7 +50,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
       return new NextResponse('ID de pedido inválido', { status: 400 });
     }
     const { status } = await req.json();
-    if (!['pending', 'shipped', 'delivered', 'canceled'].includes(status)) {
+    if (!['pending', 'shipped', 'delivered', 'canceled', 'paid'].includes(status)) {
       return new NextResponse('Estado de pedido inválido', { status: 400 });
     }
     const { rows } = await db.query(

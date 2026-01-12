@@ -1,4 +1,3 @@
-import { redirect } from "next/dist/server/api-utils";
 
 const sdkModulo = require('sdk-node-payway');
 

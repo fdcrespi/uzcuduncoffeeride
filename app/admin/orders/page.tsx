@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Search, Eye, Package, Truck, CheckCircle, Clock, X, Printer } from "lucide-react"
+import { Search, Eye, Package, Truck, CheckCircle, Clock, X, Printer, DollarSign } from "lucide-react"
 import { Order } from "@/lib/types"
 import { toast } from "sonner"
 import { io } from "socket.io-client";
@@ -21,6 +21,7 @@ const statusConfig = {
   delivered: { label: "Entregado", variant: "secondary" as const, icon: Package },
   shipped: { label: "Enviado", variant: "default" as const, icon: Truck },
   canceled: { label: "Cancelado", variant: "default" as const, icon: CheckCircle },
+  paid: { label: "Pagado", variant: "success" as const, icon: DollarSign },
 }
 
 /** Construye el HTML de la etiqueta para imprimir en un iframe oculto */
@@ -232,7 +233,7 @@ export default function OrdersPage() {
       </div>
 
       {/* Stats cards */}
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-5">
         <Card className={`cursor-pointer ${statusFilter === "all" ? "bg-[#F5F5F5] shadow-xl" : ""}`} onClick={() => setStatusFilter("all")}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Pedidos</CardTitle>
@@ -249,6 +250,15 @@ export default function OrdersPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{orders.filter((o) => o.status === "pending").length}</div>
+          </CardContent>
+        </Card>
+        <Card className={`cursor-pointer ${statusFilter === "paid" ? "bg-[#F5F5F5] shadow-xl" : ""}`} onClick={() => setStatusFilter("paid")}>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Pagados</CardTitle>
+            <CheckCircle className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{orders.filter((o) => o.status === "paid").length}</div>
           </CardContent>
         </Card>
         <Card className={`cursor-pointer ${statusFilter === "shipped" || statusFilter === "delivered" ? "bg-[#F5F5F5] shadow-xl" : ""}`} onClick={() => setStatusFilter("shipped")}>
@@ -366,18 +376,28 @@ export default function OrdersPage() {
                               <span>Pendiente</span>
                             </div>
                           </SelectItem>
-                          <SelectItem value="shipped">
+
+                          <SelectItem value="paid">
                             <div className="flex items-center space-x-2">
-                              <Package className="w-3 h-3" />
-                              <span>Enviado</span>
+                              <DollarSign className="w-3 h-3" />
+                              <span>Pagado</span>
                             </div>
                           </SelectItem>
+
                           <SelectItem value="delivered">
                             <div className="flex items-center space-x-2">
                               <Truck className="w-3 h-3" />
                               <span>Entregado</span>
                             </div>
                           </SelectItem>
+                          
+                          <SelectItem value="shipped">
+                            <div className="flex items-center space-x-2">
+                              <Package className="w-3 h-3" />
+                              <span>Enviado</span>
+                            </div>
+                          </SelectItem>
+                          
                           <SelectItem value="canceled">
                             <div className="flex items-center space-x-2">
                               <CheckCircle className="w-3 h-3" />
@@ -390,6 +410,16 @@ export default function OrdersPage() {
                     <TableCell>{new Date(order.fecha_emision).toLocaleString()}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-1">
+                        <Button
+                          variant="default"
+                          className="cursor-pointer bg-green-800 text-white hover:bg-green-900"
+                          title="Ver detalle"
+                          style={{ display: order.status === "paid" ? "none" : "inline-flex"}}
+                          onClick={() => updateOrderStatus(order.id, "paid")}
+                        >
+                          <DollarSign className="w-4 h-4" />
+                          <span>pagado</span>
+                        </Button>
                         <Link href={`/admin/orders/${order.id}`}>
                           <Button variant="ghost" size="icon" className="w-8 h-8 cursor-pointer" title="Ver detalle">
                             <Eye className="w-4 h-4" />
