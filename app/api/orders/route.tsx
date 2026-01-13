@@ -30,6 +30,14 @@ export async function POST(req: Request) {
     for (const product of products) {
       await db.query('INSERT INTO pedido_productos (pedido_id, producto_id, cantidad, precio, talle_id) VALUES ($1, $2, $3, $4, $5)', [rows[0].id, product.product.id, product.quantity, product.product.precio, product.talle_id || null]);
     }
+
+    //Disminuye el stock en producto_talles
+    for (const product of products) {
+      if (product.talle_id) {
+        await db.query('UPDATE producto_talle SET stock = stock - $1 WHERE producto_id = $2 AND talle_id = $3', [product.quantity, product.product.id, product.talle_id]);
+      }
+    }
+
     //console.log(rows[0].id);
     return NextResponse.json({ message: "Order created successfully", orderId: rows[0].id });
   } catch (error) {

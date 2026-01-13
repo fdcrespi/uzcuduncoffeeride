@@ -25,7 +25,7 @@ const statusConfig = {
 }
 
 /** Construye el HTML de la etiqueta para imprimir en un iframe oculto */
-function buildLabelHTML(order: Order) {  
+function buildLabelHTML(order: Order) {
   const fecha = new Date(order.fecha_emision).toLocaleString();
 
   // Remitente (desde lib/data.ts)
@@ -141,7 +141,7 @@ async function printOrderLabel(order: Order) {
   setTimeout(() => {
     try {
       document.body.removeChild(iframe);
-    } catch {}
+    } catch { }
   }, 1500);
 }
 
@@ -153,14 +153,21 @@ export default function OrdersPage() {
   const [filteredOrders, setFilteredOrders] = useState<Order[]>([])
 
   useEffect(() => {
-    const fetchOrders = async () => {
+    fetchOrders()
+  }, []);
+
+  const fetchOrders = async () => {
+    try {
       const data = await fetch("/api/orders").then((res) => res.json())
       setLoading(false);
       setOrders(data);
       setFilteredOrders(data);
     }
-    fetchOrders()
-  }, []);
+    catch (error) {
+      console.error(error);
+    }
+  }
+
 
   useEffect(() => {
     socket.on('connect', () => {
@@ -168,17 +175,23 @@ export default function OrdersPage() {
     });
     socket.on('addPedido', () => {
       setLoading(true);
-      fetch('/api/orders')
-        .then(response => {
-          if (!response.ok) throw new Error('Error al cargar los pedidos');
-          return response.json();
-        })
-        .then(data => { setOrders(data); })
-        .catch(console.error)
-        .finally(() => setLoading(false));
+      console.log('Producto actualizado, recargando lista...');
+      getPedidos();
     });
     return () => { socket.off('addPedido'); };
   }, []);
+
+  const getPedidos = async () => {
+    try {
+      const data = await fetch("/api/orders").then((res) => res.json())
+      setLoading(false);
+      setOrders(data);
+      setFilteredOrders(data);
+    }
+    catch (error) {
+      console.error(error);
+    }
+  }
 
   useEffect(() => {
     let filtered = [...orders]
@@ -314,7 +327,7 @@ export default function OrdersPage() {
             <CardTitle>Lista de Pedidos ({filteredOrders.length})</CardTitle>
             <CardDescription>Gestiona el estado y detalles de todos los pedidos</CardDescription>
           </div>
-          <Link href={process.env.NEXT_PUBLIC_PAYWAY_PORTAL} target="_blank" rel="noopener noreferrer">
+          <Link href={process.env.NEXT_PUBLIC_PAYWAY_PORTAL!} target="_blank" rel="noopener noreferrer">
             <Button className="ml-auto cursor-pointer">
               <Link2 className="w-4 h-4 mr-2" />
               Corroborar pagos
@@ -348,7 +361,7 @@ export default function OrdersPage() {
                     <TableCell>
                       <div>
                         <div className="font-medium">{order.payer_name}</div>
-                        <div className="text-sm text-muted-foreground">{order.payer_address}</div>
+                        <div className="text-sm text-muted-foreground max-w-[200px] overflow-hidden whitespace-nowrap text-ellipsis">{order.payer_address}</div>
                       </div>
                     </TableCell>
                     <TableCell>
@@ -368,7 +381,11 @@ export default function OrdersPage() {
                       )}
                     </TableCell>
                     <TableCell>
-                      <Select value={order.status} onValueChange={(value) => updateOrderStatus(order.id, value as Order["status"])}>
+                      <Select 
+                        value={order.status} 
+                        onValueChange={(value) => updateOrderStatus(order.id, value as Order["status"])}
+                        disabled={order.status === "canceled"}
+                      >
                         <SelectTrigger className="w-[150px]">
                           <SelectValue>
                             <div className="flex items-center space-x-2">
@@ -398,14 +415,14 @@ export default function OrdersPage() {
                               <span>Entregado</span>
                             </div>
                           </SelectItem>
-                          
+
                           <SelectItem value="shipped">
                             <div className="flex items-center space-x-2">
                               <Package className="w-3 h-3" />
                               <span>Enviado</span>
                             </div>
                           </SelectItem>
-                          
+
                           <SelectItem value="canceled">
                             <div className="flex items-center space-x-2">
                               <CheckCircle className="w-3 h-3" />
@@ -415,21 +432,26 @@ export default function OrdersPage() {
                         </SelectContent>
                       </Select>
                     </TableCell>
-                    <TableCell>{new Date(order.fecha_emision).toLocaleString()}</TableCell>
+                    <TableCell>{new Date(order.fecha_emision).toLocaleString("es-AR", { timeZone: "America/Buenos_Aires", dateStyle: "short", timeStyle: "short" })}</TableCell>
                     <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-1">
+                      <div className="flex items-center gap-1">
                         <Button
                           variant="default"
                           className="cursor-pointer bg-green-800 text-white hover:bg-green-900"
-                          title="Ver detalle"
-                          style={{ display: order.status === "paid" ? "none" : "inline-flex"}}
+                          title="Marcar como pagado"
+                          style={{ display: order.status === "paid" || order.status === "canceled" ? "none" : "inline-flex" }}
                           onClick={() => updateOrderStatus(order.id, "paid")}
                         >
                           <DollarSign className="w-4 h-4" />
                           <span>pagado</span>
                         </Button>
                         <Link href={`/admin/orders/${order.id}`}>
-                          <Button variant="ghost" size="icon" className="w-8 h-8 cursor-pointer" title="Ver detalle">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="w-8 h-8 cursor-pointer"
+                            title="Ver detalle"
+                          >
                             <Eye className="w-4 h-4" />
                           </Button>
                         </Link>

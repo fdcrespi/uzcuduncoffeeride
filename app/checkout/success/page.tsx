@@ -17,11 +17,13 @@ export default function SuccessPage() {
       <div className="flex justify-center">
         <CheckCircle className="text-green-500 w-16 h-16 mb-4" />
       </div>
-      <p className="mb-2">Tu pago ha sido procesado con éxito.</p>
+      <p className="mb-2">Tu pedido ha sido procesado con éxito.</p>
       {/* <p className="mb-2">ID de Pago: {payment_id}</p>
       <p className="mb-2">Estado: {status}</p>
       <p className="mb-2">Referencia Externa: {external_reference}</p> */}
-      <p className="mt-4">Te enviaremos un correo con los detalles de tu pedido.</p>
+      <p className="mb-2">Una vez verificado el pago, comenzaremos a preparar tu pedido.</p>
+      <p className="mt-4">Nos pondremos en contacto contigo a la brevedad.</p>
+      <p className="mt-4">¡Gracias por elegir Uzcudun Coffee Ride!</p>
       <div className="mt-6">
         <a href="/" className="text-blue-500 hover:underline">Volver al inicio</a>
       </div>

@@ -6,7 +6,7 @@ export async function GET(request: Request) {
   // get params result from url
   const { searchParams } = new URL(request.url);
   const result = searchParams.get('result');
-  // console.log('Payment result:', result);
+  console.log('Payment result:', result);
 
   // Consulta estado de resultado de pago si es necesario
   if (result) {

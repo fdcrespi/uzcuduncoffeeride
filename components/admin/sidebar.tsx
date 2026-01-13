@@ -84,7 +84,7 @@ export function AdminSidebar({ className, onClose }: AdminSidebarProps) {
         console.log('Conectado al servidor de WebSocket');
       });
       socket.on('addPedido', () => {
-        console.log('Producto actualizado, recargando lista...');
+        console.log('Pedido agregado, recargando lista...');
         // Volver a cargar los productos
         getCantidadPedidos();
       });

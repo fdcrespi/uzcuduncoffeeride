@@ -57,6 +57,23 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
       'UPDATE pedido SET status = $1 WHERE id = $2 RETURNING *',
       [status, orderId]
     );
+
+    // Si el estado es 'canceled', restaurar el stock
+    if (status === 'canceled') {
+      const { rows: products } = await db.query(
+        'SELECT producto_id, cantidad, talle_id FROM pedido_productos WHERE pedido_id = $1',
+        [orderId]
+      );
+      for (const product of products) {
+        if (product.talle_id) {
+          await db.query(
+            'UPDATE producto_talle SET stock = stock + $1 WHERE producto_id = $2 AND talle_id = $3',
+            [product.cantidad, product.producto_id, product.talle_id]
+          );
+        }
+      }
+    }
+
     if (rows.length === 0) {
       return new NextResponse('Pedido no encontrado', { status: 404 });
     }

@@ -29,6 +29,11 @@ import type { CartItem } from "@/lib/types";
 import { AddressInput } from "@/components/checkout/addressAutocomplete";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import data from "@/lib/data";
+import { io } from "socket.io-client";
+
+
+const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || (typeof window !== "undefined" ? window.location.origin : "");
+const socket = io(SOCKET_URL, { transports: ["websocket"] });
 
 /* =========================
    Tipos y utilidades extra
@@ -541,6 +546,7 @@ export default function CheckoutPage() {
       });
       if (res.ok) {
         const data = await res.json();
+        socket.emit('addPedido', 'Pedido actualizado');
         return data.orderId;
       } else {
         toast({
