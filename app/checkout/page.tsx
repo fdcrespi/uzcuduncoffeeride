@@ -30,6 +30,7 @@ import { AddressInput } from "@/components/checkout/addressAutocomplete";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import data from "@/lib/data";
 import { io } from "socket.io-client";
+import { sendEmailAviso } from "@/lib/mail";
 
 
 const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || (typeof window !== "undefined" ? window.location.origin : "");
@@ -482,7 +483,8 @@ export default function CheckoutPage() {
       const data = await res.json();
       if (data.url) {
         // Guardar pedido en base de datos antes de redirigir
-        await SaveOrder(shippingData, finalTotal, items, shippingToSend, data.paymentHash);
+        const orderId = await SaveOrder(shippingData, finalTotal, items, shippingToSend, data.paymentHash);
+        sendEmailAviso(orderId); // Enviar email de aviso al admin
         window.location.href = data.url; // Redirección externa a Payway [13]
       } else {
         toast({
