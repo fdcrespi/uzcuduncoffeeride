@@ -481,7 +481,7 @@ export default function CheckoutPage() {
         body: JSON.stringify({ amount: finalTotal, products: items, shippingData: shippingData, shippingPrice: shippingToSend }),
       });
       const data = await res.json();
-      console.log("Respuesta de /api/checkout:", data);
+ 
       if (data.url) {
         // Guardar pedido en base de datos antes de redirigir
         const orderId = await SaveOrder(shippingData, finalTotal, items, shippingToSend, data.paymentHash);

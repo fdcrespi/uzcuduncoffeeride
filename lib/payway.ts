@@ -24,6 +24,8 @@ export interface CheckoutArgs {
  * Genera el hash necesario para el link de pago (Rubro RETAIL) [8]
  */
 export const createCheckoutLink = async (args: CheckoutArgs) => {
+
+  console.log(args);
   const products = Array.isArray(args.products)
     ? args.products.map((item: any) => {
       if (item && item.product) {
@@ -66,7 +68,7 @@ export const createCheckoutLink = async (args: CheckoutArgs) => {
     cancel_url: args.cancel_url,
     notifications_url: `${process.env.NEXT_PUBLIC_URL}/api/payway/notifications`,
     template_id: 2, // Numérico (1 = sin Cybersource, 2 = con Cybersource)
-    installments: [1], // Cuotas permitidas [8]
+    installments: [3], // Cuotas permitidas [8]
     plan_gobierno: false,
     public_apikey: publicKey,
     auth_3ds: false

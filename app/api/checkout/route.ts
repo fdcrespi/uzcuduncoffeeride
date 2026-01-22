@@ -18,7 +18,6 @@ export async function POST(request: Request) {
     
     // El resultado puede tener id o hash dependiendo de la versión del SDK/API
     const paymentHash = result;
-    console.log("Link de pago generado:", paymentHash);
 
     return NextResponse.json({ url: `${paymentHash}`, paymentHash: paymentHash }, { status: 200});
   } catch (error) {
