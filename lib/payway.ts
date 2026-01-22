@@ -29,7 +29,8 @@ export const createCheckoutLink = async (args: CheckoutArgs) => {
     ? args.products.map((item: any) => {
       if (item && item.product) {
         const p = item.product;
-        const value = typeof p.precio_alternativo === 'number' && p.precio_alternativo > 0 ? p.precio_alternativo : p.precio;
+        //const value = typeof p.precio_alternativo === 'number' && p.precio_alternativo > 0 ? p.precio_alternativo : p.precio;
+        const value = typeof p.precio_alternativo === 'number' && p.precio;
         return {
           id: Number(p.id),
           value,
@@ -53,8 +54,7 @@ export const createCheckoutLink = async (args: CheckoutArgs) => {
     description: `Costo de envío a ${args.shippingData?.city || 'desconocido'}`,
     quantity: 1,
   });
-  console.log("Productos para Payway:", products);
-  console.log("Argumentos para Payway:", args);
+
   const params = {
     origin_platform: "SDK-Node",
     // Tanto productos como descripción del pago no pueden tener valores al mismo tiempo
