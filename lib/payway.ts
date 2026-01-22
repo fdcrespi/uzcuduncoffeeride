@@ -25,7 +25,6 @@ export interface CheckoutArgs {
  */
 export const createCheckoutLink = async (args: CheckoutArgs) => {
 
-  console.log(args);
   const products = Array.isArray(args.products)
     ? args.products.map((item: any) => {
       if (item && item.product) {
@@ -54,7 +53,8 @@ export const createCheckoutLink = async (args: CheckoutArgs) => {
     description: `Costo de envío a ${args.shippingData?.city || 'desconocido'}`,
     quantity: 1,
   });
-
+  console.log("Productos para Payway:", products);
+  console.log("Argumentos para Payway:", args);
   const params = {
     origin_platform: "SDK-Node",
     // Tanto productos como descripción del pago no pueden tener valores al mismo tiempo
