@@ -60,6 +60,7 @@ export interface Order {
   pago: boolean;
   payer_name: string;
   payer_address: string;
+  payer_phone: string;
   total: number;
   delivery: number;
   modo_entrega_id: number;
